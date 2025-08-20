@@ -1,0 +1,25 @@
+---
+const { images } = Astro.props;
+--- 
+
+<style>
+.gallery {
+  column-count: 3;
+  column-gap: 1rem;
+}
+.gallery img {
+  width: 100%;
+  margin-bottom: 1rem;
+  break-inside: avoid;
+  border-radius: 8px;
+}
+</style>
+
+<div class="gallery">
+  {images.map(({ src, filename, tags }) => (
+    <div>
+      <img src={src} alt={filename} loading="lazy" />
+      <p>{tags.join(', ')}</p>
+    </div>
+  ))}
+</div>

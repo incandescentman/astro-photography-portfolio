@@ -5,9 +5,16 @@ const title = siteConfig.title;
 
 const base = import.meta.env.BASE_URL;
 const menuItems = [
-	{ name: 'Home', link: `${base}` },
-	{ name: 'Gallery', link: `${base}/collections` },
+	{ name: 'Red Carpet Photos', link: `${base}/gallery` },
 	{ name: 'About', link: `${base}/about` },
+	{ name: 'Contact', link: `mailto:jay@jaydixit.com` },
+	{ name: 'jaydixit.com', link: 'https://jaydixit.com' },
+];
+
+const socialLinks = [
+	{ name: 'Twitter', url: 'https://twitter.com/jaydixit', icon: '𝕏' },
+	{ name: 'LinkedIn', url: 'https://linkedin.com/in/jaydixit', icon: 'in' },
+	{ name: 'Instagram', url: 'https://instagram.com/jaydixit', icon: '📷' },
 ];
 ---
 
@@ -30,17 +37,34 @@ const menuItems = [
 		</a>
 
 		<!-- Desktop Menu -->
-		<div class="hidden md:flex space-x-8">
+		<div class="hidden md:flex items-center space-x-8">
 			{
 				menuItems.map((item) => (
 					<a
 						href={item.link}
-						class="nav-link relative after:content-[''] after:absolute after:left-0 after:bottom-[-2px] after:h-[2px] after:bg-black after:w-0 hover:after:w-full transition-all"
+						class="nav-link relative after:content-[''] after:absolute after:left-0 after:bottom-[-2px] after:h-[2px] after:bg-black after:w-0 hover:after:w-full transition-all text-sm"
+						target={item.link.startsWith('http') ? '_blank' : '_self'}
 					>
 						{item.name}
 					</a>
 				))
 			}
+			
+			<!-- Social Links -->
+			<div class="flex items-center space-x-3 ml-6 border-l border-gray-300 pl-6">
+				{
+					socialLinks.map((social) => (
+						<a
+							href={social.url}
+							target="_blank"
+							class="text-gray-600 hover:text-black transition-colors text-sm"
+							title={social.name}
+						>
+							{social.icon}
+						</a>
+					))
+				}
+			</div>
 		</div>
 
 		<!-- Mobile Menu Button -->
@@ -67,11 +91,32 @@ const menuItems = [
 		<div class="flex flex-col py-4 px-6 space-y-4">
 			{
 				menuItems.map((item) => (
-					<a href={item.link} class="text-lg" @click="isOpen = false">
+					<a 
+						href={item.link} 
+						class="text-lg" 
+						@click="isOpen = false"
+						target={item.link.startsWith('http') ? '_blank' : '_self'}
+					>
 						{item.name}
 					</a>
 				))
 			}
+			
+			<!-- Mobile Social Links -->
+			<div class="flex items-center space-x-4 pt-4 border-t border-gray-200">
+				{
+					socialLinks.map((social) => (
+						<a
+							href={social.url}
+							target="_blank"
+							class="text-gray-600 hover:text-black transition-colors"
+							title={social.name}
+						>
+							{social.icon}
+						</a>
+					))
+				}
+			</div>
 		</div>
 	</div>
 </nav>

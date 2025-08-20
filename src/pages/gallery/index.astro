@@ -1,0 +1,93 @@
+---
+import fs from 'fs';
+import path from 'path';
+import MainLayout from '../../layouts/MainLayout.astro';
+
+// Get all gallery folders
+const galleryDir = path.join(process.cwd(), 'src/gallery');
+const folders = fs.existsSync(galleryDir) 
+  ? fs.readdirSync(galleryDir).filter(item => {
+      const itemPath = path.join(galleryDir, item);
+      return fs.statSync(itemPath).isDirectory();
+    })
+  : [];
+
+// Get sample images and counts for each gallery
+const galleries = folders.map(folder => {
+  const folderPath = path.join(galleryDir, folder);
+  const imageFiles = fs.readdirSync(folderPath).filter(f => /\.(jpg|jpeg|png|webp)$/i.test(f));
+  const sampleImage = imageFiles[0];
+  
+  return {
+    name: folder,
+    displayName: folder.split('-').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' '),
+    imageCount: imageFiles.length,
+    sampleImage: sampleImage ? `/gallery/${folder}/${sampleImage}` : null,
+    url: `/gallery/${folder}`
+  };
+});
+---
+
+<MainLayout>
+  <section class="py-16 pt-24">
+    <div class="container-custom">
+      <div class="mb-16 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">Photo Galleries</h1>
+        <p class="text-gray-600 max-w-xl mx-auto">
+          Browse my photography collections organized by theme and event
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {galleries.map(gallery => (
+          <a 
+            href={gallery.url}
+            class="group block bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
+          >
+            <div class="aspect-video bg-gray-200 overflow-hidden">
+              {gallery.sampleImage ? (
+                <img 
+                  src={gallery.sampleImage} 
+                  alt={gallery.displayName}
+                  class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  loading="lazy"
+                />
+              ) : (
+                <div class="w-full h-full flex items-center justify-center text-gray-400">
+                  <svg class="w-16 h-16" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                  </svg>
+                </div>
+              )}
+            </div>
+            
+            <div class="p-6">
+              <h3 class="text-xl font-semibold mb-2 group-hover:text-blue-600 transition-colors">
+                {gallery.displayName}
+              </h3>
+              <p class="text-gray-600 text-sm">
+                {gallery.imageCount} {gallery.imageCount === 1 ? 'photo' : 'photos'}
+              </p>
+            </div>
+          </a>
+        ))}
+      </div>
+
+      {galleries.length === 0 && (
+        <div class="text-center py-16">
+          <div class="text-gray-400 mb-4">
+            <svg class="w-24 h-24 mx-auto" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">No galleries found</h3>
+          <p class="text-gray-600">
+            Create gallery folders in <code class="bg-gray-100 px-2 py-1 rounded text-sm">src/gallery/</code> to get started.
+          </p>
+        </div>
+      )}
+    </div>
+  </section>
+</MainLayout>

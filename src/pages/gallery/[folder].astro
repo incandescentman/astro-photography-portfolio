@@ -1,0 +1,177 @@
+---
+import fs from 'fs';
+import path from 'path';
+import MainLayout from '../../layouts/MainLayout.astro';
+import MasonryGallery from '../../components/MasonryGallery.astro';
+import PhotoComments from '../../components/PhotoComments.astro';
+
+const { folder } = Astro.params;
+
+// Check if the folder exists
+const imageDir = path.join(process.cwd(), 'src/gallery', folder);
+if (!fs.existsSync(imageDir)) {
+  return Astro.redirect('/404');
+}
+
+// Get image files from the folder
+const imageFiles = fs.readdirSync(imageDir).filter(f => /\.(jpg|jpeg|png|webp)$/i.test(f));
+
+// Load tags.json if it exists
+const tagsPath = path.join(imageDir, 'tags.json');
+const tags = fs.existsSync(tagsPath) ? JSON.parse(fs.readFileSync(tagsPath, 'utf8')) : {};
+
+// Create image objects with metadata
+const imageUrls = imageFiles.map((file) => {
+  const filename = path.parse(file).name;
+  
+  // Parse filename for caption (maria-bakalova_locarno_2024.jpg -> Maria Bakalova at Locarno in 2024)
+  const parts = filename.split('_');
+  let subject = '';
+  let event = '';
+  let year = '';
+  
+  if (parts.length > 0) {
+    subject = parts[0].split('-').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
+  }
+  
+  if (parts.length > 1) {
+    const lastPart = parts[parts.length - 1];
+    if (/^\d{4}$/.test(lastPart)) {
+      year = lastPart;
+      if (parts.length > 2) {
+        event = parts.slice(1, -1).join(' ').split('-').map(word => 
+          word.charAt(0).toUpperCase() + word.slice(1)
+        ).join(' ');
+      }
+    } else {
+      event = parts.slice(1).join(' ').split('-').map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1)
+      ).join(' ');
+    }
+  }
+  
+  let caption = subject;
+  if (event) caption += ` at ${event}`;
+  if (year) caption += ` in ${year}`;
+  
+  // Get tags from tags.json or parse from filename
+  let imageTags = tags[file] || [];
+  if (imageTags.length === 0) {
+    // Extract tags from filename (look for patterns like _tag1-tag2)
+    const tagMatch = filename.match(/_([^_]+)$/);
+    if (tagMatch) {
+      imageTags = tagMatch[1].split('-');
+    }
+    // Add folder name as tag
+    imageTags.push(folder);
+  }
+  
+  return {
+    src: `/gallery/${folder}/${file}`,
+    filename: file,
+    caption,
+    tags: imageTags
+  };
+});
+
+// Get all unique tags for filtering
+const allTags = [...new Set(imageUrls.flatMap(img => img.tags))];
+
+export const getStaticPaths = async () => {
+  const galleryDir = path.join(process.cwd(), 'src/gallery');
+  if (!fs.existsSync(galleryDir)) return [];
+  
+  const folders = fs.readdirSync(galleryDir).filter(item => {
+    const itemPath = path.join(galleryDir, item);
+    return fs.statSync(itemPath).isDirectory();
+  });
+  
+  return folders.map(folder => ({
+    params: { folder }
+  }));
+};
+---
+
+<MainLayout>
+  <section class="py-16 pt-24">
+    <div class="container-custom">
+      <div class="mb-16 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">{folder.charAt(0).toUpperCase() + folder.slice(1)} Gallery</h1>
+        <p class="text-gray-600 max-w-xl mx-auto">{imageUrls.length} photos</p>
+      </div>
+
+      <!-- Search and Filter UI -->
+      <div class="mb-8">
+        <div class="max-w-md mx-auto mb-6">
+          <input 
+            type="text" 
+            id="search" 
+            placeholder="Search photos..."
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        
+        <div class="flex flex-wrap gap-2 justify-center mb-6">
+          {allTags.map(tag => (
+            <button 
+              class="tag-filter px-3 py-1 text-sm border border-gray-300 rounded-full hover:bg-gray-100 transition-colors"
+              data-tag={tag}
+            >
+              {tag}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <MasonryGallery images={imageUrls} />
+      <PhotoComments galleryName={folder} />
+    </div>
+  </section>
+</MainLayout>
+
+<script>
+  // Search and filter functionality
+  document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('search');
+    const tagButtons = document.querySelectorAll('.tag-filter');
+    const images = document.querySelectorAll('.gallery-item');
+    let activeTags = new Set();
+
+    function filterImages() {
+      const searchTerm = searchInput.value.toLowerCase();
+      
+      images.forEach(img => {
+        const caption = img.dataset.caption?.toLowerCase() || '';
+        const tags = JSON.parse(img.dataset.tags || '[]');
+        
+        const matchesSearch = !searchTerm || caption.includes(searchTerm);
+        const matchesTags = activeTags.size === 0 || tags.some(tag => activeTags.has(tag));
+        
+        img.style.display = matchesSearch && matchesTags ? 'block' : 'none';
+      });
+    }
+
+    searchInput.addEventListener('input', filterImages);
+
+    tagButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const tag = button.dataset.tag;
+        
+        if (activeTags.has(tag)) {
+          activeTags.delete(tag);
+          button.classList.remove('bg-blue-500', 'text-white');
+          button.classList.add('border-gray-300');
+        } else {
+          activeTags.add(tag);
+          button.classList.add('bg-blue-500', 'text-white');
+          button.classList.remove('border-gray-300');
+        }
+        
+        filterImages();
+      });
+    });
+  });
+</script>
+</MainLayout>

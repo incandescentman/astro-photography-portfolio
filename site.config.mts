@@ -8,19 +8,19 @@ export interface SocialLink {
 }
 
 export default {
-	title: 'SR',
+	title: 'Jay Dixit Photos',
 	favicon: 'favicon.ico',
-	owner: 'Sara Richard',
+	owner: 'Jay Dixit',
 	profileImage: 'profile.webp',
 	socialLinks: [
 		{
 			name: 'GitHub',
-			url: 'https://github.com/rockem/astro-photography-portfolio',
+			url: 'https://github.com/incandescentman/jaydixit-photos',
 			icon: Github,
 		} as SocialLink,
 		{
 			name: 'Instagram',
-			url: 'https://www.instagram.com',
+			url: 'https://www.instagram.com/jaydixit',
 			icon: Instagram,
 		} as SocialLink,
 	],

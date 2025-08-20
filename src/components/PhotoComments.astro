@@ -1,0 +1,69 @@
+---
+const { galleryName, photoId = null } = Astro.props;
+const discussionTerm = photoId ? `${galleryName}-${photoId}` : galleryName;
+---
+
+<div class="comments-section mt-16 pt-8 border-t border-gray-200">
+  <h3 class="text-2xl font-bold mb-6 text-center">Comments</h3>
+  
+  <div class="max-w-4xl mx-auto">
+    <div id="giscus-container" data-term={discussionTerm}></div>
+  </div>
+</div>
+
+<script>
+class PhotoComments extends HTMLElement {
+  constructor() {
+    super();
+    this.term = this.querySelector('#giscus-container').dataset.term;
+    this.loadComments();
+  }
+
+  loadComments() {
+    // Create Giscus script element
+    const script = document.createElement('script');
+    script.src = 'https://giscus.app/client.js';
+    script.setAttribute('data-repo', 'incandescentman/jaydixit-photos');
+    script.setAttribute('data-repo-id', 'REPLACE_WITH_YOUR_REPO_ID');
+    script.setAttribute('data-category', 'General');
+    script.setAttribute('data-category-id', 'REPLACE_WITH_YOUR_CATEGORY_ID');
+    script.setAttribute('data-mapping', 'specific');
+    script.setAttribute('data-term', this.term);
+    script.setAttribute('data-strict', '0');
+    script.setAttribute('data-reactions-enabled', '1');
+    script.setAttribute('data-emit-metadata', '0');
+    script.setAttribute('data-input-position', 'top');
+    script.setAttribute('data-theme', 'light');
+    script.setAttribute('data-lang', 'en');
+    script.crossOrigin = 'anonymous';
+    script.async = true;
+
+    // Clear container and append script
+    const container = this.querySelector('#giscus-container');
+    container.innerHTML = '';
+    container.appendChild(script);
+  }
+}
+
+// Register the custom element
+customElements.define('photo-comments', PhotoComments);
+</script>
+
+<style>
+.comments-section {
+  background: #fafafa;
+  margin-top: 2rem;
+  padding: 2rem 1rem;
+}
+
+#giscus-container {
+  min-height: 200px;
+}
+
+/* Dark mode support for Giscus */
+@media (prefers-color-scheme: dark) {
+  .comments-section {
+    background: #1a1a1a;
+  }
+}
+</style>

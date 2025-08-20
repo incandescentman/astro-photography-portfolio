@@ -1,17 +1,140 @@
 ---
+import fs from 'fs';
+import path from 'path';
 import MainLayout from '../layouts/MainLayout.astro';
-import LandingHero from '../components/LandingHero-1.astro';
-import FeaturedGallery from '../components/FeaturedGallery.astro';
-import FeaturedWorkScroll from '../components/FeaturedWorkScroll.astro';
+
+// Get the highlights photos (downloaded from live site)
+const highlightsDir = path.join(process.cwd(), 'public/highlights');
+const highlightPhotos = [];
+
+if (fs.existsSync(highlightsDir)) {
+  const imageFiles = fs.readdirSync(highlightsDir).filter(f => /\.(jpg|jpeg|png|webp)$/i.test(f));
+  
+  // Define specific captions for the live photos
+  const captions = {
+    'dixit_nobel-physics.jpg': 'Nobel Prize in Physics Ceremony',
+    'vanessa-kirby.jpg': 'Vanessa Kirby',
+    'Lisa_Gilroy_at_SXSW_in_2025-1.jpg': 'Lisa Gilroy at SXSW in 2025',
+    'jay-dixit_red-carpet_01130.jpg': 'Jay Dixit on the Red Carpet',
+    'jeremy.jpg': 'Jeremy',
+    'jeremy-11.jpg': 'Jeremy',
+    'judd-apatow.jpg': 'Judd Apatow',
+    'jeremy-3.jpg': 'Jeremy',
+    'vinod.jpg': 'Vinod',
+    'conan.jpg': 'Conan O\'Brien',
+    'jay-dixit_red-carpet_05923-1.jpg': 'Jay Dixit Red Carpet',
+    'jeremy-6.jpg': 'Jeremy',
+    'jeremy-4.jpg': 'Jeremy',
+    'vinod-4.jpg': 'Vinod'
+  };
+  
+  imageFiles.forEach(file => {
+    highlightPhotos.push({
+      src: `/highlights/${file}`,
+      filename: file,
+      caption: captions[file] || path.parse(file).name,
+      tags: ['featured', 'highlights']
+    });
+  });
+}
 ---
 
 <MainLayout>
-	<section class="relative min-h-screen items-center flex py-20 md:py-16 overflow-hidden">
-		<LandingHero />
-		<FeaturedWorkScroll />
-	</section>
-
-	<section class="featured-section py-20">
-		<FeaturedGallery />
-	</section>
+  <div class="photo-grid-container">
+    <div class="photo-grid">
+      {highlightPhotos.map((photo, index) => (
+        <div class="photo-item">
+          <a href={photo.src} data-gallery="main-gallery">
+            <img 
+              src={photo.src} 
+              alt={photo.caption}
+              loading="lazy"
+              class="photo-image"
+            />
+          </a>
+        </div>
+      ))}
+    </div>
+  </div>
 </MainLayout>
+
+<style>
+.photo-grid-container {
+  padding: 20px;
+  margin: 0 auto;
+  max-width: 1400px;
+}
+
+.photo-grid {
+  column-count: 2;
+  column-gap: 15px;
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .photo-grid {
+    column-count: 3;
+    column-gap: 20px;
+  }
+  .photo-grid-container {
+    padding: 30px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .photo-grid {
+    column-count: 4;
+    column-gap: 25px;
+  }
+  .photo-grid-container {
+    padding: 40px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .photo-grid {
+    column-count: 5;
+  }
+}
+
+.photo-item {
+  break-inside: avoid;
+  margin-bottom: 20px;
+  display: block;
+}
+
+.photo-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  cursor: pointer;
+}
+
+.photo-item:hover .photo-image {
+  transform: scale(1.02);
+  opacity: 0.95;
+}
+
+/* Match the original site's minimal styling */
+body {
+  margin: 0;
+  padding: 0;
+  background: #fff;
+}
+</style>
+
+<script>
+  import GLightbox from 'glightbox';
+  
+  // Initialize GLightbox
+  const lightbox = GLightbox({
+    selector: '[data-gallery="main-gallery"]',
+    touchNavigation: true,
+    loop: true,
+    autoplayVideos: false,
+    zoomable: true,
+    draggable: true,
+  });
+</script>

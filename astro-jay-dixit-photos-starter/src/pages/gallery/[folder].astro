@@ -1,0 +1,29 @@
+---
+import fs from 'fs';
+import path from 'path';
+import MasonryGallery from '../../components/MasonryGallery.astro';
+import PhotoComments from '../../components/PhotoComments.astro';
+
+const { folder } = Astro.params;
+const imageDir = `public/photos/${folder}`;
+const imageFiles = fs.readdirSync(imageDir).filter(f => /\.(jpg|jpeg|png|webp)$/.test(f));
+const tagsPath = path.join(imageDir, 'tags.json');
+const tags = fs.existsSync(tagsPath) ? JSON.parse(fs.readFileSync(tagsPath)) : {};
+
+const imageUrls = imageFiles.map((file) => ({
+  src: `/photos/${folder}/${file}`,
+  filename: file,
+  tags: tags[file] || []
+}));
+--- 
+
+<html>
+  <head>
+    <title>{folder} Gallery</title>
+  </head>
+  <body>
+    <h1>{folder} Gallery</h1>
+    <MasonryGallery images={imageUrls} />
+    <PhotoComments filename={folder} />
+  </body>
+</html>

@@ -1,0 +1,125 @@
+Jay Dixit Photography Portfolio Site - Full Specification
+
+Project Goal:
+To build a fast, beautiful, scalable, and low-maintenance photography portfolio site using Astro. The site will organize and showcase Jay Dixit's event and portrait photography using automatic gallery generation, smart filtering, captions, lightbox viewing, Giscus comments, and Supabase-based like functionality.
+
+
+
+Tech Stack:
+ - Static Site Generator: Astro
+ - Hosting: Vercel (deployed at photos.jaydixit.com)
+ - Lightbox: GLightbox
+ - Backend (for likes): Supabase
+ - Comments: Giscus (GitHub Discussions)
+ - Tagging: Local tags.json files per folder
+
+
+
+Key Functional Features:
+
+1. Folder-Based Photo Galleries
+ - All photo folders in public/photos/ are turned into galleries.
+ - Each folder's contents are displayed at /gallery/[foldername].
+ - Nested folders are supported (e.g. public/photos/red-carpet/locarno).
+ - Folders should be named semantically, not by year (e.g. locarno-film-festival, tiff, sundance).
+
+2. Responsive Masonry Grid
+ - Uses pure CSS (column-count, break-inside: avoid) to display photos in a Pinterest-style grid.
+ - Fully responsive across desktop and mobile.
+ - Each image includes a caption and a like button.
+
+3. Captions
+ - Captions are auto-generated from the filename.
+ - Format: subject_event_optional-tags.jpg
+ - Caption example: vanessa-kirby_toronto-film-festival_2024.jpg → "Vanessa Kirby at the Toronto Film Festival in 2024."
+ - Uses slugification logic (replace hyphens with spaces, capitalize words).
+
+4. Tags System
+ - Tags can be parsed from the filename or folder name.
+ - Folders can include an optional tags.json file with structure:
+
+{
+  "ana-de-armas_locarno.jpg": ["locarno", "night", "red carpet"]
+}
+
+ - Tags are displayed as filter chips above the gallery grid.
+ - Clicking tags filters the photo grid (live narrowing).
+ - Optional search input also filters based on tags, captions, subject names, and events.
+
+5. Live Search Bar
+ - Users can type keywords (e.g., "kirby", "tiff", "rain") to narrow the photo grid.
+ - Live results update in real-time.
+ - Search box includes a ✖ button to clear search.
+
+6. Giscus Commenting System
+ - Comments appear at the bottom of each gallery page.
+ - Giscus maps GitHub Discussion threads to each gallery using the folder name.
+ - Visitors must have a GitHub account to comment.
+ - Future-ready for per-photo comment threads.
+
+7. Supabase Like Button
+ - Each photo has a ❤️ button that increments a like counter.
+ - Likes are stored in Supabase using the photo filename as the unique ID.
+ - Table: photo_likes with photo_id, like_count, created_at.
+ - Users can like anonymously.
+ - Future enhancement: sort by most-liked.
+
+8. Searchable Landing Page
+ - Home page lists all gallery folders with:
+ - Folder title
+ - Hero thumbnail (first image in folder)
+ - Link to the /gallery/[folder] page
+
+9. Tag-Aware Filename Parser Script
+ - CLI script: generate-tags-json.js
+ - Scans a folder, parses filenames, and generates a tags.json file
+ - Humanizes slugs: ana-de-armas → Ana De Armas, etc.
+
+10. Optional Features (Future Enhancements)
+ - captions.json override support
+ - EXIF metadata parsing (currently disabled)
+ - Lightbox-level like and comment interactions
+ - Most-liked photo sorting UI
+ - Global tag explorer / trending tag view
+
+
+
+Design Philosophy:
+ - All metadata lives in filenames or structured .json files
+ - Authoring workflow should be as simple as drag-drop photos into folders
+ - Avoid reliance on CMS or databases unless needed (e.g., Supabase only used for likes)
+ - Site should remain fast, portable, and easy to host or redeploy
+ - URL paths should be clean, readable, and stable
+
+
+
+Deployment
+ - Hosted on Vercel, mapped to photos.jaydixit.com
+ - Astro generates fully static pages
+ - Site build will include:
+ - /public/photos/ folder with images
+ - /src/pages/gallery/[folder].astro
+ - MasonryGallery.astro, PhotoComments.astro, PhotoLikeButton.astro
+ - /scripts/generate-tags-json.js
+
+
+
+Setup Checklist:
+ - Astro project initialized
+ - Masonry gallery component
+ - Giscus embedded with folder-based mapping
+ - Supabase like system (table + RLS policies + anonymous insert)
+ - tags.json parser script complete
+ - Supabase function for safe like increment
+ - PhotoLikeButton.astro integration
+ - Full tag filtering UI
+ - Landing page index view
+
+
+
+To Do Next:
+ - Complete Supabase function + API integration
+ - Hook up PhotoLikeButton into gallery
+ - Polish tag filtering UI and layout
+ - Implement responsive header with logo + title
+ - Add hover interactions for metadata or likes 

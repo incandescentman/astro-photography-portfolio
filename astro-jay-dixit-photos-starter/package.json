@@ -1,0 +1,13 @@
+{
+  "name": "jay-dixit-photos",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "generate-tags": "node scripts/generate-tags-json.js ./public/photos/locarno"
+  },
+  "dependencies": {
+    "astro": "^5.13.2"
+  }
+}
