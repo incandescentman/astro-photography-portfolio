@@ -42,18 +42,29 @@ if (fs.existsSync(highlightsDir)) {
 <MainLayout>
   <div class="photo-grid-container">
     <div class="photo-grid" id="masonry-grid">
-      {highlightPhotos.map((photo, index) => (
-        <div class="photo-item">
-          <a href={photo.src} data-gallery="main-gallery">
-            <img 
-              src={photo.src} 
-              alt={photo.caption}
-              loading="lazy"
-              class="photo-image"
-            />
-          </a>
-        </div>
-      ))}
+      {highlightPhotos.map((photo, index) => {
+        // Create varied sizes - some wide, some tall, some small, some large
+        let sizeClass = '';
+        if (index % 7 === 0) sizeClass = 'wide-tall';
+        else if (index % 5 === 0) sizeClass = 'wide-short';
+        else if (index % 4 === 1) sizeClass = 'tall';
+        else if (index % 6 === 2) sizeClass = 'wide';
+        else if (index % 8 === 3) sizeClass = 'small';
+        else sizeClass = 'medium';
+        
+        return (
+          <div class={`photo-item ${sizeClass}`}>
+            <a href={photo.src} data-gallery="main-gallery">
+              <img 
+                src={photo.src} 
+                alt={photo.caption}
+                loading="lazy"
+                class="photo-image"
+              />
+            </a>
+          </div>
+        );
+      })}
     </div>
   </div>
 </MainLayout>
@@ -66,51 +77,74 @@ if (fs.existsSync(highlightsDir)) {
 }
 
 .photo-grid {
-  column-count: 2;
-  column-gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-gap: 10px;
+  grid-auto-rows: 10px;
   margin: 0;
 }
 
 @media (min-width: 640px) {
   .photo-grid {
-    column-count: 3;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   }
 }
 
 @media (min-width: 1024px) {
   .photo-grid {
-    column-count: 4;
-  }
-}
-
-@media (min-width: 1280px) {
-  .photo-grid {
-    column-count: 5;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
 }
 
 .photo-item {
-  break-inside: avoid;
-  margin-bottom: 10px;
-  display: block;
-  width: 100%;
   overflow: hidden;
+  cursor: pointer;
+}
+
+/* Different sizes for true masonry */
+.photo-item.small {
+  grid-row-end: span 20;
+  grid-column-end: span 1;
+}
+
+.photo-item.medium {
+  grid-row-end: span 30;
+  grid-column-end: span 1;
+}
+
+.photo-item.tall {
+  grid-row-end: span 45;
+  grid-column-end: span 1;
+}
+
+.photo-item.wide {
+  grid-row-end: span 25;
+  grid-column-end: span 2;
+}
+
+.photo-item.wide-short {
+  grid-row-end: span 20;
+  grid-column-end: span 2;
+}
+
+.photo-item.wide-tall {
+  grid-row-end: span 40;
+  grid-column-end: span 2;
 }
 
 .photo-image {
   width: 100%;
-  height: auto;
+  height: 100%;
   display: block;
+  object-fit: cover;
   border-radius: 0;
   transition: transform 0.2s ease;
-  cursor: pointer;
   margin: 0;
   padding: 0;
-  vertical-align: top;
 }
 
 .photo-item:hover .photo-image {
-  transform: scale(1.03);
+  transform: scale(1.05);
 }
 
 /* Match the original site's minimal styling */
