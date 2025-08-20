@@ -41,7 +41,7 @@ if (fs.existsSync(highlightsDir)) {
 
 <MainLayout>
   <div class="photo-grid-container">
-    <div class="photo-grid">
+    <div class="photo-grid" id="masonry-grid">
       {highlightPhotos.map((photo, index) => (
         <div class="photo-item">
           <a href={photo.src} data-gallery="main-gallery">
@@ -60,34 +60,26 @@ if (fs.existsSync(highlightsDir)) {
 
 <style>
 .photo-grid-container {
-  padding: 20px;
+  padding: 10px;
   margin: 0 auto;
   max-width: 1400px;
 }
 
 .photo-grid {
   column-count: 2;
-  column-gap: 15px;
+  column-gap: 10px;
   margin: 0;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 640px) {
   .photo-grid {
     column-count: 3;
-    column-gap: 20px;
-  }
-  .photo-grid-container {
-    padding: 30px;
   }
 }
 
 @media (min-width: 1024px) {
   .photo-grid {
     column-count: 4;
-    column-gap: 25px;
-  }
-  .photo-grid-container {
-    padding: 40px;
   }
 }
 
@@ -99,8 +91,10 @@ if (fs.existsSync(highlightsDir)) {
 
 .photo-item {
   break-inside: avoid;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   display: block;
+  width: 100%;
+  overflow: hidden;
 }
 
 .photo-image {
@@ -108,13 +102,15 @@ if (fs.existsSync(highlightsDir)) {
   height: auto;
   display: block;
   border-radius: 0;
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  transition: transform 0.2s ease;
   cursor: pointer;
+  margin: 0;
+  padding: 0;
+  vertical-align: top;
 }
 
 .photo-item:hover .photo-image {
-  transform: scale(1.02);
-  opacity: 0.95;
+  transform: scale(1.03);
 }
 
 /* Match the original site's minimal styling */
