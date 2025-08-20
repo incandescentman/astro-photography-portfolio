@@ -9,7 +9,9 @@
       "Bash(npm run download-photos:*)",
       "Bash(npm run dev:*)",
       "WebFetch(domain:photos.jaydixit.com)",
-      "Bash(npm run download-live:*)"
+      "Bash(npm run download-live:*)",
+      "Bash(node:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

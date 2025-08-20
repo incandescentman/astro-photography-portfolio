@@ -1,0 +1,453 @@
+---
+import fs from 'fs';
+import path from 'path';
+import MainLayout from '../../layouts/MainLayout.astro';
+import PhotoComments from '../../components/PhotoComments.astro';
+
+const { folder } = Astro.params;
+
+// Handle nested folder paths (e.g., "red-carpet/tiff")
+const folderPath = Array.isArray(folder) ? folder.join('/') : folder;
+const photosDir = path.join(process.cwd(), 'public/photos', folderPath);
+
+// Check if folder exists
+if (!fs.existsSync(photosDir)) {
+  return Astro.redirect('/404');
+}
+
+// Get image files
+const imageFiles = fs.readdirSync(photosDir).filter(f => 
+  /\.(jpg|jpeg|png|webp|gif)$/i.test(f)
+);
+
+// Load tags.json if it exists
+const tagsPath = path.join(photosDir, 'tags.json');
+const tagsOverride = fs.existsSync(tagsPath) ? 
+  JSON.parse(fs.readFileSync(tagsPath, 'utf8')) : {};
+
+// Process each image
+const images = imageFiles.map(file => {
+  const filename = path.parse(file).name;
+  
+  // Parse filename for caption: subject_event_year.jpg
+  const parts = filename.split('_');
+  let subject = '';
+  let event = '';
+  let year = '';
+  
+  if (parts.length > 0) {
+    subject = parts[0].split('-').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
+  }
+  
+  if (parts.length > 1) {
+    const lastPart = parts[parts.length - 1];
+    if (/^\d{4}$/.test(lastPart)) {
+      year = lastPart;
+      if (parts.length > 2) {
+        event = parts.slice(1, -1).join(' ').split('-').map(word => 
+          word.charAt(0).toUpperCase() + word.slice(1)
+        ).join(' ');
+      }
+    } else {
+      event = parts.slice(1).join(' ').split('-').map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1)
+      ).join(' ');
+    }
+  }
+  
+  // Build caption
+  let caption = subject;
+  if (event) caption += ` at ${event}`;
+  if (year) caption += ` in ${year}`;
+  
+  // Get tags from tags.json or parse from filename
+  let tags = tagsOverride[file] || [];
+  if (tags.length === 0) {
+    // Extract tags from filename patterns like _tag1-tag2
+    const tagMatch = filename.match(/_([^_]+)$/);
+    if (tagMatch) {
+      tags = tagMatch[1].split('-');
+    }
+    // Add folder name(s) as tags
+    tags.push(...folderPath.split('/'));
+  }
+  
+  return {
+    src: `/photos/${folderPath}/${file}`,
+    filename: file,
+    caption,
+    tags: [...new Set(tags)] // Remove duplicates
+  };
+});
+
+// Get all unique tags for filtering
+const allTags = [...new Set(images.flatMap(img => img.tags))];
+
+// Display name for the gallery
+const displayName = folderPath.split('/').map(part => 
+  part.split('-').map(word => 
+    word.charAt(0).toUpperCase() + word.slice(1)
+  ).join(' ')
+).join(' → ');
+
+export const getStaticPaths = async () => {
+  const photosDir = path.join(process.cwd(), 'public/photos');
+  if (!fs.existsSync(photosDir)) return [];
+  
+  const paths = [];
+  
+  function getAllFolders(dir, basePath = '') {
+    const items = fs.readdirSync(dir);
+    
+    for (const item of items) {
+      const itemPath = path.join(dir, item);
+      const relativePath = basePath ? `${basePath}/${item}` : item;
+      
+      if (fs.statSync(itemPath).isDirectory()) {
+        // Check if this folder has images
+        const hasImages = fs.readdirSync(itemPath).some(f => 
+          /\.(jpg|jpeg|png|webp|gif)$/i.test(f)
+        );
+        
+        if (hasImages) {
+          paths.push({
+            params: { folder: relativePath.split('/') }
+          });
+        }
+        
+        // Recursively check subfolders
+        getAllFolders(itemPath, relativePath);
+      }
+    }
+  }
+  
+  getAllFolders(photosDir);
+  return paths;
+};
+---
+
+<MainLayout>
+  <section class="py-16 pt-24">
+    <div class="container mx-auto px-4 max-w-7xl">
+      <!-- Gallery Header -->
+      <div class="mb-8 text-center">
+        <h1 class="text-3xl md:text-4xl font-bold mb-2">{displayName}</h1>
+        <p class="text-gray-600">{images.length} {images.length === 1 ? 'photo' : 'photos'}</p>
+      </div>
+
+      <!-- Search and Filter -->
+      <div class="mb-8">
+        <div class="max-w-md mx-auto mb-6">
+          <input 
+            type="text" 
+            id="search" 
+            placeholder="Search photos..."
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+        
+        {allTags.length > 0 && (
+          <div class="flex flex-wrap gap-2 justify-center mb-6">
+            <button 
+              class="tag-filter-all px-3 py-1 text-sm bg-gray-200 hover:bg-gray-300 rounded-full transition-colors"
+            >
+              All
+            </button>
+            {allTags.map(tag => (
+              <button 
+                class="tag-filter px-3 py-1 text-sm border border-gray-300 rounded-full hover:bg-gray-100 transition-colors"
+                data-tag={tag}
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <!-- Masonry Gallery -->
+      <div class="photo-grid">
+        {images.map((image, index) => {
+          const sizeClass = index % 7 === 0 ? 'wide-tall' : 
+                           index % 5 === 0 ? 'wide-short' : 
+                           index % 4 === 1 ? 'tall' : 
+                           index % 6 === 2 ? 'wide' : 
+                           index % 8 === 3 ? 'small' : 'medium';
+          
+          return (
+            <div 
+              class={`photo-item ${sizeClass}`}
+              data-caption={image.caption}
+              data-tags={JSON.stringify(image.tags)}
+            >
+              <a href={image.src} data-gallery="gallery">
+                <img 
+                  src={image.src} 
+                  alt={image.caption}
+                  loading="lazy"
+                  class="photo-image"
+                />
+              </a>
+              <div class="photo-caption">
+                <div class="flex justify-between items-center px-2 mt-2">
+                  <p class="text-sm text-gray-700 flex-1">{image.caption}</p>
+                  <button class="like-button ml-2" data-photo-id={image.filename}>
+                    <svg class="heart w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                    <span class="like-count text-xs ml-1">0</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <!-- Comments Section -->
+      <PhotoComments galleryName={folderPath} />
+    </div>
+  </section>
+</MainLayout>
+
+<style>
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-gap: 10px;
+  grid-auto-rows: 10px;
+  margin: 0;
+}
+
+@media (min-width: 640px) {
+  .photo-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .photo-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
+
+.photo-item {
+  overflow: hidden;
+  cursor: pointer;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.photo-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+/* Size variations */
+.photo-item.small {
+  grid-row-end: span 20;
+  grid-column-end: span 1;
+}
+
+.photo-item.medium {
+  grid-row-end: span 30;
+  grid-column-end: span 1;
+}
+
+.photo-item.tall {
+  grid-row-end: span 45;
+  grid-column-end: span 1;
+}
+
+.photo-item.wide {
+  grid-row-end: span 25;
+  grid-column-end: span 2;
+}
+
+.photo-item.wide-short {
+  grid-row-end: span 20;
+  grid-column-end: span 2;
+}
+
+.photo-item.wide-tall {
+  grid-row-end: span 40;
+  grid-column-end: span 2;
+}
+
+.photo-image {
+  width: 100%;
+  height: calc(100% - 40px);
+  display: block;
+  object-fit: cover;
+  border-radius: 8px 8px 0 0;
+}
+
+.photo-caption {
+  padding: 8px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+}
+
+/* Hidden by default for filtering */
+.photo-item.hidden {
+  display: none;
+}
+
+/* Like button styles */
+.like-button {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, color 0.2s ease;
+  color: #9ca3af;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.like-button:hover {
+  transform: scale(1.1);
+  color: #ef4444;
+}
+
+.like-button.liked {
+  color: #ef4444;
+}
+
+.like-button.liked .heart {
+  animation: heartbeat 0.6s ease-in-out;
+}
+
+@keyframes heartbeat {
+  0% { transform: scale(1); }
+  14% { transform: scale(1.3); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.2); }
+  70% { transform: scale(1); }
+}
+</style>
+
+<script>
+  import GLightbox from 'glightbox';
+  
+  // Initialize GLightbox
+  const lightbox = GLightbox({
+    selector: '[data-gallery="gallery"]',
+    touchNavigation: true,
+    loop: true,
+    autoplayVideos: false,
+    zoomable: true,
+    draggable: true,
+  });
+  
+  // Search and filter functionality
+  document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('search');
+    const tagButtons = document.querySelectorAll('.tag-filter');
+    const allButton = document.querySelector('.tag-filter-all');
+    const photoItems = document.querySelectorAll('.photo-item');
+    const likeButtons = document.querySelectorAll('.like-button');
+    let activeTags = new Set();
+
+    function filterPhotos() {
+      const searchTerm = searchInput?.value.toLowerCase() || '';
+      
+      photoItems.forEach(item => {
+        const caption = item.dataset.caption?.toLowerCase() || '';
+        const tags = JSON.parse(item.dataset.tags || '[]');
+        
+        const matchesSearch = !searchTerm || caption.includes(searchTerm);
+        const matchesTags = activeTags.size === 0 || 
+          [...activeTags].every(tag => tags.includes(tag));
+        
+        if (matchesSearch && matchesTags) {
+          item.classList.remove('hidden');
+        } else {
+          item.classList.add('hidden');
+        }
+      });
+    }
+
+    // Search input
+    searchInput?.addEventListener('input', filterPhotos);
+
+    // Tag filters
+    tagButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const tag = button.dataset.tag;
+        
+        if (activeTags.has(tag)) {
+          activeTags.delete(tag);
+          button.classList.remove('bg-blue-500', 'text-white');
+          button.classList.add('border-gray-300');
+        } else {
+          activeTags.add(tag);
+          button.classList.add('bg-blue-500', 'text-white');
+          button.classList.remove('border-gray-300');
+        }
+        
+        filterPhotos();
+      });
+    });
+
+    // All button
+    allButton?.addEventListener('click', () => {
+      activeTags.clear();
+      tagButtons.forEach(btn => {
+        btn.classList.remove('bg-blue-500', 'text-white');
+        btn.classList.add('border-gray-300');
+      });
+      filterPhotos();
+    });
+
+    // Like functionality
+    likeButtons.forEach(button => {
+      const photoId = button.dataset.photoId;
+      const likeCount = button.querySelector('.like-count');
+      
+      // Load initial like state from localStorage
+      const likes = JSON.parse(localStorage.getItem('photoLikes') || '{}');
+      const currentLikes = likes[photoId] || { count: 0, liked: false };
+      
+      likeCount.textContent = currentLikes.count;
+      if (currentLikes.liked) {
+        button.classList.add('liked');
+      }
+      
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const likes = JSON.parse(localStorage.getItem('photoLikes') || '{}');
+        const current = likes[photoId] || { count: 0, liked: false };
+        
+        if (current.liked) {
+          // Unlike
+          current.liked = false;
+          current.count = Math.max(0, current.count - 1);
+          button.classList.remove('liked');
+        } else {
+          // Like
+          current.liked = true;
+          current.count += 1;
+          button.classList.add('liked');
+        }
+        
+        likes[photoId] = current;
+        localStorage.setItem('photoLikes', JSON.stringify(likes));
+        likeCount.textContent = current.count;
+        
+        // TODO: Integrate with Supabase for persistent likes
+        // This currently uses localStorage for demo purposes
+        console.log(`Photo ${photoId}: ${current.liked ? 'liked' : 'unliked'} (${current.count} total)`);
+      });
+    });
+  });
+</script>
+</MainLayout>

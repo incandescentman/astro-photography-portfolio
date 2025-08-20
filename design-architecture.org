@@ -1,0 +1,329 @@
+#+TITLE: Jay Dixit Photography Portfolio - Design Architecture
+#+AUTHOR: Claude Code Implementation
+#+DATE: 2025-08-20
+
+* Overview
+
+This document outlines the complete architecture and implementation of the Jay Dixit Photography Portfolio, a static site generator (SSG)-powered photography portfolio using Astro.
+
+** Goal
+Create a professional photography portfolio that showcases Jay Dixit's work through:
+- Automatic gallery generation from folder structures
+- Beautiful masonry layouts with varied photo sizes
+- Search and filtering capabilities
+- Interactive features (likes, comments)
+- Mobile-responsive design matching the original photos.jaydixit.com
+
+** Purpose
+- Provide a low-maintenance, high-impact portfolio solution
+- Enable quick photo uploads via simple folder organization
+- Maintain professional presentation while being easy to manage
+- Support both highlight showcases and organized galleries
+
+* Architecture
+
+** Dual System Design
+
+*** Main Landing Page (Highlights)
+- *Location*: `/` (index.astro)
+- *Photo Source*: `public/highlights/`
+- *Purpose*: Showcase best photos in beautiful masonry layout
+- *Features*: 
+  - True masonry with varied photo sizes (wide, tall, small, medium)
+  - CSS Grid with 10px gaps
+  - Downloaded directly from live photos.jaydixit.com
+  - Exact visual match to original site
+
+*** Gallery System
+- *Location*: `/gallery/[...folder]` (dynamic routes)
+- *Photo Source*: `public/photos/**` (nested folder structure)
+- *Purpose*: Organized collections by theme/event/category
+- *Features*:
+  - Folder-based automatic gallery generation
+  - Search and tag filtering
+  - Photo captions and metadata
+  - Like buttons and comments
+
+** Technology Stack
+
+| Component           | Technology                    | Purpose                           |
+|--------------------+-------------------------------+-----------------------------------|
+| Site Generator     | Astro v5.13.2                | Static site generation            |
+| Layout System      | CSS Grid Masonry              | Varied photo sizes and spacing    |
+| Image Viewer       | GLightbox v3.3.1              | Full-screen lightbox viewing      |
+| Styling            | Tailwind CSS v4.0.14          | Responsive design system          |
+| Build Tool         | Vite                          | Fast development and building     |
+| Package Manager    | npm                           | Dependency management             |
+| Hosting Target     | Vercel                        | Static site deployment            |
+| Domain             | photos.jaydixit.com           | Custom domain                     |
+
+* Implementation Details
+
+** Masonry Layout System
+
+*** Main Page Masonry
+- *Method*: CSS Grid with `grid-auto-rows: 10px`
+- *Size Variations*:
+  - Small: `grid-row-end: span 20` (1 column × 20 rows)
+  - Medium: `grid-row-end: span 30` (1 column × 30 rows)
+  - Tall: `grid-row-end: span 45` (1 column × 45 rows)
+  - Wide: `grid-row-end: span 25, grid-column-end: span 2` (2 columns × 25 rows)
+  - Wide-short: `grid-row-end: span 20, grid-column-end: span 2` (2 columns × 20 rows)
+  - Wide-tall: `grid-row-end: span 40, grid-column-end: span 2` (2 columns × 40 rows)
+
+*** Size Distribution Algorithm
+#+BEGIN_SRC javascript
+const sizeClass = index % 7 === 0 ? 'wide-tall' : 
+                 index % 5 === 0 ? 'wide-short' : 
+                 index % 4 === 1 ? 'tall' : 
+                 index % 6 === 2 ? 'wide' : 
+                 index % 8 === 3 ? 'small' : 'medium';
+#+END_SRC
+
+*** Responsive Breakpoints
+- Mobile: 2 columns (`grid-template-columns: repeat(auto-fit, minmax(200px, 1fr))`)
+- Tablet (640px+): 3 columns (`minmax(180px, 1fr)`)
+- Desktop (1024px+): 4 columns (`minmax(200px, 1fr)`)
+- Large (1280px+): 5 columns
+
+** Photo Organization System
+
+*** Folder Structure
+#+BEGIN_EXAMPLE
+public/
+├── highlights/           # Main page masonry photos
+│   ├── vanessa-kirby.jpg
+│   ├── conan.jpg
+│   └── ...
+└── photos/              # Gallery system
+    ├── red-carpet/
+    │   ├── tiff/
+    │   │   ├── vanessa-kirby_tiff_2024.jpg
+    │   │   └── tags.json
+    │   └── sundance/
+    │       └── conan-obrien_sundance_2024.jpg
+    ├── portraits/
+    │   └── studio/
+    │       └── jeremy-strong_studio-session_2024.jpg
+    ├── events/
+    │   └── nobel/
+    │       └── john-hopfield_nobel-physics_2024.jpg
+    └── themes/
+        └── fashion/
+            └── judd-apatow_fashion-shoot_2024.jpg
+#+END_EXAMPLE
+
+*** Filename Convention
+- *Pattern*: `subject_event_year.jpg`
+- *Example*: `maria-bakalova_locarno_2024.jpg`
+- *Generated Caption*: "Maria Bakalova at Locarno in 2024"
+- *Tag Extraction*: `[maria, bakalova, locarno, 2024]`
+
+** Search and Filtering System
+
+*** Search Implementation
+- *Method*: JavaScript real-time filtering
+- *Targets*: Photo captions, subject names, event names, tags
+- *Algorithm*: Case-insensitive substring matching
+#+BEGIN_SRC javascript
+const matchesSearch = !searchTerm || caption.includes(searchTerm);
+#+END_SRC
+
+*** Tag System
+- *Sources*:
+  1. Filename parsing (automatic)
+  2. `tags.json` override files (manual)
+  3. Folder name inheritance
+- *Filtering Logic*: AND operation (all selected tags must match)
+#+BEGIN_SRC javascript
+const matchesTags = activeTags.size === 0 || 
+  [...activeTags].every(tag => tags.includes(tag));
+#+END_SRC
+
+** Interactive Features
+
+*** Like System
+- *Storage*: localStorage (demo) → Supabase (production ready)
+- *Data Structure*: `{photoId: {count: number, liked: boolean}}`
+- *UI*: Heart icon with count, animated on interaction
+- *Method*: Event delegation with data attributes
+
+*** Comments System
+- *Technology*: Giscus (GitHub Discussions)
+- *Scope*: Per-gallery threads
+- *Integration*: PhotoComments.astro component
+- *Configuration*: Ready for `incandescentman/jaydixit-photos` repo
+
+** Routing System
+
+*** Static Routes
+- `/` → Main highlights masonry
+- `/gallery` → Gallery index (categorized view)
+- `/about` → About page
+- `/collections` → Legacy collection system
+
+*** Dynamic Routes
+- `/gallery/[...folder]` → Nested gallery pages
+- *Examples*:
+  - `/gallery/red-carpet/tiff`
+  - `/gallery/portraits/studio`
+  - `/gallery/events/nobel`
+
+*** Route Generation
+- *Method*: `getStaticPaths()` with recursive folder scanning
+- *Source*: `public/photos/**` directory structure
+- *Filter*: Only folders containing image files
+
+** Navigation System
+
+*** Header Navigation
+- *Brand*: "Jay Dixit Photos"
+- *Menu Items*:
+  - Red Carpet Photos → `/gallery`
+  - About → `/about`
+  - Contact → `mailto:jay@jaydixit.com`
+  - jaydixit.com → External link
+- *Social Links*: Twitter (𝕏), LinkedIn, Instagram
+
+*** Gallery Index Organization
+- *Grouping*: By top-level folder (category)
+- *Display*: Grid cards with thumbnails
+- *Metadata*: Photo count per gallery
+- *Thumbnail*: First image from each gallery
+
+** Performance Optimizations
+
+*** Image Handling
+- *Loading*: Lazy loading with `loading="lazy"`
+- *Format*: Original high-quality JPEG
+- *Sizing*: `object-fit: cover` for consistent grid
+- *Optimization*: Astro's built-in image optimization
+
+*** Asset Management
+- *GLightbox*: CDN-loaded lightbox library
+- *Tailwind*: JIT compilation for minimal CSS
+- *JavaScript*: Minimal client-side code
+- *Static Generation*: All routes pre-built
+
+** Developer Experience
+
+*** CLI Tools
+- *Tag Generation*: `npm run generate-tags`
+  #+BEGIN_EXAMPLE
+  node scripts/generate-tags-json.js ./public/photos/red-carpet/tiff
+  #+END_EXAMPLE
+- *Development*: `npm run dev --open`
+- *Build*: `npm run build`
+- *Photo Download*: `npm run download-live`
+
+*** Content Management
+- *Method*: File system based (no CMS)
+- *Workflow*:
+  1. Add photos to appropriate `public/photos/category/` folder
+  2. Follow naming convention: `subject_event_year.jpg`
+  3. Optionally run tag generation script
+  4. Deploy (automatic route generation)
+
+*** Maintenance
+- *Adding Galleries*: Create new folder in `public/photos/`
+- *Updating Photos*: Replace files in folders
+- *Customizing Tags*: Edit or create `tags.json` files
+- *Managing Highlights*: Update `public/highlights/` folder
+
+* Design Decisions
+
+** Why Dual System?
+- *Main Page*: Showcases best work immediately (highlights)
+- *Gallery System*: Provides organized browsing by category
+- *Flexibility*: Supports both "wow factor" and detailed exploration
+
+** Why CSS Grid Masonry?
+- *Performance*: No JavaScript layout calculations
+- *Responsive*: Natural breakpoint adaptation
+- *Consistency*: Precise 10px spacing control
+- *Visual Interest*: Varied sizes prevent monotony
+
+** Why Folder-Based?
+- *Simplicity*: No database or CMS complexity
+- *Version Control*: Photos tracked in git
+- *Scalability*: Easy to add new categories
+- *Portability*: No vendor lock-in
+
+** Why Filename Metadata?
+- *Self-Contained*: Metadata travels with file
+- *Human Readable*: Clear naming convention
+- *Automation*: Enables automatic caption generation
+- *Flexibility*: Override with `tags.json` when needed
+
+* Implementation Status
+
+** ✅ Completed Features
+- *Dual System Architecture*: Main highlights masonry + gallery system
+- *Folder-Based Routing*: Dynamic routes from public/photos/** structure  
+- *CSS Grid Masonry*: Precise 10px spacing with varied photo sizes
+- *Search & Filtering*: Real-time search with clickable tag pills
+- *Like System*: localStorage-based with animated interactions
+- *Comments Integration*: Giscus components ready for activation
+- *Caption Generation*: Automatic parsing from filename convention
+- *Tag System*: Filename parsing + tags.json override capability
+- *Responsive Design*: Mobile-first with breakpoint optimization
+- *Performance*: Lazy loading, efficient CSS Grid, minimal JavaScript
+
+** 🚧 Remaining Implementation Items
+
+*** External Service Integration
+- *Supabase Setup*: Replace localStorage likes with persistent database
+  - Create Supabase project: `jaydixit-photos`
+  - Set up `photo_likes` table with schema
+  - Replace localStorage API calls with Supabase client
+- *Giscus Configuration*: Connect to GitHub Discussions
+  - Enable Discussions on `incandescentman/jaydixit-photos` repo
+  - Configure at giscus.app to get repo-id and category-id
+  - Update PhotoComments.astro with real configuration values
+
+*** Production Deployment
+- *Vercel Setup*: Deploy to photos.jaydixit.com
+  - Configure custom domain
+  - Set up Git integration for automatic deployments
+  - Verify build process and static output
+
+*** Content Population
+- *Photo Organization*: Populate gallery folders with real collections
+  - `/public/photos/red-carpet/tiff/` - TIFF red carpet photos
+  - `/public/photos/red-carpet/sundance/` - Sundance photos
+  - `/public/photos/portraits/studio/` - Studio sessions
+  - `/public/photos/events/nobel/` - Nobel Prize events
+  - `/public/photos/themes/fashion/` - Fashion photography
+- *Tag Generation*: Run scripts for all populated folders
+- *Testing*: Verify all routes and functionality with real content
+
+** 🔮 Future Enhancements
+
+*** Immediate Possibilities
+- *EXIF Data*: Extract camera settings and date information
+- *Image Upload UI*: Web-based photo management interface
+- *Social Sharing*: Per-photo sharing buttons
+- *Individual Photo Pages*: Dedicated URLs for each photo
+
+*** Long-term Considerations
+- *Search Enhancement*: Full-text search with indexing
+- *Performance*: Advanced image optimization and CDN integration
+- *Analytics*: Photo view tracking and popularity metrics
+- *Workflow*: Automated photo processing pipeline
+- *CMS Integration*: Optional admin interface for non-technical users
+
+* Deployment
+
+** Current Setup
+- *Development*: `http://localhost:4323/`
+- *Build Target*: Static files in `dist/`
+- *Deployment*: Vercel Git integration
+- *Domain*: photos.jaydixit.com
+
+** Configuration
+- *Astro Config*: Static output mode
+- *Base URL*: Root deployment (no subdirectory)
+- *Asset Handling*: Public folder serving
+- *Build*: Node.js environment
+
+This architecture provides a robust, maintainable, and visually appealing photography portfolio that balances automation with flexibility, performance with features, and simplicity with sophistication.

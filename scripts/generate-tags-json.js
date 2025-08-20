@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 /**
  * Generate tags.json file for a photo gallery folder
  * Usage: node scripts/generate-tags-json.js <folder-path>
- * Example: node scripts/generate-tags-json.js ./src/gallery/nature
+ * Example: node scripts/generate-tags-json.js ./public/photos/red-carpet/tiff
  */
 
 function parseTagsFromFilename(filename) {
@@ -109,7 +109,8 @@ function main() {
   
   if (args.length === 0) {
     console.log('Usage: node scripts/generate-tags-json.js <folder-path>');
-    console.log('Example: node scripts/generate-tags-json.js ./src/gallery/nature');
+    console.log('Example: node scripts/generate-tags-json.js ./public/photos/red-carpet/tiff');
+    console.log('Example: node scripts/generate-tags-json.js ./public/photos/portraits/studio');
     process.exit(1);
   }
   
