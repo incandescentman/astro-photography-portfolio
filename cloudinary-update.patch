@@ -1,178 +1,64 @@
---- a/design-architecture.org
-+++ b/design-architecture.org
-@@
- *** The architecture (what works best)
- 
--- *Store images in object storage + CDN* (not in the repo): Supabase Storage (with its built-in on-the-fly image transformations), Cloudinary, or ImageKit. For you, *Supabase Storage + Transformations* is the smoothest fit. It serves resized/optimized variants via URL params (WebP/AVIF, width, quality), so you don't rebuild the site every time you add photos. ([Supabase][1])
-+- *Store images in object storage + CDN* (not in the repo): **Cloudinary** (chosen), ImageKit, or Supabase Storage. For this portfolio we will use **Cloudinary** with a named transform (`t_gallery`) for smart crops and auto-optimization (AVIF/WebP, quality), so you don't rebuild the site every time you add photos. ([Cloudinary Docs][10])
- - *Keep only metadata in the repo* (albums, captions, tags) using *Astro Content Collections*. You get types, schema validation, and fast queries. ([Astro Docs][2])
- - *Render with a modern lightbox* such as *PhotoSwipe*; it plays nicely with Astro and is simple to wire up. ([launchfa.st][3], [DEV Community][4])
- - *Use a masonry-style layout* for visual density. Native CSS Masonry is arriving (and increasingly supported); otherwise use CSS columns or a lightweight JS fallback. ([MDN Web Docs][5], [Chrome for Developers][6], [CSS-Tricks][7])
--- *Lean on responsive images & lazy-loading*. In Astro, the built-in image tools are great for local assets; for remote/CDN images, you still get `<img loading="lazy">` + `srcset/sizes` via your provider. (Astro's image guide explains where its optimizer applies.) ([Astro Docs][8])
-+- *Lean on responsive images & lazy-loading*. In Astro, the built-in image tools are great for local assets; for remote/CDN images, offload transforms to your provider (Cloudinary/ImageKit) and still use <img loading="lazy"> + `srcset/sizes` in your templates. ([Astro Docs][8], [Cloudinary Docs][11])
- 
- *** Why not put photos in the repo?
- 
- - Thousands of images = huge git history + long builds.
--- Astro's optimizer targets *local* images; for remote stores you should offload transforms to a service (Supabase/Cloudinary/etc.). ([Astro Docs][8])
-+- Astro's optimizer targets *local* images; for remote stores you should offload transforms to Cloudinary/ImageKit/Supabase and let the CDN handle resizing/format/quality. ([Astro Docs][8], [Cloudinary Docs][11])
- 
--*** Concrete setup (Supabase-first)
-+*** Concrete setup (Cloudinary-first)
- 
--1. *Buckets & URLs*
--
--- Create a bucket per collection (e.g., `events/tiFF-2025`, `portraits/...`).
--- Serve via the public CDN URL. Supabase adds *image transformations* via URL params like `?width=1600&quality=70&format=webp`. ([Supabase][1])
--
--2. *Albums as content*
--
--- Make a `src/content/albums/` collection with schema: title, date, cover, location, tags, and an array of photo objects `{ src, width, height, alt, exif }`. Content Collections give you typed content and nice DX. ([Astro Docs][2])
--
--3. *Gallery UI*
--
--- Grid layout with CSS Masonry (where available) or `column-count` fallback; lazy-load thumbnails (`~400-600px` wide) with a blurred placeholder (use your provider's tiny width param as LQIP). Add PhotoSwipe for fullscreen zoom, keyboard nav, and swipe. ([MDN Web Docs][5], [CSS-Tricks][7], [launchfa.st][3], [DEV Community][4])
--
--4. *Responsive source sets*
--
--- For each image, render `srcset` at e.g. 480 / 768 / 1024 / 1600 widths; let the browser pick. Supabase transforms handle the sizing & format (WebP/AVIF) at the edge. ([Supabase][1])
--
--5. *Performance & SEO*
--
--- Pagination or infinite scroll on album pages (avoid loading 200 images at once).
--- Add structured data (`CollectionPage` with `ImageObject`s) and a sitemap entry for each album.
--- Preload the first viewport's worth of thumbnails only.
-+1. *Named Transformation*
-+
-+- In the Cloudinary Console → *Settings → Transformations* create a named transformation called `gallery` with:
-+  - `c_fill` — fill target box
-+  - `g_auto` — smart gravity (auto-hotspot)
-+  - `f_auto` — modern formats (WebP/AVIF)
-+  - `q_auto` — automatic quality
-+  - Optional: `ar_4:3` or `ar_3:2` to enforce aspect ratio; optional `b_auto:border` for subtle borders. Your transform is referenced as `t_gallery`.
-+
-+2. *Albums as content*
-+
-+- Use a `src/content/albums/` collection that lists Cloudinary `publicId` values instead of local file paths. Keep title/date/tags/alt text as before.
-+
-+3. *Gallery UI*
-+
-+- Use CSS columns or native masonry for the grid; render thumbnails at multiple widths via `srcset` built from Cloudinary URLs using `t_gallery`. Add PhotoSwipe for fullscreen viewing and keyboard/swipe nav. ([PhotoSwipe][12])
-+
-+4. *Responsive source sets*
-+
-+- For each image, generate a `srcset` at widths like 480/768/1024/1600/2200 and let the browser pick. Cloudinary serves optimized AVIF/WebP and quality automatically via `f_auto,q_auto`. ([Cloudinary Docs][11])
-+
-+5. *Performance & SEO*
-+
-+- Paginate long albums; add `CollectionPage` structured data and sitemap entries; preload only the first-viewport thumbnails. Preconnect to `https://res.cloudinary.com`.
- 
- *** Nice extras
- 
- - *EXIF → captions*: read EXIF on upload (or at build via a small script) to auto-fill camera/lens, shutter, location --- great for your red carpet sets.
--- *Dominant-color placeholders*: render a tiny 8-16px image or use a dominant color as a background to eliminate CLS.
-+- *Dominant-color or blur placeholders*: either render a tiny 8–16px Cloudinary variant (e.g., `w_20,e_blur:2000`) or use a dominant color as background to prevent CLS. ([Cloudinary Docs][11])
- - *Tag routes*: generate `/albums/tag/portrait/` pages via Content Collections queries. ([Astro Docs][2])
- - *Accessibility*: require `alt` text in the collection schema; PhotoSwipe supports captions.
- 
--*** If you prefer Cloudinary/ImageKit instead
--
--- Similar flow: store originals, render with transformation URLs (`f_avif,q_auto,w_...`). Both have excellent CDNs, analytics, and cropping/faces. (Uploadcare has a good Astro guide too if you want a hosted uploader.) ([Uploadcare][9])
-+*** If you prefer ImageKit or Supabase instead
-+
-+- Similar flow: store originals, render with transformation URLs (e.g., `f_avif,q_auto,w_...`). Both ImageKit and Supabase offer on-the-fly transforms; Cloudinary remains primary for this site. (Uploadcare has a good Astro guide if you want a hosted uploader.) ([Uploadcare][9])
- 
- *** Quick decision tree
- 
- - *< 200 photos total, rarely updated?* You can keep images local and use Astro's `<Image />` to pre-optimize at build --- simplest, but avoid growth pains. ([Astro Docs][8])
--- *Hundreds/thousands of photos, frequent updates?* Use Supabase/Cloudinary (CDN + on-the-fly transforms), albums as Content Collections, PhotoSwipe lightbox, and a masonry layout. ([Supabase][1], [Astro Docs][2], [launchfa.st][3])
-+- *Hundreds/thousands of photos, frequent updates?* Use **Cloudinary** (CDN + on-the-fly transforms), albums as Content Collections, PhotoSwipe lightbox, and a masonry layout. ([Cloudinary Docs][11], [Astro Docs][2], [launchfa.st][3])
- 
- If you want, I can sketch a minimal Astro page (+ Content Collection schema) that wires up: Supabase URLs → responsive `srcset` → CSS masonry → PhotoSwipe.
- 
-@@
--This gives you URLs like:
--
--#+end_src 
--
--https://res.cloudinary.com/<cloud>/image/upload/t_gallery,w_1600/events/tiff_2025/IMG_1234.jpg
--#+end_src 
--
--You won't tweak these per image --- Astro will generate widths automatically.
-+This gives you URLs like (no per-image tuning needed):
-+
-+#+BEGIN_EXAMPLE
-+https://res.cloudinary.com/<cloud>/image/upload/t_gallery,w_1600/events/tiff_2025/IMG_1234.jpg
-+#+END_EXAMPLE
-+
-+You won't tweak these per image --- Astro will generate widths automatically.
-@@
--** Technology Stack
--
--| Component       | Technology           | Purpose                        |
--|-----------------+----------------------+--------------------------------|
--| Site Generator  | Astro v5.13.2        | Static site generation         |
--| Layout System   | CSS Grid Masonry     | Varied photo sizes and spacing |
--| Image Viewer    | GLightbox v3.3.1     | Full-screen lightbox viewing   |
--| Styling         | Tailwind CSS v4.0.14 | Responsive design system       |
--| Build Tool      | Vite                 | Fast development and building  |
--| Package Manager | npm                  | Dependency management          |
--| Hosting Target  | Vercel               | Static site deployment         |
--| Domain          | photos.jaydixit.com  | Custom domain                  |
-+** Technology Stack
-+
-+- *Site Generator*: Astro v5.13.2 — Static site generation
-+- *Image Delivery*: **Cloudinary** (t_gallery: c_fill,g_auto,f_auto,q_auto)
-+- *Layout System*: CSS Grid / Masonry (CSS columns fallback)
-+- *Lightbox*: **PhotoSwipe** v5+
-+- *Styling*: Tailwind CSS v4.0.14
-+- *Build Tool*: Vite
-+- *Package Manager*: npm
-+- *Hosting Target*: Vercel
-+- *Domain*: photos.jaydixit.com
-@@
- *** Image Handling
--- *Loading*: Lazy loading with `loading="lazy"`
--- *Format*: Original high-quality JPEG
--- *Sizing*: `object-fit: cover` for consistent grid
--- *Optimization*: Astro's built-in image optimization
-+- *Loading*: Lazy loading with `loading="lazy"` + responsive `srcset/sizes`
-+- *Formats & Quality*: Cloudinary `f_auto,q_auto` for AVIF/WebP + optimal quality
-+- *Sizing & Cropping*: Cloudinary `c_fill,g_auto` to frame subjects consistently
-@@
--** Why Folder-Based?
--- *Simplicity*: No database or CMS complexity
--- *Version Control*: Photos tracked in git
--- *Scalability*: Easy to add new categories
--- *Portability*: No vendor lock-in
-+** Why Folder-Based?
-+- *Simplicity*: Metadata and routes are file-driven (Content Collections), while **assets live in Cloudinary**
-+- *Version Control*: Album metadata (JSON/MD/MDX) tracked in git; no massive binaries in the repo
-+- *Scalability*: Easy to add albums by adding content files that reference Cloudinary public IDs
-+- *Portability*: Minimal vendor lock-in; you can swap CDNs by changing the URL helper
-@@
- *** Folder Structure
--#+BEGIN_EXAMPLE
-+*Note*: With Cloudinary-first, the source of truth is album metadata (public IDs). Local `public/photos` folders are optional for development or legacy import.
-+
-+#+BEGIN_EXAMPLE
-@@
- *** External Service Integration
-+- *Cloudinary Setup*: Create named transform `t_gallery`; add `PUBLIC_CLOUDINARY_CLOUD_NAME` to `.env`; verify delivery URLs and preconnect.
- - *Supabase Setup*: Replace localStorage likes with persistent database
-   - Create Supabase project: `jaydixit-photos`
-   - Set up `photo_likes` table with schema
-@@
- ** Masonry Layout System
- ...
-+
-+** Image Viewer
-+
-+- *Library*: **PhotoSwipe** v5+
-+- *Why*: Keyboard navigation, touch gestures, captions, and responsive zoom with minimal JS.
-+
-@@
- [9]: https://uploadcare.com/blog/how-to-optimize-images-in-astro/?utm_source=chatgpt.com "How to optimize images in Astro: A step-by-step guide"
-+[10]: https://cloudinary.com/documentation/image_transformations?utm_source=chatgpt.com "Image transformations — Cloudinary"
-+[11]: https://cloudinary.com/documentation/responsive_images?utm_source=chatgpt.com "Responsive images, f_auto / q_auto — Cloudinary"
-+[12]: https://photoswipe.com/ "PhotoSwipe"
+Edits to apply to design-architecture.org
+ - In * Photos → ** The architecture (what works best), replace the first bullet with:
+ - Store images in object storage + CDN (not in the repo): Cloudinary (chosen), ImageKit, or Supabase Storage. For this portfolio we will use Cloudinary with a named transform (t_gallery) for smart crops and auto-optimization (AVIF/WebP, quality), so you don't rebuild the site every time you add photos. ([Cloudinary Docs][10])
+ - In the same list, update the "responsive images & lazy-loading" bullet to:
+ - Lean on responsive images & lazy-loading. In Astro, the built-in image tools are great for local assets; for remote/CDN images, offload transforms to your provider (Cloudinary/ImageKit) and still use <img loading="lazy"> + srcset/sizes in your templates. ([Astro Docs][8], [Cloudinary Docs][11])
+ - In ** Why not put photos in the repo?, change the second bullet to:
+ - Astro's optimizer targets local images; for remote stores you should offload transforms to Cloudinary/ImageKit/Supabase and let the CDN handle resizing/format/quality. ([Astro Docs][8], [Cloudinary Docs][11])
+ - Rename ** Concrete setup (Supabase-first) → ** Concrete setup (Cloudinary-first) and replace its numbered list with:
+ 1. Named Transformation
+ - In the Cloudinary Console → Settings → Transformations create a named transformation called gallery with:
+ - c_fill --- fill target box
+ - g_auto --- smart gravity (auto-hotspot)
+ - f_auto --- modern formats (WebP/AVIF)
+ - q_auto --- automatic quality
+ - Optional: ar_4:3 or ar_3:2 to enforce aspect ratio; optional b_auto:border for subtle borders. Your transform is referenced as t_gallery.
+ 2. Albums as content
+ - Use a src/content/albums/ collection that lists Cloudinary publicId values instead of local file paths. Keep title/date/tags/alt text as before.
+ 3. Gallery UI
+ - Use CSS columns or native masonry for the grid; render thumbnails at multiple widths via srcset built from Cloudinary URLs using t_gallery. Add PhotoSwipe for fullscreen viewing and keyboard/swipe nav. ([PhotoSwipe][12])
+ 4. Responsive source sets
+ - For each image, generate a srcset at widths like 480/768/1024/1600/2200 and let the browser pick. Cloudinary serves optimized AVIF/WebP and quality automatically via f_auto,q_auto. ([Cloudinary Docs][11])
+ 5. Performance & SEO
+ - Paginate long albums; add CollectionPage structured data and sitemap entries; preload only the first-viewport thumbnails. Preconnect to https://res.cloudinary.com.
+ - In ** Nice extras, replace the LQIP bullet with:
+ - Dominant-color or blur placeholders: either render a tiny 8-16px Cloudinary variant (e.g., w_20,e_blur:2000) or use a dominant color as background to prevent CLS. ([Cloudinary Docs][11])
+ - Change the heading ** If you prefer Cloudinary/ImageKit instead to ** If you prefer ImageKit or Supabase instead, and update its first line to:
+ - Similar flow: store originals, render with transformation URLs (e.g., f_avif,q_auto,w_...). Both ImageKit and Supabase offer on-the-fly transforms; Cloudinary remains primary for this site. (Uploadcare has a good Astro guide if you want a hosted uploader.) ([Uploadcare][9])
+ - In ** Quick decision tree, update the "hundreds/thousands" bullet to:
+ - Hundreds/thousands of photos, frequent updates? Use Cloudinary (CDN + on-the-fly transforms), albums as Content Collections, PhotoSwipe lightbox, and a masonry layout. ([Cloudinary Docs][11], [Astro Docs][2], [launchfa.st][3])
+ - In the * Cloudinary section, fix the broken URL snippet after "This gives you URLs like:" to an Org example block:
+
+#+BEGIN_EXAMPLE
+https://res.cloudinary.com/<cloud>/image/upload/t_gallery,w_1600/events/tiff_2025/IMG_1234.jpg
+#+END_EXAMPLE
+
+
+ - Normalize Org code fences in that Cloudinary section: use uppercase #+BEGIN_SRC ... / #+END_SRC for all blocks (ts, astro, bash, etc.).
+ - Replace the Technology Stack table with bullets (you prefer no tables):
+ - Site Generator: Astro v5.13.2 --- Static site generation
+ - Image Delivery: Cloudinary (t_gallery: c_fill,g_auto,f_auto,q_auto)
+ - Layout System: CSS Grid / Masonry (CSS columns fallback)
+ - Lightbox: PhotoSwipe v5+
+ - Styling: Tailwind CSS v4.0.14
+ - Build Tool: Vite
+ - Package Manager: npm
+ - Hosting Target: Vercel
+ - Domain: photos.jaydixit.com
+ - In * Performance Optimizations → ** Image Handling, replace bullets with:
+ - Loading: Lazy loading with loading="lazy" + responsive srcset/sizes
+ - Formats & Quality: Cloudinary f_auto,q_auto for AVIF/WebP + optimal quality
+ - Sizing & Cropping: Cloudinary c_fill,g_auto to frame subjects consistently
+ - In * Design Decisions → * Why Folder-Based?, update the bullets to reflect Cloudinary assets:
+ - Simplicity: Metadata and routes are file-driven (Content Collections), while assets live in Cloudinary
+ - Version Control: Album metadata (JSON/MD/MDX) tracked in git; no massive binaries in the repo
+ - Scalability: Easy to add albums by adding content files that reference Cloudinary public IDs
+ - Portability: Minimal vendor lock-in; you can swap CDNs by changing the URL helper
+ - In * Photo Organization System → ** Folder Structure, add this note above the example block:
+ - Note: With Cloudinary-first, the source of truth is album metadata (public IDs). Local public/photos folders are optional for development or legacy import.
+ - In * 🚧 Remaining Implementation Items → ** External Service Integration, add a new first bullet:
+ - Cloudinary Setup: Create named transform t_gallery; add PUBLIC_CLOUDINARY_CLOUD_NAME to .env; verify delivery URLs and preconnect.
+ - Append new link references after [9]::
+ - [10]: https://cloudinary.com/documentation/image_transformations?utm_source=chatgpt.com "Image transformations --- Cloudinary"
+ - [11]: https://cloudinary.com/documentation/responsive_images?utm_source=chatgpt.com "Responsive images, f_auto / q_auto --- Cloudinary"
+ - [12]: https://photoswipe.com/ "PhotoSwipe"
