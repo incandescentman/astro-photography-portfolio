@@ -1,0 +1,44 @@
+[
+  {
+    "src": "fashion-portrait-450x600.jpg",
+    "size": "regular",
+    "width": 450,
+    "height": 600
+  },
+  {
+    "src": "restaurant-scene-450x600.jpg",
+    "size": "regular",
+    "width": 450,
+    "height": 600
+  },
+  {
+    "src": "abstract-art-450x600.jpg",
+    "size": "regular",
+    "width": 450,
+    "height": 600
+  },
+  {
+    "src": "swimming-pool-900x600.jpg",
+    "size": "wide",
+    "width": 900,
+    "height": 600
+  },
+  {
+    "src": "nature-landscape-900x600.jpg",
+    "size": "wide",
+    "width": 900,
+    "height": 600
+  },
+  {
+    "src": "featured-portrait-1-900x1200.jpg",
+    "size": "wide_tall",
+    "width": 900,
+    "height": 1200
+  },
+  {
+    "src": "featured-portrait-2-900x1200.jpg",
+    "size": "wide_tall",
+    "width": 900,
+    "height": 1200
+  }
+]

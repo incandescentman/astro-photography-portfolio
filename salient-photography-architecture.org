@@ -1,0 +1,428 @@
+#+TITLE: Salient Photography Masonry Architecture
+#+AUTHOR: Analysis for photos.jaydixit.com
+#+DATE: 2025-09-03
+
+* Executive Summary
+
+The Salient WordPress theme includes a sophisticated "Photography Based" masonry layout system optimized for professional photography portfolios. This document provides a complete technical analysis for exact replication in the Astro-based photos.jaydixit.com project.
+
+* Core Architecture
+
+** System Overview
+
+The Photography masonry mode is a specialized grid layout that:
+- Uses portrait-oriented aspect ratios (3:4) instead of squares
+- Supports mixed sizes (1x1, 2x1, 2x2 grid units) in the same layout
+- Implements intelligent gap-filling via Isotope.js
+- Provides per-image size control through metadata
+- Maintains responsive behavior across all viewports
+
+** Configuration Activation
+
+The system activates when:
+#+BEGIN_SRC php
+$masonry_sizing_type = ( $nectar_options['portfolio_masonry_grid_sizing'] == 'photography' ) ? 'photography' : 'default';
+#+END_SRC
+
+* Image Size Specifications
+
+** Registered WordPress Image Sizes
+
+| Size Name                    | Dimensions | Aspect Ratio | Grid Space | Use Case                |
+|------------------------------+------------+--------------+------------+-------------------------|
+| regular_photography          | 450×600px  | 3:4          | 1×1        | Standard portrait       |
+| regular_photography_small    | 350×467px  | 3:4          | 1×1        | Mobile/smaller viewport |
+| wide_photography             | 900×600px  | 3:2          | 2×1        | Landscape (2x width)    |
+| wide_photography_small       | 675×450px  | 3:2          | 2×1        | Mobile landscape        |
+| wide_tall_photography        | 900×1200px | 3:4          | 2×2        | Featured (2x both)      |
+
+** Key Differences from Default Mode
+
+Default (Square) Mode:
+- Regular: 500×500px (1:1)
+- Wide: 1000×500px (2:1)
+- Tall: 500×1000px (1:2)
+- Wide & Tall: 1000×1000px (1:1)
+
+Photography Mode:
+- All sizes optimized for 3:4 or 3:2 ratios
+- No standalone "tall" option (converts to wide_tall)
+- Better suited for portrait-oriented photography
+
+* Dynamic Size Assignment System
+
+** Individual Size Control
+
+Each image can be assigned a specific size through two mechanisms:
+
+*** 1. Portfolio Item Level
+For portfolio posts/projects:
+#+BEGIN_SRC php
+$masonry_item_sizing = get_post_meta( $post->ID, '_portfolio_item_masonry_sizing', true );
+if ( empty( $masonry_item_sizing ) && $masonry_layout === 'true' ) {
+    $masonry_item_sizing = 'regular';
+}
+#+END_SRC
+
+*** 2. Media Attachment Level
+For individual images in galleries:
+#+BEGIN_SRC php
+// Stored as post meta on attachment
+update_post_meta( $attachment_id, 'nectar_image_gal_masonry_sizing', $size );
+#+END_SRC
+
+** Size Options
+
+Users can select from:
+- =regular= - Single grid unit (1×1)
+- =wide= - Double width (2×1)
+- =tall= - Automatically converts to wide_tall in Photography mode
+- =wide_tall= - Double width and height (2×2)
+
+** Automatic Size Conversion
+
+Photography mode enforces this conversion:
+#+BEGIN_SRC php
+if ( $masonry_sizing_type === 'photography' && $masonry_item_sizing === 'tall' ) {
+    $masonry_item_sizing = 'wide_tall';
+}
+#+END_SRC
+
+* Grid Layout Implementation
+
+** HTML Structure
+
+#+BEGIN_SRC html
+<div class="portfolio-items masonry-items" 
+     data-masonry-type="photography" 
+     data-ps="6"
+     data-col-num="elastic">
+    
+    <!-- Regular item (1×1) -->
+    <div class="col elastic-portfolio-item regular">
+        <img src="..." width="450" height="600">
+    </div>
+    
+    <!-- Wide item (2×1) - DOUBLE WIDTH -->
+    <div class="col elastic-portfolio-item wide">
+        <img src="..." width="900" height="600">
+    </div>
+    
+    <!-- Wide & Tall item (2×2) - DOUBLE SIZE -->
+    <div class="col elastic-portfolio-item wide_tall">
+        <img src="..." width="900" height="1200">
+    </div>
+</div>
+#+END_SRC
+
+** Visual Grid Example
+
+#+BEGIN_EXAMPLE
+Column:   1         2         3         4
+        +-------+-------+--------------+
+Row 1   |Regular|Regular|   Wide       |
+        +-------+-------+--------------+
+Row 2   |Regular|       |              |
+        +-------+ Wide  |  Wide & Tall |
+Row 3   | Wide  |  &    |              |
+        |       | Tall  |              |
+        +---------------+--------------+
+Row 4   |Regular|Regular|   Regular    |
+        +-------+-------+--------------+
+#+END_EXAMPLE
+
+** CSS Grid Mapping
+
+The layout uses these span values:
+- Regular: =grid-column: span 1; grid-row: span 1;=
+- Wide: =grid-column: span 2; grid-row: span 1;=
+- Wide & Tall: =grid-column: span 2; grid-row: span 2;=
+
+* JavaScript Implementation
+
+** Isotope.js Configuration
+
+The masonry uses Isotope with these settings:
+- Layout mode: =masonry=
+- Column width: Based on regular item width
+- Gutter: Configurable (default/1px/2px/3px/5px)
+- Horizontal fit: Enabled for gap filling
+
+** Animation Timing
+
+Photography mode has faster animation:
+#+BEGIN_SRC javascript
+var portfolioAnimationDelay = ($that.is('[data-masonry-type="photography"].masonry-items')) 
+    ? 85    // Photography mode: 85ms
+    : 115;  // Default mode: 115ms
+#+END_SRC
+
+** Initialization Sequence
+
+1. Wait for images to load (imagesLoaded library)
+2. Initialize Isotope on container
+3. Apply staggered animation with 85ms delays
+4. Handle resize events for responsive behavior
+
+* Responsive Behavior
+
+** Breakpoint Strategy
+
+#+BEGIN_SRC css
+/* Desktop: 4 columns */
+@media (min-width: 1300px) {
+    .portfolio-items { columns: 4; }
+}
+
+/* Laptop: 3 columns */
+@media (min-width: 1000px) and (max-width: 1299px) {
+    .portfolio-items { columns: 3; }
+}
+
+/* Tablet: 2 columns */
+@media (min-width: 690px) and (max-width: 999px) {
+    .portfolio-items { columns: 2; }
+    .wide, .wide_tall { grid-column: span 1; }
+}
+
+/* Mobile: 1 column */
+@media (max-width: 689px) {
+    .portfolio-items { columns: 1; }
+    .wide, .wide_tall { 
+        grid-column: span 1;
+        grid-row: span 1;
+    }
+}
+#+END_SRC
+
+** Size Adjustments
+
+On smaller screens:
+- Wide items (2×1) → Regular width (1×1)
+- Wide & Tall items (2×2) → Regular size (1×1)
+- Maintains aspect ratios but adjusts grid spanning
+
+* Implementation Strategy for Astro
+
+** 1. Cloudinary Transform Setup
+
+Create named transformations matching exact dimensions:
+#+BEGIN_SRC yaml
+transformations:
+  regular_photo:
+    width: 450
+    height: 600
+    crop: fill
+    gravity: auto
+    
+  wide_photo:
+    width: 900
+    height: 600
+    crop: fill
+    gravity: auto
+    
+  wide_tall_photo:
+    width: 900
+    height: 1200
+    crop: fill
+    gravity: auto
+#+END_SRC
+
+** 2. Metadata System
+
+Store size assignments in photo metadata:
+#+BEGIN_SRC typescript
+interface PhotoMetadata {
+  publicId: string;
+  alt: string;
+  size: 'regular' | 'wide' | 'wide_tall';
+  // Auto-assign based on aspect ratio or manual override
+}
+#+END_SRC
+
+** 3. Size Assignment Algorithm
+
+#+BEGIN_SRC javascript
+function assignPhotoSize(photo) {
+  const aspectRatio = photo.naturalWidth / photo.naturalHeight;
+  
+  // Landscape photos → wide
+  if (aspectRatio > 1.3) {
+    return 'wide';
+  }
+  
+  // Featured/hero photos → wide_tall
+  if (photo.isFeatured || photo.importance === 'high') {
+    return 'wide_tall';
+  }
+  
+  // Default portrait → regular
+  return 'regular';
+}
+
+// Distribution strategy for visual interest
+function distributePhotoSizes(photos) {
+  const distribution = {
+    regular: 0.6,    // 60% regular
+    wide: 0.25,      // 25% wide
+    wide_tall: 0.15  // 15% featured
+  };
+  
+  // Apply distribution logic
+  return photos.map((photo, index) => {
+    // Every 7th photo could be wide_tall
+    if (index % 7 === 0 && !photo.size) {
+      photo.size = 'wide_tall';
+    }
+    // Every 3rd photo could be wide
+    else if (index % 3 === 0 && !photo.size) {
+      photo.size = 'wide';
+    }
+    // Default to regular
+    else if (!photo.size) {
+      photo.size = 'regular';
+    }
+    return photo;
+  });
+}
+#+END_SRC
+
+** 4. CSS Grid Implementation
+
+#+BEGIN_SRC css
+.photography-masonry {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  grid-auto-rows: 10px;
+  gap: 15px;
+}
+
+.photo-item.regular {
+  grid-row-end: span 60;  /* 600px / 10px */
+}
+
+.photo-item.wide {
+  grid-column-end: span 2;
+  grid-row-end: span 60;
+}
+
+.photo-item.wide_tall {
+  grid-column-end: span 2;
+  grid-row-end: span 120;  /* 1200px / 10px */
+}
+#+END_SRC
+
+** 5. Component Structure
+
+#+BEGIN_SRC astro
+---
+// PhotoMasonry.astro
+const photos = await getPhotos();
+const photosWithSizes = distributePhotoSizes(photos);
+---
+
+<div class="photography-masonry" data-masonry-type="photography">
+  {photosWithSizes.map((photo) => (
+    <div class={`photo-item ${photo.size}`}>
+      <img 
+        src={getCloudinaryUrl(photo.publicId, photo.size)}
+        width={getSizeWidth(photo.size)}
+        height={getSizeHeight(photo.size)}
+        alt={photo.alt}
+        loading="lazy"
+      />
+    </div>
+  ))}
+</div>
+#+END_SRC
+
+* Performance Optimizations
+
+** Image Loading Strategy
+
+1. Lazy load all images except first 4-6
+2. Use Intersection Observer for viewport detection
+3. Preload critical images above fold
+4. Generate responsive srcset for each size variant
+
+** Animation Performance
+
+- Use CSS transforms only (no layout properties)
+- Implement will-change for animated elements
+- Stagger animations with 85ms delays
+- Use requestAnimationFrame for smooth scrolling
+
+* Testing Checklist
+
+** Functionality Tests
+- [ ] Regular size images display at 450×600px
+- [ ] Wide images span 2 columns (900×600px)
+- [ ] Wide & Tall images span 2×2 grid (900×1200px)
+- [ ] Mixed sizes create dynamic layout without gaps
+- [ ] Animation triggers with 85ms stagger
+- [ ] Responsive breakpoints work correctly
+- [ ] Images maintain aspect ratios
+
+** Browser Compatibility
+- [ ] Chrome/Edge (Blink)
+- [ ] Firefox (Gecko)
+- [ ] Safari (WebKit)
+- [ ] Mobile Safari (iOS)
+- [ ] Chrome Mobile (Android)
+
+** Performance Metrics
+- [ ] LCP < 2.5s
+- [ ] CLS < 0.1
+- [ ] FID < 100ms
+- [ ] Images optimized via Cloudinary
+- [ ] Lazy loading functional
+
+* Migration Path
+
+** Phase 1: Setup
+1. Configure Cloudinary transformations
+2. Create metadata structure for photo sizes
+3. Implement CSS Grid layout
+
+** Phase 2: Core Implementation
+1. Build PhotoMasonry component
+2. Add size assignment logic
+3. Implement responsive behavior
+
+** Phase 3: Enhancement
+1. Add Isotope.js or native CSS masonry
+2. Implement staggered animations
+3. Add filtering/sorting capabilities
+
+** Phase 4: Optimization
+1. Fine-tune lazy loading
+2. Add srcset/sizes for responsiveness
+3. Implement performance monitoring
+
+* Technical Notes
+
+** Why Not CSS Masonry Native?
+Currently experimental in browsers. Use CSS Grid with calculated spans as fallback until native masonry is widely supported.
+
+** Isotope.js Alternatives
+- Native CSS Grid (current recommendation)
+- Masonry.js (lighter than Isotope)
+- Muuri (includes drag-and-drop)
+- Custom implementation with Flexbox
+
+** Image Processing Considerations
+- Maintain original aspect ratios when possible
+- Use smart cropping (face/object detection)
+- Generate WebP/AVIF formats
+- Implement blur-up placeholders
+
+* Conclusion
+
+The Salient Photography masonry system creates a sophisticated, magazine-style layout through:
+1. Optimized aspect ratios (3:4 and 3:2)
+2. Mixed sizing system (1×1, 2×1, 2×2)
+3. Intelligent gap-filling algorithm
+4. Per-image size control
+5. Responsive behavior
+
+This architecture document provides the complete blueprint for exact replication in the Astro-based photos.jaydixit.com project.

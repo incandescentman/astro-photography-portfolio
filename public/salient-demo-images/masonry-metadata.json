@@ -1,0 +1,95 @@
+{
+  "source": "Salient Photography Demo - Working Test Dataset",
+  "url": "https://themenectar.com/salient/photography/",
+  "downloadDate": "2025-09-03T22:21:07.350Z",
+  "description": "Perfect test case for replicating Salient Photography masonry behavior",
+  "masonrySpecs": {
+    "system": "Photography-based",
+    "aspectRatios": {
+      "regular": "3:4 (450×600)",
+      "wide": "3:2 (900×600)",
+      "wide_tall": "3:4 (900×1200)"
+    },
+    "gridMapping": {
+      "regular": "1×1 grid units",
+      "wide": "2×1 grid units (double width)",
+      "wide_tall": "2×2 grid units (double width & height)"
+    }
+  },
+  "images": [
+    {
+      "filename": "fashion-portrait-450x600.jpg",
+      "originalName": "fashion-portrait",
+      "category": "regular",
+      "dimensions": "450x600",
+      "gridSize": "1x1",
+      "aspectRatio": "3:4",
+      "masonryClass": "elastic-portfolio-item regular"
+    },
+    {
+      "filename": "restaurant-scene-450x600.jpg",
+      "originalName": "restaurant-scene",
+      "category": "regular",
+      "dimensions": "450x600",
+      "gridSize": "1x1",
+      "aspectRatio": "3:4",
+      "masonryClass": "elastic-portfolio-item regular"
+    },
+    {
+      "filename": "abstract-art-450x600.jpg",
+      "originalName": "abstract-art",
+      "category": "regular",
+      "dimensions": "450x600",
+      "gridSize": "1x1",
+      "aspectRatio": "3:4",
+      "masonryClass": "elastic-portfolio-item regular"
+    },
+    {
+      "filename": "swimming-pool-900x600.jpg",
+      "originalName": "swimming-pool",
+      "category": "wide",
+      "dimensions": "900x600",
+      "gridSize": "2x1",
+      "aspectRatio": "3:2",
+      "masonryClass": "elastic-portfolio-item wide"
+    },
+    {
+      "filename": "nature-landscape-900x600.jpg",
+      "originalName": "nature-landscape",
+      "category": "wide",
+      "dimensions": "900x600",
+      "gridSize": "2x1",
+      "aspectRatio": "3:2",
+      "masonryClass": "elastic-portfolio-item wide"
+    },
+    {
+      "filename": "featured-portrait-1-900x1200.jpg",
+      "originalName": "featured-portrait-1",
+      "category": "wide_tall",
+      "dimensions": "900x1200",
+      "gridSize": "2x2",
+      "aspectRatio": "3:4",
+      "masonryClass": "elastic-portfolio-item wide_tall"
+    },
+    {
+      "filename": "featured-portrait-2-900x1200.jpg",
+      "originalName": "featured-portrait-2",
+      "category": "wide_tall",
+      "dimensions": "900x1200",
+      "gridSize": "2x2",
+      "aspectRatio": "3:4",
+      "masonryClass": "elastic-portfolio-item wide_tall"
+    }
+  ],
+  "testLayout": [
+    "┌─────────┬─────────┬─────────────────┐",
+    "│ Regular │ Regular │      Wide       │",
+    "├─────────┼─────────┼─────────────────┤",
+    "│ Regular │         │                 │",
+    "├─────────┤ Wide &  │   Wide & Tall   │",
+    "│ Regular │  Tall   │                 │",
+    "├─────────┤         │                 │",
+    "│ Regular │         │                 │",
+    "└─────────┴─────────┴─────────────────┘"
+  ]
+}
