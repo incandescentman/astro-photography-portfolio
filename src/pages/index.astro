@@ -7,9 +7,9 @@ import { images } from '../data/homepage-images.js';
 function optimizeImageOrder(images) {
   // Separate images by size
   const sizeGroups = {
-    wide_tall: [], // 2x2 - largest, place first for anchor points
-    wide: [],      // 2x1 - landscape 
-    regular: []    // 1x1 - standard, use to fill gaps
+    xlportrait: [], // 2x2 - largest, place first for anchor points
+    landscape: [],  // 2x1 - horizontal images
+    portrait: []    // 1x1 - standard portrait, use to fill gaps
   };
   
   images.forEach(img => {
@@ -19,42 +19,42 @@ function optimizeImageOrder(images) {
   const optimized = [];
   
   // Strategy: Place large items first, then fill gaps with smaller items
-  // 1. Start with a wide_tall to anchor the layout
-  if (sizeGroups.wide_tall.length > 0) {
-    optimized.push(sizeGroups.wide_tall.shift());
+  // 1. Start with an xlportrait to anchor the layout
+  if (sizeGroups.xlportrait.length > 0) {
+    optimized.push(sizeGroups.xlportrait.shift());
   }
   
-  // 2. Add some regular items to fill around it (need 3-4 for a 5-column grid)
-  const regularToAdd = Math.min(3, sizeGroups.regular.length);
-  for (let i = 0; i < regularToAdd; i++) {
-    if (sizeGroups.regular.length > 0) {
-      optimized.push(sizeGroups.regular.shift());
+  // 2. Add some portrait items to fill around it (need 3-4 for a 5-column grid)
+  const portraitToAdd = Math.min(3, sizeGroups.portrait.length);
+  for (let i = 0; i < portraitToAdd; i++) {
+    if (sizeGroups.portrait.length > 0) {
+      optimized.push(sizeGroups.portrait.shift());
     }
   }
   
-  // 3. Add wide items (they fit well after regulars)
-  while (sizeGroups.wide.length > 0 && optimized.length < 7) {
-    optimized.push(sizeGroups.wide.shift());
-    // After each wide, add a regular to fill the gap
-    if (sizeGroups.regular.length > 0) {
-      optimized.push(sizeGroups.regular.shift());
+  // 3. Add landscape items (they fit well after portraits)
+  while (sizeGroups.landscape.length > 0 && optimized.length < 7) {
+    optimized.push(sizeGroups.landscape.shift());
+    // After each landscape, add a portrait to fill the gap
+    if (sizeGroups.portrait.length > 0) {
+      optimized.push(sizeGroups.portrait.shift());
     }
   }
   
-  // 4. Place remaining wide_tall items with regular items between
-  while (sizeGroups.wide_tall.length > 0) {
-    // Add 1-2 regular items before the next wide_tall to prevent gaps
-    const fillCount = Math.min(2, sizeGroups.regular.length);
+  // 4. Place remaining xlportrait items with portrait items between
+  while (sizeGroups.xlportrait.length > 0) {
+    // Add 1-2 portrait items before the next xlportrait to prevent gaps
+    const fillCount = Math.min(2, sizeGroups.portrait.length);
     for (let i = 0; i < fillCount; i++) {
-      if (sizeGroups.regular.length > 0) {
-        optimized.push(sizeGroups.regular.shift());
+      if (sizeGroups.portrait.length > 0) {
+        optimized.push(sizeGroups.portrait.shift());
       }
     }
-    optimized.push(sizeGroups.wide_tall.shift());
+    optimized.push(sizeGroups.xlportrait.shift());
   }
   
   // 5. Add remaining items
-  [...sizeGroups.wide, ...sizeGroups.regular].forEach(img => {
+  [...sizeGroups.landscape, ...sizeGroups.portrait].forEach(img => {
     optimized.push(img);
   });
   
@@ -130,55 +130,55 @@ const highlightPhotos = optimizedImages.map(img => ({
   float: left;
 }
 
-/* Size variations - 3 options like Salient */
-.portfolio-items .col.regular {
+/* Size variations - User-friendly names */
+.portfolio-items .col.portrait {
   width: 20%; /* 1 unit - 5 columns */
 }
 
-.portfolio-items .col.wide {
+.portfolio-items .col.landscape {
   width: 40%; /* 2 units wide */
 }
 
-.portfolio-items .col.wide_tall {
+.portfolio-items .col.xlportrait {
   width: 40%; /* 2 units wide */
 }
 
 /* Responsive breakpoints */
 @media only screen and (max-width: 1600px) {
-  .portfolio-items .col.regular {
+  .portfolio-items .col.portrait {
     width: 25%; /* 4 columns */
   }
-  .portfolio-items .col.wide,
-  .portfolio-items .col.wide_tall {
+  .portfolio-items .col.landscape,
+  .portfolio-items .col.xlportrait {
     width: 50%; /* 2x width */
   }
 }
 
 @media only screen and (max-width: 1200px) {
-  .portfolio-items .col.regular {
+  .portfolio-items .col.portrait {
     width: 33.333%; /* 3 columns */
   }
-  .portfolio-items .col.wide,
-  .portfolio-items .col.wide_tall {
+  .portfolio-items .col.landscape,
+  .portfolio-items .col.xlportrait {
     width: 66.666%; /* 2x width */
   }
 }
 
 @media only screen and (max-width: 768px) {
-  .portfolio-items .col.regular {
+  .portfolio-items .col.portrait {
     width: 50%; /* 2 columns */
   }
-  .portfolio-items .col.wide,
-  .portfolio-items .col.wide_tall {
+  .portfolio-items .col.landscape,
+  .portfolio-items .col.xlportrait {
     width: 100%; /* Full width */
   }
 }
 
 @media only screen and (max-width: 480px) {
   .portfolio-items .col,
-  .portfolio-items .col.regular,
-  .portfolio-items .col.wide,
-  .portfolio-items .col.wide_tall {
+  .portfolio-items .col.portrait,
+  .portfolio-items .col.landscape,
+  .portfolio-items .col.xlportrait {
     width: 100%; /* 1 column on mobile */
   }
 }
@@ -206,17 +206,17 @@ const highlightPhotos = optimizedImages.map(img => ({
   transition: transform 0.45s cubic-bezier(0.3, 0.1, 0.3, 1);
 }
 
-/* Set fixed aspect ratios for each size - 3 options like Salient */
-.portfolio-items .col.regular .work-item {
+/* Set fixed aspect ratios for each size */
+.portfolio-items .col.portrait .work-item {
   aspect-ratio: 3 / 4; /* Portrait ratio like 320x430 */
 }
 
-.portfolio-items .col.wide .work-item {
+.portfolio-items .col.landscape .work-item {
   aspect-ratio: 3 / 2; /* Landscape ratio */
 }
 
-.portfolio-items .col.wide_tall .work-item {
-  aspect-ratio: 3 / 4; /* Same as regular but bigger (2x2) */
+.portfolio-items .col.xlportrait .work-item {
+  aspect-ratio: 3 / 4; /* Same as portrait but bigger (2x2) */
 }
 
 /* Hover effects */
@@ -320,7 +320,7 @@ const highlightPhotos = optimizedImages.map(img => ({
         itemSelector: '.col',
         layoutMode: 'masonry',
         masonry: {
-          columnWidth: '.col.regular',
+          columnWidth: '.col.portrait', // Use portrait as base unit
           gutter: 0,
           fitWidth: false,
           horizontalOrder: false // Vertical order fills columns top to bottom

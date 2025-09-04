@@ -1,80 +1,82 @@
 // Homepage Image Configuration
 // Edit this file to control which images appear on the homepage and their sizes.
 //
-// Size Options (matching Salient Photography theme):
-// - `regular` - Standard size (1 column × 1 row)
-// - `wide` - Landscape (2 columns × 1 row) 
-// - `wide_tall` - Feature size (2 columns × 2 rows)
+// Size Options:
+// - `portrait` - Standard portrait size (1 column × 1 row)
+// - `landscape` - Landscape/horizontal (2 columns × 1 row) 
+// - `xlportrait` - Extra-large portrait (2 columns × 2 rows) - featured images
 
 export const images = [
-  {
-    filename: 'vanessa-kirby.jpg',
-    caption: 'Vanessa Kirby',
-    size: 'wide_tall' // FEATURE IMAGE
-  },
-  {
+
+{
     filename: 'dixit_nobel-physics.jpg',
     caption: 'Nobel Prize in Physics Ceremony',
-    size: 'regular'
+    size: 'portrait'
   },
   {
     filename: 'judd-apatow.jpg',
     caption: 'Judd Apatow',
-    size: 'regular'
+    size: 'portrait'
   },
-  {
+
+{
+    filename: 'vanessa-kirby.jpg',
+    caption: 'Vanessa Kirby',
+    size: 'xlportrait' // FEATURE IMAGE
+  },
+{
     filename: 'jeremy.jpg',
     caption: 'Jeremy Strong',
-    size: 'regular'
+    size: 'portrait'
   },
   {
     filename: 'Lisa_Gilroy_at_SXSW_in_2025-1.jpg',
     caption: 'Lisa Gilroy at SXSW in 2025',
-    size: 'regular' // Portrait, not landscape
+    size: 'portrait' // Portrait, not landscape
   },
   {
     filename: 'jeremy-3.jpg',
     caption: 'Jeremy Strong',
-    size: 'regular'
+    size: 'portrait'
   },
   {
     filename: 'conan.jpg',
     caption: "Conan O'Brien",
-    size: 'regular'
+    size: 'portrait'
   },
   {
     filename: 'jeremy-6.jpg',
     caption: 'Jeremy',
-    size: 'regular' // Fill the gap before the wide_tall
+    size: 'portrait' // Fill the gap before the wide_tall
   },
   {
     filename: 'jay-dixit_red-carpet_01130.jpg',
     caption: 'Jay Dixit on the Red Carpet',
-    size: 'wide_tall' // FEATURE IMAGE - now no gap to its left
+    size: 'xlportrait' // FEATURE IMAGE - now no gap to its left
   },
   {
     filename: 'jeremy-11.jpg',
     caption: 'Jeremy',
-    size: 'wide' // LANDSCAPE
+    size: 'landscape' // LANDSCAPE
   },
   {
     filename: 'vinod.jpg',
     caption: 'Vinod',
-    size: 'wide' // LANDSCAPE
+    size: 'landscape' // LANDSCAPE
   },
   {
     filename: 'jay-dixit_red-carpet_05923-1.jpg',
     caption: 'Jay Dixit Red Carpet',
-    size: 'regular'
+    size: 'portrait'
   },
   {
     filename: 'jeremy-4.jpg',
     caption: 'Jeremy',
-    size: 'regular'
+    size: 'portrait'
   },
   {
     filename: 'vinod-4.jpg',
     caption: 'Vinod',
-    size: 'regular'
+    size: 'portrait'
   }
 ];
