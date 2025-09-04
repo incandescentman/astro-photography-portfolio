@@ -40,131 +40,240 @@ if (fs.existsSync(highlightsDir)) {
 ---
 
 <MainLayout>
-  <div class="photo-grid-container">
-    <div class="photo-grid" id="masonry-grid">
-      {highlightPhotos.map((photo, index) => {
-        // Create varied sizes - some wide, some tall, some small, some large
-        let sizeClass = '';
-        if (index % 7 === 0) sizeClass = 'wide-tall';
-        else if (index % 5 === 0) sizeClass = 'wide-short';
-        else if (index % 4 === 1) sizeClass = 'tall';
-        else if (index % 6 === 2) sizeClass = 'wide';
-        else if (index % 8 === 3) sizeClass = 'small';
-        else sizeClass = 'medium';
-        
-        return (
-          <div class={`photo-item ${sizeClass}`}>
-            <a href={photo.src} data-gallery="main-gallery">
-              <img 
-                src={photo.src} 
-                alt={photo.caption}
-                loading="lazy"
-                class="photo-image"
-              />
-            </a>
+  <div class="portfolio-wrap">
+    <div class="portfolio-items masonry-items" data-masonry-type="photography">
+      {highlightPhotos.map((photo, index) => (
+        <div class="col elastic-portfolio-item" data-delay-amount={index}>
+          <div class="inner-wrap">
+            <div class="work-item">
+              <a href={photo.src} data-gallery="main-gallery">
+                <img 
+                  src={photo.src} 
+                  alt={photo.caption}
+                  loading="lazy"
+                />
+              </a>
+              <div class="work-info-bg"></div>
+              <div class="work-info">
+                <h3>{photo.caption}</h3>
+              </div>
+            </div>
           </div>
-        );
-      })}
+        </div>
+      ))}
     </div>
   </div>
 </MainLayout>
 
 <style>
-.photo-grid-container {
-  padding: 10px;
-  margin: 0 auto;
-  max-width: 1400px;
-}
-
-.photo-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  grid-gap: 10px;
-  grid-auto-rows: 10px;
+/* Portfolio container - full width */
+.portfolio-wrap {
+  position: relative;
   margin: 0;
+  padding: 0;
+  width: 100%;
 }
 
-@media (min-width: 640px) {
-  .photo-grid {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+/* Masonry Container - full width */
+.portfolio-items {
+  position: relative;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.portfolio-items.isotope-initialized {
+  opacity: 1;
+}
+
+/* Individual Items - More columns for full-width layout */
+.portfolio-items .col {
+  width: 20%; /* 5 columns on large screens */
+  padding: 2px; /* Minimal gap between photos */
+  box-sizing: border-box;
+}
+
+/* Responsive columns */
+@media only screen and (max-width: 1600px) {
+  .portfolio-items .col {
+    width: 25%; /* 4 columns */
   }
 }
 
-@media (min-width: 1024px) {
-  .photo-grid {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+@media only screen and (max-width: 1300px) {
+  .portfolio-items .col {
+    width: 33.333%; /* 3 columns */
   }
 }
 
-.photo-item {
+@media only screen and (max-width: 990px) {
+  .portfolio-items .col {
+    width: 50%; /* 2 columns */
+  }
+}
+
+@media only screen and (max-width: 690px) {
+  .portfolio-items .col {
+    width: 100%; /* 1 column */
+  }
+}
+
+/* Inner wrapper */
+.portfolio-items .col .inner-wrap {
+  position: relative;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+
+/* Work item container */
+.portfolio-items .col .work-item {
+  position: relative;
   overflow: hidden;
   cursor: pointer;
 }
 
-/* Different sizes for true masonry */
-.photo-item.small {
-  grid-row-end: span 20;
-  grid-column-end: span 1;
+/* Images - maintain aspect ratio */
+.portfolio-items .col img {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: transform 0.45s cubic-bezier(0.3, 0.1, 0.3, 1);
 }
 
-.photo-item.medium {
-  grid-row-end: span 30;
-  grid-column-end: span 1;
+/* Hover effects */
+.portfolio-items .col:hover img {
+  transform: scale(1.07);
 }
 
-.photo-item.tall {
-  grid-row-end: span 45;
-  grid-column-end: span 1;
-}
-
-.photo-item.wide {
-  grid-row-end: span 25;
-  grid-column-end: span 2;
-}
-
-.photo-item.wide-short {
-  grid-row-end: span 20;
-  grid-column-end: span 2;
-}
-
-.photo-item.wide-tall {
-  grid-row-end: span 40;
-  grid-column-end: span 2;
-}
-
-.photo-image {
+/* Work info overlay */
+.portfolio-items .work-info-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  display: block;
-  object-fit: cover;
-  border-radius: 0;
-  transition: transform 0.2s ease;
-  margin: 0;
-  padding: 0;
+  background: rgba(0, 0, 0, 0);
+  transition: background 0.45s ease;
+  pointer-events: none;
 }
 
-.photo-item:hover .photo-image {
-  transform: scale(1.05);
+.portfolio-items .col:hover .work-info-bg {
+  background: rgba(0, 0, 0, 0.4);
 }
 
-/* Match the original site's minimal styling */
-body {
-  margin: 0;
-  padding: 0;
-  background: #fff;
+.portfolio-items .work-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20px;
+  color: #fff;
+  transform: translateY(100%);
+  transition: transform 0.45s cubic-bezier(0.3, 0.1, 0.3, 1);
 }
+
+.portfolio-items .col:hover .work-info {
+  transform: translateY(0);
+}
+
+.portfolio-items .work-info h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 400;
+}
+
+/* Animation */
+@keyframes portfolioFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.portfolio-items .col .inner-wrap {
+  animation: portfolioFadeIn 0.6s ease forwards;
+  opacity: 0;
+}
+
+.portfolio-items.animated-in .col .inner-wrap {
+  opacity: 1;
+}
+
+/* Staggered animation */
+.portfolio-items .col:nth-child(1) .inner-wrap { animation-delay: 0ms; }
+.portfolio-items .col:nth-child(2) .inner-wrap { animation-delay: 85ms; }
+.portfolio-items .col:nth-child(3) .inner-wrap { animation-delay: 170ms; }
+.portfolio-items .col:nth-child(4) .inner-wrap { animation-delay: 255ms; }
+.portfolio-items .col:nth-child(5) .inner-wrap { animation-delay: 340ms; }
+.portfolio-items .col:nth-child(6) .inner-wrap { animation-delay: 425ms; }
+.portfolio-items .col:nth-child(7) .inner-wrap { animation-delay: 510ms; }
+.portfolio-items .col:nth-child(8) .inner-wrap { animation-delay: 595ms; }
 </style>
+
+<!-- Load Isotope and required libraries -->
+<script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
+<script src="https://unpkg.com/isotope-layout@3/dist/isotope.pkgd.min.js"></script>
 
 <script>
   import GLightbox from 'glightbox';
   
-  // Initialize GLightbox
-  const lightbox = GLightbox({
-    selector: '[data-gallery="main-gallery"]',
-    touchNavigation: true,
-    loop: true,
-    autoplayVideos: false,
-    zoomable: true,
-    draggable: true,
+  document.addEventListener('DOMContentLoaded', function() {
+    const container = document.querySelector('.portfolio-items');
+    
+    // Initialize GLightbox
+    const lightbox = GLightbox({
+      selector: '[data-gallery="main-gallery"]',
+      touchNavigation: true,
+      loop: true,
+      autoplayVideos: false,
+      zoomable: true,
+      draggable: true,
+    });
+    
+    // Wait for images to load, then initialize Isotope
+    imagesLoaded(container, function() {
+      // Initialize Isotope for masonry layout
+      const iso = new Isotope(container, {
+        itemSelector: '.col',
+        layoutMode: 'masonry',
+        masonry: {
+          columnWidth: '.col',
+          gutter: 0
+        },
+        percentPosition: false,
+        transitionDuration: '0.3s',
+        hiddenStyle: {
+          opacity: 0,
+          transform: 'translateY(30px)'
+        },
+        visibleStyle: {
+          opacity: 1,
+          transform: 'translateY(0)'
+        }
+      });
+      
+      // Add initialized class
+      container.classList.add('isotope-initialized');
+      
+      // Trigger animation
+      setTimeout(() => {
+        container.classList.add('animated-in');
+      }, 100);
+      
+      // Handle window resize
+      let resizeTimer;
+      window.addEventListener('resize', function() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function() {
+          iso.layout();
+        }, 250);
+      });
+    });
   });
 </script>
