@@ -7,56 +7,64 @@ import MainLayout from '../layouts/MainLayout.astro';
 const highlightsDir = path.join(process.cwd(), 'public/highlights');
 
 // Define photos with exact sizes matching WordPress site
-// Sizes: regular (1x1), wide (2x1), tall (1x2), wide_tall (2x2), quad (2x2 but taller)
+// Order optimized to minimize gaps in 5-column layout
 const highlightPhotos = [
-  // Column 1 - Left (2 stacked portraits)
+  // Start with wide_tall to anchor the layout
+  {
+    src: '/highlights/vanessa-kirby.jpg',
+    filename: 'vanessa-kirby.jpg',
+    caption: 'Vanessa Kirby',
+    size: 'wide_tall' // 2x2 - spans 2 columns, 2 rows
+  },
+  
+  // Fill around it with regular items
   {
     src: '/highlights/dixit_nobel-physics.jpg',
     filename: 'dixit_nobel-physics.jpg',
     caption: 'Nobel Prize in Physics Ceremony',
-    size: 'regular' // Takes ~50% of column height
+    size: 'regular'
   },
   {
     src: '/highlights/judd-apatow.jpg',
     filename: 'judd-apatow.jpg', 
     caption: 'Judd Apatow',
-    size: 'regular' // Takes ~50% of column height
-  },
-  
-  // Column 2 - Middle (1 tall central portrait)
-  {
-    src: '/highlights/vanessa-kirby.jpg',
-    filename: 'vanessa-kirby.jpg',
-    caption: 'Vanessa Kirby',
-    size: 'wide_tall' // 4x size - dominant image spanning 2x2
-  },
-  
-  // Column 3 - Right (3 stacked images)
-  {
-    src: '/highlights/Lisa_Gilroy_at_SXSW_in_2025-1.jpg',
-    filename: 'Lisa_Gilroy_at_SXSW_in_2025-1.jpg',
-    caption: 'Lisa Gilroy at SXSW in 2025',
-    size: 'wide' // Landscape orientation
+    size: 'regular'
   },
   {
     src: '/highlights/jeremy.jpg',
     filename: 'jeremy.jpg',
     caption: 'Jeremy Strong',
-    size: 'regular' // Portrait, middle of right stack
+    size: 'regular'
   },
+  
+  // Add a wide to span 2 columns
+  {
+    src: '/highlights/Lisa_Gilroy_at_SXSW_in_2025-1.jpg',
+    filename: 'Lisa_Gilroy_at_SXSW_in_2025-1.jpg',
+    caption: 'Lisa Gilroy at SXSW in 2025',
+    size: 'wide' // 2x1 - spans 2 columns
+  },
+  
+  // More regular items to fill gaps
   {
     src: '/highlights/jeremy-3.jpg',
     filename: 'jeremy-3.jpg',
     caption: 'Jeremy Strong',
-    size: 'regular' // Portrait, bottom of right stack
+    size: 'regular'
+  },
+  {
+    src: '/highlights/conan.jpg',
+    filename: 'conan.jpg',
+    caption: 'Conan O\'Brien',
+    size: 'regular'
   },
   
-  // Column 4 continuation
+  // Another wide_tall for visual interest
   {
     src: '/highlights/jay-dixit_red-carpet_01130.jpg',
     filename: 'jay-dixit_red-carpet_01130.jpg',
     caption: 'Jay Dixit on the Red Carpet',
-    size: 'wide_tall' // 4x size - another dominant image
+    size: 'wide_tall' // 2x2
   },
   
   // Continue with rest of photos
@@ -157,7 +165,7 @@ const highlightPhotos = [
 /* Base column width - Responsive percentage based */
 .portfolio-items .col {
   width: 20%; /* 5 columns to fill width */
-  padding: 3px;
+  padding: 2px;
   box-sizing: border-box;
   float: left;
 }
