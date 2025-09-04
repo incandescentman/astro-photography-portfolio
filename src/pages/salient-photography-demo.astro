@@ -1,17 +1,32 @@
 ---
 import Layout from '../layouts/MainLayout.astro';
 
-// Salient demo images with exact dimensions and sizing
+// Salient demo images - reordered for optimal masonry layout (minimize gaps)
+// Strategy: Mix sizes to fill columns evenly
 const salientImages = [
-  { src: "fashion-portrait-450x600.jpg", size: "regular", width: 450, height: 600 },
-  { src: "swimming-pool-900x600.jpg", size: "wide", width: 900, height: 600 },
-  { src: "restaurant-scene-450x600.jpg", size: "regular", width: 450, height: 600 },
+  // Column 1 start - tall item
   { src: "featured-portrait-1-900x1200.jpg", size: "wide_tall", width: 900, height: 1200 },
+  
+  // Next items fill gaps
+  { src: "fashion-portrait-450x600.jpg", size: "regular", width: 450, height: 600 },
+  { src: "restaurant-scene-450x600.jpg", size: "regular", width: 450, height: 600 },
+  
+  // Wide item spans 2 columns
+  { src: "swimming-pool-900x600.jpg", size: "wide", width: 900, height: 600 },
+  
+  // Regular items
   { src: "abstract-art-450x600.jpg", size: "regular", width: 450, height: 600 },
-  { src: "nature-landscape-900x600.jpg", size: "wide", width: 900, height: 600 },
+  
+  // Another tall item for balance
   { src: "featured-portrait-2-900x1200.jpg", size: "wide_tall", width: 900, height: 1200 },
-  // Add more for variety
+  
+  // Fill with regular items  
   { src: "creative-portrait-450x600.jpg", size: "regular", width: 450, height: 600 },
+  
+  // Wide landscape
+  { src: "nature-landscape-900x600.jpg", size: "wide", width: 900, height: 600 },
+  
+  // More regular items to fill
   { src: "high-end-fashion-450x600.jpg", size: "regular", width: 450, height: 600 },
   { src: "lifestyle-portrait-450x600.jpg", size: "regular", width: 450, height: 600 },
   { src: "portrait-session-450x600.jpg", size: "regular", width: 450, height: 600 },
@@ -309,7 +324,7 @@ const salientImages = [
     </div>
   </div>
 
-  <!-- Load Isotope from CDN -->
+  <!-- Load Isotope from CDN (same as Salient uses) -->
   <script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
   <script src="https://unpkg.com/isotope-layout@3/dist/isotope.pkgd.min.js"></script>
   
@@ -323,7 +338,7 @@ const salientImages = [
         // Hide loading
         loading.style.display = 'none';
         
-        // Initialize Isotope with Salient settings
+        // Initialize Isotope with standard masonry (what Salient actually uses)
         const iso = new Isotope(container, {
           itemSelector: '.col',
           layoutMode: 'masonry',
@@ -351,7 +366,7 @@ const salientImages = [
           container.classList.add('animated-in');
         }, 100);
         
-        // Handle window resize
+        // Handle window resize - recalculate layout
         let resizeTimer;
         window.addEventListener('resize', function() {
           clearTimeout(resizeTimer);
@@ -360,7 +375,7 @@ const salientImages = [
           }, 250);
         });
         
-        console.log('Salient Photography Masonry initialized with Isotope.js');
+        console.log('Salient Photography Masonry initialized with Isotope masonry');
       });
     });
   </script>
