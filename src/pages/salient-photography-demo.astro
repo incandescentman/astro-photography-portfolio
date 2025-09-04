@@ -1,0 +1,335 @@
+---
+import Layout from '../layouts/MainLayout.astro';
+
+// Salient demo images with exact dimensions
+const salientImages = [
+  {
+    "src": "fashion-portrait-450x600.jpg",
+    "size": "regular",
+    "width": 450,
+    "height": 600
+  },
+  {
+    "src": "restaurant-scene-450x600.jpg",
+    "size": "regular",
+    "width": 450,
+    "height": 600
+  },
+  {
+    "src": "abstract-art-450x600.jpg",
+    "size": "regular",
+    "width": 450,
+    "height": 600
+  },
+  {
+    "src": "swimming-pool-900x600.jpg",
+    "size": "wide",
+    "width": 900,
+    "height": 600
+  },
+  {
+    "src": "nature-landscape-900x600.jpg",
+    "size": "wide",
+    "width": 900,
+    "height": 600
+  },
+  {
+    "src": "featured-portrait-1-900x1200.jpg",
+    "size": "wide_tall",
+    "width": 900,
+    "height": 1200
+  },
+  {
+    "src": "featured-portrait-2-900x1200.jpg",
+    "size": "wide_tall",
+    "width": 900,
+    "height": 1200
+  }
+];
+
+// Mix up the images to create a visually interesting layout
+// Following Salient's distribution: regular, wide, tall mixed
+const masonryImages = [
+  salientImages[0], // regular
+  salientImages[3], // wide
+  salientImages[1], // regular
+  salientImages[5], // wide_tall
+  salientImages[2], // regular
+  salientImages[4], // wide
+  salientImages[6], // wide_tall
+  // Repeat for more content
+  ...salientImages,
+  ...salientImages
+];
+---
+
+<Layout title="Salient Photography Demo - Exact Masonry Replication">
+  <style>
+    /* Salient Photography Masonry Exact Replication */
+    
+    .salient-demo-header {
+      text-align: center;
+      padding: 60px 20px 40px;
+      background: #fafafa;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .salient-demo-header h1 {
+      font-size: 2.5rem;
+      font-weight: 300;
+      margin-bottom: 10px;
+      letter-spacing: -1px;
+    }
+    
+    .salient-demo-header p {
+      color: #666;
+      font-size: 1.1rem;
+    }
+    
+    .spec-badge {
+      display: inline-block;
+      background: #000;
+      color: #fff;
+      padding: 4px 12px;
+      border-radius: 3px;
+      font-size: 0.85rem;
+      margin: 0 5px;
+    }
+    
+    /* Masonry Container - Exact Salient Specs */
+    .portfolio-items {
+      position: relative;
+      margin: 0 auto;
+      padding: 40px 0;
+    }
+    
+    .portfolio-items.masonry-items {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+      grid-auto-rows: 10px;
+      gap: 15px;
+      max-width: 1425px; /* 450*3 + gaps */
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    
+    /* Individual Items - Photography Sizing */
+    .portfolio-items .col {
+      position: relative;
+      overflow: hidden;
+      background: #f5f5f5;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.3, 0.1, 0.3, 1);
+    }
+    
+    .portfolio-items .col.elastic-portfolio-item {
+      display: flex;
+    }
+    
+    .portfolio-items .col img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.5s cubic-bezier(0.3, 0.1, 0.3, 1);
+    }
+    
+    /* Photography Size Classes - Exact Grid Mapping */
+    .portfolio-items .col.regular {
+      grid-row-end: span 60; /* 600px / 10px */
+    }
+    
+    .portfolio-items .col.wide {
+      grid-column-end: span 2;
+      grid-row-end: span 60; /* 600px / 10px */
+    }
+    
+    .portfolio-items .col.wide_tall {
+      grid-column-end: span 2;
+      grid-row-end: span 120; /* 1200px / 10px */
+    }
+    
+    /* Hover Effect - Salient Style */
+    .portfolio-items .col:hover img {
+      transform: scale(1.05);
+    }
+    
+    .portfolio-items .col:hover {
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      z-index: 10;
+    }
+    
+    /* Work Info Overlay */
+    .work-info {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 30px;
+      background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
+      color: white;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+    }
+    
+    .col:hover .work-info {
+      transform: translateY(0);
+    }
+    
+    .work-info h3 {
+      margin: 0;
+      font-size: 1.4rem;
+      font-weight: 400;
+    }
+    
+    .work-info .category {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      margin-top: 5px;
+    }
+    
+    /* Staggered Animation on Load */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .portfolio-items .col {
+      opacity: 0;
+      animation: fadeInUp 0.6s cubic-bezier(0.3, 0.1, 0.3, 1) forwards;
+    }
+    
+    /* 85ms stagger like Salient Photography mode */
+    .portfolio-items .col:nth-child(1) { animation-delay: 0ms; }
+    .portfolio-items .col:nth-child(2) { animation-delay: 85ms; }
+    .portfolio-items .col:nth-child(3) { animation-delay: 170ms; }
+    .portfolio-items .col:nth-child(4) { animation-delay: 255ms; }
+    .portfolio-items .col:nth-child(5) { animation-delay: 340ms; }
+    .portfolio-items .col:nth-child(6) { animation-delay: 425ms; }
+    .portfolio-items .col:nth-child(7) { animation-delay: 510ms; }
+    .portfolio-items .col:nth-child(8) { animation-delay: 595ms; }
+    .portfolio-items .col:nth-child(9) { animation-delay: 680ms; }
+    .portfolio-items .col:nth-child(10) { animation-delay: 765ms; }
+    
+    /* Responsive Breakpoints - Exact Salient Behavior */
+    @media (max-width: 1400px) {
+      .portfolio-items.masonry-items {
+        grid-template-columns: repeat(3, 1fr);
+        max-width: 1200px;
+      }
+    }
+    
+    @media (max-width: 999px) {
+      .portfolio-items.masonry-items {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 900px;
+      }
+      
+      /* Wide items become regular width on tablet */
+      .portfolio-items .col.wide,
+      .portfolio-items .col.wide_tall {
+        grid-column-end: span 1;
+      }
+      
+      .portfolio-items .col.wide_tall {
+        grid-row-end: span 60; /* Becomes regular height */
+      }
+    }
+    
+    @media (max-width: 690px) {
+      .portfolio-items.masonry-items {
+        grid-template-columns: 1fr;
+        max-width: 450px;
+      }
+      
+      /* All items become regular size on mobile */
+      .portfolio-items .col.wide,
+      .portfolio-items .col.wide_tall {
+        grid-column-end: span 1;
+        grid-row-end: span 60;
+      }
+    }
+    
+    /* Debug Info */
+    .debug-info {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 10px 15px;
+      border-radius: 5px;
+      font-family: monospace;
+      font-size: 12px;
+      z-index: 9999;
+    }
+  </style>
+
+  <div class="salient-demo-header">
+    <h1>Salient Photography Demo</h1>
+    <p>Exact Masonry Replication with Mixed Sizes</p>
+    <div style="margin-top: 20px;">
+      <span class="spec-badge">450×600 (1×1)</span>
+      <span class="spec-badge">900×600 (2×1)</span>
+      <span class="spec-badge">900×1200 (2×2)</span>
+    </div>
+  </div>
+
+  <div class="portfolio-items masonry-items" data-masonry-type="photography" data-ps="6">
+    {masonryImages.map((image, index) => {
+      const titles = [
+        'High-End Fashion', 'Restaurant Week', 'Claire Swimming',
+        'The Jungle King', 'Purple Flowers', 'Urban Lifestyle',
+        'Creative Portrait', 'Abstract Art', 'Nature Scene'
+      ];
+      
+      return (
+        <div 
+          class={`col elastic-portfolio-item ${image.size}`}
+          data-delay-amount={index}
+        >
+          <img 
+            src={`/salient-demo-images/${image.src}`}
+            alt={titles[index % titles.length]}
+            width={image.width}
+            height={image.height}
+            loading={index < 4 ? "eager" : "lazy"}
+          />
+          <div class="work-info">
+            <h3>{titles[index % titles.length]}</h3>
+            <div class="category">
+              {image.size === 'regular' ? 'Portrait' : 
+               image.size === 'wide' ? 'Landscape' : 'Featured'}
+            </div>
+          </div>
+        </div>
+      );
+    })}
+  </div>
+
+  <div class="debug-info">
+    <div>Masonry Type: Photography</div>
+    <div>Animation: 85ms stagger</div>
+    <div>Grid: CSS Grid (10px rows)</div>
+  </div>
+
+  <script>
+    // Optional: Add Isotope.js for perfect gap-filling
+    // For now, using pure CSS Grid which works great for this layout
+    
+    // Log the layout for debugging
+    const items = document.querySelectorAll('.portfolio-items .col');
+    console.log('Salient Photography Demo Loaded');
+    console.log('Total items:', items.length);
+    console.log('Layout distribution:');
+    console.log('- Regular (1×1):', document.querySelectorAll('.col.regular').length);
+    console.log('- Wide (2×1):', document.querySelectorAll('.col.wide').length);
+    console.log('- Wide & Tall (2×2):', document.querySelectorAll('.col.wide_tall').length);
+  </script>
+</Layout>
