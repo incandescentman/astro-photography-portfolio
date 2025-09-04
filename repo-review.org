@@ -1,0 +1,29 @@
+* Repo Scan Summary
+
+** What This Is
+- Modern Astro 5 + Tailwind 4 photography portfolio.
+- Two gallery systems:
+  - YAML-driven under ~src/gallery/gallery.yaml~ rendered via ~collections~ and ~PhotoGrid~.
+  - Filesystem-driven under ~public/photos/**~ with dynamic routes and optional ~tags.json~.
+
+** Key Files
+- ~src/pages/index.astro~: Masonry-style highlights grid (Isotope + GLightbox).
+- ~src/pages/collections/[...collection].astro~: YAML gallery views.
+- ~src/pages/gallery/[folder].astro~ and ~src/pages/gallery/[...folder].astro~: Filesystem galleries.
+- ~src/data/imageStore.ts~ + ~src/data/galleryData.ts~: YAML data loading/validation/sorting.
+- ~scripts/generate-tags-json.js~: Generates tags for ~public/photos/**~ folders.
+- ~site.config.mts~: Site owner/meta + lucide icons.
+
+** Things To Decide
+- Duplicate gallery routes: ~~/gallery/[folder]~~ (reads ~src/gallery~) vs ~~/gallery/[...folder]~~ (reads ~public/photos~). These can conflict. Choose a canonical source and remove/rename the other.
+- Comments: ~PhotoComments.astro~ has placeholder Giscus ~data-repo-id~ and ~data-category-I'd~ —needs real values to work.
+- Lightbox CSS: Index page uses GLightbox; core CSS may not be globally imported. Consider importing ~glightbox/dist/css/glightbox.css~ globally (e.g., in ~MainLayout~) or directly where needed.
+
+** Nice Touches Present
+- Tests exist for the YAML data layer in ~src/data/__tests__~.
+- Gallery generator (~src/data/gallery-generator.ts~) to build/update ~gallery.yaml~ with EXIF merging.
+
+** Next Actions
+- Wire up Giscus IDs in ~PhotoComments.astro~ for comments to function.
+- Import GLightbox core CSS globally for consistent styling.
+- Optionally: run ~npm install~, ~npm run dev~, and tests to validate end-to-end.

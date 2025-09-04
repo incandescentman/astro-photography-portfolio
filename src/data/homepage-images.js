@@ -9,24 +9,31 @@
 // Order Control:
 // - Set `order: 1, 2, 3...` to force specific positions
 // - Images without `order` will be auto-arranged by the optimizer
+//
+// Caption:
+// - Provide a custom caption for each image
+// - If not provided, the filename will be used (with dashes/underscores converted to spaces)
 
 export const images = [
 
 {
     filename: 'dixit_nobel-physics.jpg',
     caption: 'Nobel Prize in Physics Ceremony',
-    size: 'portrait'
+    size: 'portrait',
+    order: 1
   },
   {
     filename: 'judd-apatow.jpg',
     caption: 'Judd Apatow',
-    size: 'portrait'
+    size: 'portrait',
+    order: 2
   },
 
 {
     filename: 'vanessa-kirby.jpg',
     caption: 'Vanessa Kirby',
-    size: 'xlportrait' // FEATURE IMAGE
+    size: 'xlportrait', // FEATURE IMAGE
+    order: 3
   },
 {
     filename: 'jeremy.jpg',

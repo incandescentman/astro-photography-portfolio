@@ -1,0 +1,68 @@
+#+TITLE: Cloudinary Albums Setup
+#+AUTHOR: Project Guide
+
+* Overview
+This guide enables Cloudinary-backed albums rendered via Astro Content Collections and PhotoSwipe.
+
+* Prerequisites
+- Cloud name: ~dszpm7yps~ (confirm in Cloudinary → Settings → Account Details).
+- Named transformation: ~gallery~.
+- Node packages installed; optional: ~cloudinary~ SDK for uploads.
+
+* 1) Create a Named Transformation
+- Cloudinary → Settings → Transformations → Named Transformations → New
+- Name: ~gallery~
+- Definition: ~c_fill,g_auto,f_auto,q_auto~
+- Optional: add ~ar_3:2~ or ~ar_4:3~ for consistent aspect ratio.
+
+* 2) Environment Variables
+- Copy ~.env.example~ to ~.env~ and set:
+  - ~PUBLIC_CLOUDINARY_CLOUD_NAME=dszpm7yps~
+  - ~PUBLIC_CLOUDINARY_TRANSFORM=gallery~
+- For upload script auth, set one of:
+  - ~CLOUDINARY_URL=cloudinary://<api_key>:<api_secret>@dszpm7yps~
+  - or ~CLOUDINARY_API_KEY~, ~CLOUDINARY_API_SECRET~, ~CLOUDINARY_CLOUD_NAME~
+
+* 3) Upload Local Images (optional helper)
+Install SDK:
+#+begin_src bash
+npm i cloudinary
+#+end_src
+
+Upload from a local folder (preserve structure):
+#+begin_src bash
+npm run upload-cloudinary -- ./public/photos events
+#+end_src
+This yields public IDs like ~events/red-carpet/tiff/vanessa-kirby_tiff_2024~ (no extension).
+
+* 4) Create an Album File
+Add a JSON file under ~src/content/albums/~, e.g., ~src/content/albums/tiff-2025.json~:
+#+begin_src json
+{
+  "title": "TIFF 2025 — Red Carpet",
+  "tags": ["red-carpet", "tiff"],
+  "photos": [
+    { "publicId": "events/red-carpet/tiff/vanessa-kirby_tiff_2024", "alt": "Vanessa Kirby at TIFF" },
+    { "publicId": "events/red-carpet/tiff/another_image", "alt": "Another subject" }
+  ]
+}
+#+end_src
+
+* 5) Run & View
+Start dev server and open albums:
+#+begin_src bash
+npm run dev
+# Visit: http://localhost:4323/albums
+# Or a specific album: http://localhost:4323/albums/tiff-2025
+#+end_src
+
+* 6) Sanity Check a Direct URL
+Replace with a real public ID you uploaded:
+#+begin_src text
+https://res.cloudinary.com/dszpm7yps/image/upload/t_gallery,w_1024/events/red-carpet/tiff/vanessa-kirby_tiff_2024
+#+end_src
+
+* Notes
+- Gallery uses PhotoSwipe (CDN) and CSS columns (no heavy JS layout).
+- Site preconnects to ~https://res.cloudinary.com~ for faster first paint.
+- Public IDs are path-like identifiers without file extensions.

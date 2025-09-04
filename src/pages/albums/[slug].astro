@@ -1,0 +1,23 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import Gallery from '../../components/Gallery.astro';
+import { getCollection, getEntry } from 'astro:content';
+
+const { slug } = Astro.params;
+const entry = await getEntry('albums', String(slug));
+const album = entry?.data;
+
+if (!album) {
+  return Astro.redirect('/404');
+}
+
+export const getStaticPaths = async () => {
+  const albums = await getCollection('albums');
+  return albums.map((a) => ({ params: { slug: a.slug } }));
+};
+---
+
+<MainLayout>
+  <Gallery album={album} />
+</MainLayout>
+

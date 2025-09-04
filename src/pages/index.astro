@@ -5,43 +5,63 @@ import { images } from '../data/homepage-images.js';
 
 // Set this to false to use your manual image order from homepage-images.js
 // Set to true to automatically optimize order to minimize gaps
-const AUTO_OPTIMIZE_ORDER = false;
+const AUTO_OPTIMIZE_ORDER = true;
 
 // Algorithm to optimize image order for minimal gaps
 function optimizeImageOrder(images) {
-  // Separate images by size
+  // Separate images into ordered and unordered
+  const orderedImages = [];
+  const unorderedImages = [];
+  
+  images.forEach(img => {
+    if (img.order !== undefined) {
+      orderedImages.push(img);
+    } else {
+      unorderedImages.push(img);
+    }
+  });
+  
+  // Sort ordered images by their order value
+  orderedImages.sort((a, b) => a.order - b.order);
+  
+  // If no unordered images, just return the ordered ones
+  if (unorderedImages.length === 0) {
+    return orderedImages;
+  }
+  
+  // Optimize the unordered images
   const sizeGroups = {
     xlportrait: [], // 2x2 - largest, place first for anchor points
     landscape: [],  // 2x1 - horizontal images
     portrait: []    // 1x1 - standard portrait, use to fill gaps
   };
   
-  images.forEach(img => {
+  unorderedImages.forEach(img => {
     sizeGroups[img.size].push(img);
   });
   
-  const optimized = [];
+  const optimizedUnordered = [];
   
   // Strategy: Place large items first, then fill gaps with smaller items
   // 1. Start with an xlportrait to anchor the layout
   if (sizeGroups.xlportrait.length > 0) {
-    optimized.push(sizeGroups.xlportrait.shift());
+    optimizedUnordered.push(sizeGroups.xlportrait.shift());
   }
   
   // 2. Add some portrait items to fill around it (need 3-4 for a 5-column grid)
   const portraitToAdd = Math.min(3, sizeGroups.portrait.length);
   for (let i = 0; i < portraitToAdd; i++) {
     if (sizeGroups.portrait.length > 0) {
-      optimized.push(sizeGroups.portrait.shift());
+      optimizedUnordered.push(sizeGroups.portrait.shift());
     }
   }
   
   // 3. Add landscape items (they fit well after portraits)
-  while (sizeGroups.landscape.length > 0 && optimized.length < 7) {
-    optimized.push(sizeGroups.landscape.shift());
+  while (sizeGroups.landscape.length > 0 && optimizedUnordered.length < 7) {
+    optimizedUnordered.push(sizeGroups.landscape.shift());
     // After each landscape, add a portrait to fill the gap
     if (sizeGroups.portrait.length > 0) {
-      optimized.push(sizeGroups.portrait.shift());
+      optimizedUnordered.push(sizeGroups.portrait.shift());
     }
   }
   
@@ -51,28 +71,46 @@ function optimizeImageOrder(images) {
     const fillCount = Math.min(2, sizeGroups.portrait.length);
     for (let i = 0; i < fillCount; i++) {
       if (sizeGroups.portrait.length > 0) {
-        optimized.push(sizeGroups.portrait.shift());
+        optimizedUnordered.push(sizeGroups.portrait.shift());
       }
     }
-    optimized.push(sizeGroups.xlportrait.shift());
+    optimizedUnordered.push(sizeGroups.xlportrait.shift());
   }
   
   // 5. Add remaining items
   [...sizeGroups.landscape, ...sizeGroups.portrait].forEach(img => {
-    optimized.push(img);
+    optimizedUnordered.push(img);
   });
   
-  return optimized;
+  // Merge ordered and optimized unordered images
+  const result = [];
+  let orderedIndex = 0;
+  let unorderedIndex = 0;
+  
+  // Place images according to order values, filling gaps with optimized unordered
+  for (let position = 1; orderedIndex < orderedImages.length || unorderedIndex < optimizedUnordered.length; position++) {
+    // Check if there's an ordered image for this position
+    if (orderedIndex < orderedImages.length && orderedImages[orderedIndex].order === position) {
+      result.push(orderedImages[orderedIndex]);
+      orderedIndex++;
+    } else if (unorderedIndex < optimizedUnordered.length) {
+      // Fill with optimized unordered image
+      result.push(optimizedUnordered[unorderedIndex]);
+      unorderedIndex++;
+    }
+  }
+  
+  return result;
 }
 
-// Optimize the image order
-const optimizedImages = optimizeImageOrder(images);
+// Decide whether to optimize or use manual order
+const processedImages = AUTO_OPTIMIZE_ORDER ? optimizeImageOrder(images) : images;
 
-// Build the photo array from optimized configuration
-const highlightPhotos = optimizedImages.map(img => ({
+// Build the photo array from configuration
+const highlightPhotos = processedImages.map(img => ({
   src: `/highlights/${img.filename}`,
   filename: img.filename,
-  caption: img.caption,
+  caption: img.caption || img.filename.replace(/[-_]/g, ' ').replace(/\.\w+$/, ''),
   size: img.size
 }));
 ---
@@ -251,12 +289,12 @@ const highlightPhotos = optimizedImages.map(img => ({
   right: 0;
   padding: 20px;
   color: #fff;
-  transform: translateY(100%);
-  transition: transform 0.45s cubic-bezier(0.3, 0.1, 0.3, 1);
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .portfolio-items .col:hover .work-info {
-  transform: translateY(0);
+  opacity: 1;
 }
 
 .portfolio-items .work-info h3 {

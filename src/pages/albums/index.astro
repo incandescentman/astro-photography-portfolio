@@ -1,0 +1,29 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import { getCollection } from 'astro:content';
+
+const albums = await getCollection('albums');
+---
+
+<MainLayout>
+  <section class="py-16 pt-24">
+    <div class="container mx-auto px-4 max-w-5xl">
+      <h1 class="text-3xl md:text-4xl font-bold mb-6">Albums</h1>
+      {albums.length === 0 ? (
+        <p class="text-gray-600">No albums yet. Add files in <code class="bg-gray-100 px-1 rounded">src/content/albums/</code>.</p>
+      ) : (
+        <ul class="space-y-3">
+          {albums.map((a) => (
+            <li class="border rounded-md p-4 hover:bg-gray-50 transition">
+              <a href={`/albums/${a.slug}`} class="font-semibold">{a.data.title || a.slug}</a>
+              {a.data.tags && a.data.tags.length > 0 && (
+                <span class="ml-2 text-sm text-gray-500">[{a.data.tags.join(', ')}]</span>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  </section>
+</MainLayout>
+

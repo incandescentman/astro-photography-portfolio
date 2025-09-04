@@ -1,7 +1,7 @@
 ---
 import '../styles/global.css';
 import '../styles/glightbox-custom.css';
-import siteConfig from '../../site.config.mjs';
+import siteConfig from '../../site.config.mts';
 import Footer from '../components/Footer.astro';
 import NavBar from '../components/NavBar.astro';
 
@@ -17,6 +17,7 @@ const base = import.meta.env.BASE_URL;
 
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link rel="preconnect" href="https://res.cloudinary.com" />
 		<link
 			href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&display=swap"
 			rel="stylesheet"

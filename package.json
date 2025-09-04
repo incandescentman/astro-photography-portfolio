@@ -13,7 +13,8 @@
 		"generate": "npx tsx src/data/gallery-generator.ts src/gallery",
 		"generate-tags": "node scripts/generate-tags-json.js",
 		"download-photos": "node scripts/download-dummy-photos.js",
-		"download-live": "node scripts/download-live-photos.js"
+		"download-live": "node scripts/download-live-photos.js",
+		"upload-cloudinary": "node scripts/upload-to-cloudinary.js"
 	},
 	"devDependencies": {
 		"@tailwindcss/typography": "^0.5.16",
