@@ -237,12 +237,30 @@ const highlightPhotos = [
   cursor: pointer;
 }
 
-/* Images - maintain aspect ratio */
+/* Images - fixed aspect ratio with cropping */
 .portfolio-items .col img {
   width: 100%;
-  height: auto;
+  height: 100%;
   display: block;
+  object-fit: cover;
   transition: transform 0.45s cubic-bezier(0.3, 0.1, 0.3, 1);
+}
+
+/* Set fixed aspect ratios for each size */
+.portfolio-items .col.regular .work-item {
+  aspect-ratio: 3 / 4; /* Portrait ratio like 320x430 */
+}
+
+.portfolio-items .col.wide .work-item {
+  aspect-ratio: 3 / 2; /* Landscape ratio */
+}
+
+.portfolio-items .col.tall .work-item {
+  aspect-ratio: 3 / 5; /* Taller portrait */
+}
+
+.portfolio-items .col.wide_tall .work-item {
+  aspect-ratio: 3 / 4; /* Same as regular but bigger */
 }
 
 /* Hover effects */
