@@ -1,10 +1,9 @@
 // Homepage Image Configuration
 // Edit this file to control which images appear on the homepage and their sizes.
 //
-// Size Options:
+// Size Options (matching Salient Photography theme):
 // - `regular` - Standard size (1 column × 1 row)
 // - `wide` - Landscape (2 columns × 1 row) 
-// - `tall` - Portrait tall (1 column × 2 rows)
 // - `wide_tall` - Feature size (2 columns × 2 rows)
 
 export const images = [

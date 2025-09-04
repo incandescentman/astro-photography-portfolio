@@ -9,7 +9,6 @@ function optimizeImageOrder(images) {
   const sizeGroups = {
     wide_tall: [], // 2x2 - largest, place first for anchor points
     wide: [],      // 2x1 - landscape 
-    tall: [],      // 1x2 - tall portrait
     regular: []    // 1x1 - standard, use to fill gaps
   };
   
@@ -55,7 +54,7 @@ function optimizeImageOrder(images) {
   }
   
   // 5. Add remaining items
-  [...sizeGroups.wide, ...sizeGroups.tall, ...sizeGroups.regular].forEach(img => {
+  [...sizeGroups.wide, ...sizeGroups.regular].forEach(img => {
     optimized.push(img);
   });
   
@@ -131,7 +130,7 @@ const highlightPhotos = optimizedImages.map(img => ({
   float: left;
 }
 
-/* Size variations */
+/* Size variations - 3 options like Salient */
 .portfolio-items .col.regular {
   width: 20%; /* 1 unit - 5 columns */
 }
@@ -140,18 +139,13 @@ const highlightPhotos = optimizedImages.map(img => ({
   width: 40%; /* 2 units wide */
 }
 
-.portfolio-items .col.tall {
-  width: 20%; /* 1 unit width but taller */
-}
-
 .portfolio-items .col.wide_tall {
   width: 40%; /* 2 units wide */
 }
 
 /* Responsive breakpoints */
 @media only screen and (max-width: 1600px) {
-  .portfolio-items .col.regular,
-  .portfolio-items .col.tall {
+  .portfolio-items .col.regular {
     width: 25%; /* 4 columns */
   }
   .portfolio-items .col.wide,
@@ -161,8 +155,7 @@ const highlightPhotos = optimizedImages.map(img => ({
 }
 
 @media only screen and (max-width: 1200px) {
-  .portfolio-items .col.regular,
-  .portfolio-items .col.tall {
+  .portfolio-items .col.regular {
     width: 33.333%; /* 3 columns */
   }
   .portfolio-items .col.wide,
@@ -172,8 +165,7 @@ const highlightPhotos = optimizedImages.map(img => ({
 }
 
 @media only screen and (max-width: 768px) {
-  .portfolio-items .col.regular,
-  .portfolio-items .col.tall {
+  .portfolio-items .col.regular {
     width: 50%; /* 2 columns */
   }
   .portfolio-items .col.wide,
@@ -186,7 +178,6 @@ const highlightPhotos = optimizedImages.map(img => ({
   .portfolio-items .col,
   .portfolio-items .col.regular,
   .portfolio-items .col.wide,
-  .portfolio-items .col.tall,
   .portfolio-items .col.wide_tall {
     width: 100%; /* 1 column on mobile */
   }
@@ -215,7 +206,7 @@ const highlightPhotos = optimizedImages.map(img => ({
   transition: transform 0.45s cubic-bezier(0.3, 0.1, 0.3, 1);
 }
 
-/* Set fixed aspect ratios for each size */
+/* Set fixed aspect ratios for each size - 3 options like Salient */
 .portfolio-items .col.regular .work-item {
   aspect-ratio: 3 / 4; /* Portrait ratio like 320x430 */
 }
@@ -224,12 +215,8 @@ const highlightPhotos = optimizedImages.map(img => ({
   aspect-ratio: 3 / 2; /* Landscape ratio */
 }
 
-.portfolio-items .col.tall .work-item {
-  aspect-ratio: 3 / 5; /* Taller portrait */
-}
-
 .portfolio-items .col.wide_tall .work-item {
-  aspect-ratio: 3 / 4; /* Same as regular but bigger */
+  aspect-ratio: 3 / 4; /* Same as regular but bigger (2x2) */
 }
 
 /* Hover effects */
