@@ -1,195 +1,247 @@
 ---
 import Layout from '../layouts/MainLayout.astro';
 
-// Salient demo images with exact dimensions
+// Salient demo images with exact dimensions and sizing
 const salientImages = [
-  {
-    "src": "fashion-portrait-450x600.jpg",
-    "size": "regular",
-    "width": 450,
-    "height": 600
-  },
-  {
-    "src": "restaurant-scene-450x600.jpg",
-    "size": "regular",
-    "width": 450,
-    "height": 600
-  },
-  {
-    "src": "abstract-art-450x600.jpg",
-    "size": "regular",
-    "width": 450,
-    "height": 600
-  },
-  {
-    "src": "swimming-pool-900x600.jpg",
-    "size": "wide",
-    "width": 900,
-    "height": 600
-  },
-  {
-    "src": "nature-landscape-900x600.jpg",
-    "size": "wide",
-    "width": 900,
-    "height": 600
-  },
-  {
-    "src": "featured-portrait-1-900x1200.jpg",
-    "size": "wide_tall",
-    "width": 900,
-    "height": 1200
-  },
-  {
-    "src": "featured-portrait-2-900x1200.jpg",
-    "size": "wide_tall",
-    "width": 900,
-    "height": 1200
-  }
-];
-
-// Mix up the images to create a visually interesting layout
-// Following Salient's distribution: regular, wide, tall mixed
-const masonryImages = [
-  salientImages[0], // regular
-  salientImages[3], // wide
-  salientImages[1], // regular
-  salientImages[5], // wide_tall
-  salientImages[2], // regular
-  salientImages[4], // wide
-  salientImages[6], // wide_tall
-  // Repeat for more content
-  ...salientImages,
-  ...salientImages
+  { src: "fashion-portrait-450x600.jpg", size: "regular", width: 450, height: 600 },
+  { src: "swimming-pool-900x600.jpg", size: "wide", width: 900, height: 600 },
+  { src: "restaurant-scene-450x600.jpg", size: "regular", width: 450, height: 600 },
+  { src: "featured-portrait-1-900x1200.jpg", size: "wide_tall", width: 900, height: 1200 },
+  { src: "abstract-art-450x600.jpg", size: "regular", width: 450, height: 600 },
+  { src: "nature-landscape-900x600.jpg", size: "wide", width: 900, height: 600 },
+  { src: "featured-portrait-2-900x1200.jpg", size: "wide_tall", width: 900, height: 1200 },
+  // Add more for variety
+  { src: "creative-portrait-450x600.jpg", size: "regular", width: 450, height: 600 },
+  { src: "high-end-fashion-450x600.jpg", size: "regular", width: 450, height: 600 },
+  { src: "lifestyle-portrait-450x600.jpg", size: "regular", width: 450, height: 600 },
+  { src: "portrait-session-450x600.jpg", size: "regular", width: 450, height: 600 },
+  { src: "restaurant-week-450x600.jpg", size: "regular", width: 450, height: 600 },
+  { src: "urban-lifestyle-450x600.jpg", size: "regular", width: 450, height: 600 },
 ];
 ---
 
-<Layout title="Salient Photography Demo - Exact Masonry Replication">
+<Layout title="Salient Photography Demo - Isotope Masonry">
   <style>
-    /* Salient Photography Masonry Exact Replication */
+    /* Reset and Base Styles */
+    * {
+      box-sizing: border-box;
+    }
     
-    .salient-demo-header {
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #fff;
+    }
+    
+    /* Demo Header */
+    .demo-header {
       text-align: center;
-      padding: 60px 20px 40px;
+      padding: 80px 20px 60px;
       background: #fafafa;
-      border-bottom: 1px solid #eee;
     }
     
-    .salient-demo-header h1 {
-      font-size: 2.5rem;
+    .demo-header h1 {
+      font-size: 42px;
       font-weight: 300;
-      margin-bottom: 10px;
-      letter-spacing: -1px;
+      letter-spacing: -2px;
+      margin: 0 0 10px 0;
     }
     
-    .salient-demo-header p {
+    .demo-header p {
       color: #666;
-      font-size: 1.1rem;
+      font-size: 18px;
+      margin: 0;
     }
     
-    .spec-badge {
-      display: inline-block;
-      background: #000;
-      color: #fff;
-      padding: 4px 12px;
-      border-radius: 3px;
-      font-size: 0.85rem;
-      margin: 0 5px;
-    }
+    /* EXACT SALIENT PORTFOLIO MASONRY STYLES */
     
-    /* Masonry Container - Exact Salient Specs */
-    .portfolio-items {
+    /* Container */
+    .portfolio-wrap {
       position: relative;
       margin: 0 auto;
-      padding: 40px 0;
+      padding: 0;
+    }
+    
+    /* Masonry Container - Salient Structure */
+    .portfolio-items {
+      position: relative;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0;
+      transition: opacity 0.3s ease;
     }
     
     .portfolio-items.masonry-items {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-      grid-auto-rows: 10px;
-      gap: 15px;
-      max-width: 1425px; /* 450*3 + gaps */
-      margin: 0 auto;
-      padding: 40px 20px;
+      opacity: 0;
     }
     
-    /* Individual Items - Photography Sizing */
+    .portfolio-items.masonry-items.isotope-initialized {
+      opacity: 1;
+    }
+    
+    /* Individual Items - EXACT Salient Sizing */
     .portfolio-items .col {
+      position: absolute;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+    }
+    
+    /* Elastic Portfolio Item Base */
+    .portfolio-items .col.elastic-portfolio-item {
+      width: 20%; /* Base width for 5 columns */
+    }
+    
+    /* Photography-Based Sizing - EXACT from Salient */
+    .portfolio-items .col.elastic-portfolio-item.regular {
+      width: 20%;
+      /* Height handled by image aspect ratio */
+    }
+    
+    .portfolio-items .col.elastic-portfolio-item.wide {
+      width: 40%; /* Double width */
+    }
+    
+    .portfolio-items .col.elastic-portfolio-item.wide_tall {
+      width: 40%; /* Double width */
+      /* Height is naturally double due to image */
+    }
+    
+    /* Gutter Styles */
+    .portfolio-items[data-gutter="default"] .col {
+      padding: 8px;
+    }
+    
+    .portfolio-items[data-gutter="1px"] .col {
+      padding: 0.5px;
+    }
+    
+    .portfolio-items[data-gutter="2px"] .col {
+      padding: 1px;
+    }
+    
+    .portfolio-items[data-gutter="3px"] .col {
+      padding: 1.5px;
+    }
+    
+    /* Inner Wrap for Padding */
+    .portfolio-items .col .inner-wrap {
       position: relative;
       overflow: hidden;
-      background: #f5f5f5;
+      background: #000;
+    }
+    
+    /* Work Item Container */
+    .portfolio-items .col .work-item {
+      position: relative;
+      overflow: hidden;
       cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.3, 0.1, 0.3, 1);
     }
     
-    .portfolio-items .col.elastic-portfolio-item {
-      display: flex;
-    }
-    
+    /* Image Styles */
     .portfolio-items .col img {
       width: 100%;
-      height: 100%;
-      object-fit: cover;
+      height: auto;
       display: block;
-      transition: transform 0.5s cubic-bezier(0.3, 0.1, 0.3, 1);
+      transition: transform 0.45s cubic-bezier(0.3, 0.1, 0.3, 1);
     }
     
-    /* Photography Size Classes - Exact Grid Mapping */
-    .portfolio-items .col.regular {
-      grid-row-end: span 60; /* 600px / 10px */
-    }
-    
-    .portfolio-items .col.wide {
-      grid-column-end: span 2;
-      grid-row-end: span 60; /* 600px / 10px */
-    }
-    
-    .portfolio-items .col.wide_tall {
-      grid-column-end: span 2;
-      grid-row-end: span 120; /* 1200px / 10px */
-    }
-    
-    /* Hover Effect - Salient Style */
+    /* Hover Effects - Salient Style */
     .portfolio-items .col:hover img {
-      transform: scale(1.05);
-    }
-    
-    .portfolio-items .col:hover {
-      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-      z-index: 10;
+      transform: scale(1.07);
     }
     
     /* Work Info Overlay */
-    .work-info {
+    .portfolio-items .work-info-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0);
+      transition: background 0.45s ease;
+      pointer-events: none;
+    }
+    
+    .portfolio-items .col:hover .work-info-bg {
+      background: rgba(0, 0, 0, 0.4);
+    }
+    
+    .portfolio-items .work-info {
       position: absolute;
       bottom: 0;
       left: 0;
       right: 0;
-      padding: 30px;
-      background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
-      color: white;
+      padding: 25px;
+      color: #fff;
       transform: translateY(100%);
-      transition: transform 0.3s ease;
+      transition: transform 0.45s cubic-bezier(0.3, 0.1, 0.3, 1);
     }
     
-    .col:hover .work-info {
+    .portfolio-items .col:hover .work-info {
       transform: translateY(0);
     }
     
-    .work-info h3 {
-      margin: 0;
-      font-size: 1.4rem;
+    .portfolio-items .work-info h3 {
+      margin: 0 0 5px 0;
+      font-size: 20px;
       font-weight: 400;
+      letter-spacing: -0.5px;
     }
     
-    .work-info .category {
-      font-size: 0.9rem;
-      opacity: 0.8;
-      margin-top: 5px;
+    .portfolio-items .work-info p {
+      margin: 0;
+      font-size: 13px;
+      opacity: 0.7;
     }
     
-    /* Staggered Animation on Load */
-    @keyframes fadeInUp {
+    /* Loading State */
+    .portfolio-loading {
+      text-align: center;
+      padding: 60px;
+      color: #999;
+    }
+    
+    /* Responsive Breakpoints - Salient Exact */
+    @media only screen and (max-width: 1600px) {
+      .portfolio-items .col.elastic-portfolio-item.regular {
+        width: 25%;
+      }
+      .portfolio-items .col.elastic-portfolio-item.wide,
+      .portfolio-items .col.elastic-portfolio-item.wide_tall {
+        width: 50%;
+      }
+    }
+    
+    @media only screen and (max-width: 1300px) {
+      .portfolio-items .col.elastic-portfolio-item.regular {
+        width: 33.333%;
+      }
+      .portfolio-items .col.elastic-portfolio-item.wide,
+      .portfolio-items .col.elastic-portfolio-item.wide_tall {
+        width: 66.666%;
+      }
+    }
+    
+    @media only screen and (max-width: 990px) {
+      .portfolio-items .col.elastic-portfolio-item.regular,
+      .portfolio-items .col.elastic-portfolio-item.wide,
+      .portfolio-items .col.elastic-portfolio-item.wide_tall {
+        width: 50%;
+      }
+    }
+    
+    @media only screen and (max-width: 690px) {
+      .portfolio-items .col.elastic-portfolio-item.regular,
+      .portfolio-items .col.elastic-portfolio-item.wide,
+      .portfolio-items .col.elastic-portfolio-item.wide_tall {
+        width: 100%;
+      }
+    }
+    
+    /* Animation */
+    @keyframes portfolioFadeIn {
       from {
         opacity: 0;
         transform: translateY(30px);
@@ -200,136 +252,116 @@ const masonryImages = [
       }
     }
     
-    .portfolio-items .col {
+    .portfolio-items .col .inner-wrap {
+      animation: portfolioFadeIn 0.6s ease forwards;
       opacity: 0;
-      animation: fadeInUp 0.6s cubic-bezier(0.3, 0.1, 0.3, 1) forwards;
     }
     
-    /* 85ms stagger like Salient Photography mode */
-    .portfolio-items .col:nth-child(1) { animation-delay: 0ms; }
-    .portfolio-items .col:nth-child(2) { animation-delay: 85ms; }
-    .portfolio-items .col:nth-child(3) { animation-delay: 170ms; }
-    .portfolio-items .col:nth-child(4) { animation-delay: 255ms; }
-    .portfolio-items .col:nth-child(5) { animation-delay: 340ms; }
-    .portfolio-items .col:nth-child(6) { animation-delay: 425ms; }
-    .portfolio-items .col:nth-child(7) { animation-delay: 510ms; }
-    .portfolio-items .col:nth-child(8) { animation-delay: 595ms; }
-    .portfolio-items .col:nth-child(9) { animation-delay: 680ms; }
-    .portfolio-items .col:nth-child(10) { animation-delay: 765ms; }
-    
-    /* Responsive Breakpoints - Exact Salient Behavior */
-    @media (max-width: 1400px) {
-      .portfolio-items.masonry-items {
-        grid-template-columns: repeat(3, 1fr);
-        max-width: 1200px;
-      }
+    .portfolio-items.animated-in .col .inner-wrap {
+      opacity: 1;
     }
     
-    @media (max-width: 999px) {
-      .portfolio-items.masonry-items {
-        grid-template-columns: repeat(2, 1fr);
-        max-width: 900px;
-      }
-      
-      /* Wide items become regular width on tablet */
-      .portfolio-items .col.wide,
-      .portfolio-items .col.wide_tall {
-        grid-column-end: span 1;
-      }
-      
-      .portfolio-items .col.wide_tall {
-        grid-row-end: span 60; /* Becomes regular height */
-      }
-    }
-    
-    @media (max-width: 690px) {
-      .portfolio-items.masonry-items {
-        grid-template-columns: 1fr;
-        max-width: 450px;
-      }
-      
-      /* All items become regular size on mobile */
-      .portfolio-items .col.wide,
-      .portfolio-items .col.wide_tall {
-        grid-column-end: span 1;
-        grid-row-end: span 60;
-      }
-    }
-    
-    /* Debug Info */
-    .debug-info {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: rgba(0,0,0,0.8);
-      color: white;
-      padding: 10px 15px;
-      border-radius: 5px;
-      font-family: monospace;
-      font-size: 12px;
-      z-index: 9999;
-    }
+    /* Staggered animation with 85ms delay for Photography mode */
+    .portfolio-items .col:nth-child(1) .inner-wrap { animation-delay: 0ms; }
+    .portfolio-items .col:nth-child(2) .inner-wrap { animation-delay: 85ms; }
+    .portfolio-items .col:nth-child(3) .inner-wrap { animation-delay: 170ms; }
+    .portfolio-items .col:nth-child(4) .inner-wrap { animation-delay: 255ms; }
+    .portfolio-items .col:nth-child(5) .inner-wrap { animation-delay: 340ms; }
+    .portfolio-items .col:nth-child(6) .inner-wrap { animation-delay: 425ms; }
+    .portfolio-items .col:nth-child(7) .inner-wrap { animation-delay: 510ms; }
+    .portfolio-items .col:nth-child(8) .inner-wrap { animation-delay: 595ms; }
   </style>
 
-  <div class="salient-demo-header">
-    <h1>Salient Photography Demo</h1>
-    <p>Exact Masonry Replication with Mixed Sizes</p>
-    <div style="margin-top: 20px;">
-      <span class="spec-badge">450×600 (1×1)</span>
-      <span class="spec-badge">900×600 (2×1)</span>
-      <span class="spec-badge">900×1200 (2×2)</span>
-    </div>
+  <div class="demo-header">
+    <h1>Salient Photography Masonry</h1>
+    <p>Exact replication with Isotope.js</p>
   </div>
 
-  <div class="portfolio-items masonry-items" data-masonry-type="photography" data-ps="6">
-    {masonryImages.map((image, index) => {
-      const titles = [
-        'High-End Fashion', 'Restaurant Week', 'Claire Swimming',
-        'The Jungle King', 'Purple Flowers', 'Urban Lifestyle',
-        'Creative Portrait', 'Abstract Art', 'Nature Scene'
-      ];
-      
-      return (
-        <div 
-          class={`col elastic-portfolio-item ${image.size}`}
-          data-delay-amount={index}
-        >
-          <img 
-            src={`/salient-demo-images/${image.src}`}
-            alt={titles[index % titles.length]}
-            width={image.width}
-            height={image.height}
-            loading={index < 4 ? "eager" : "lazy"}
-          />
-          <div class="work-info">
-            <h3>{titles[index % titles.length]}</h3>
-            <div class="category">
-              {image.size === 'regular' ? 'Portrait' : 
-               image.size === 'wide' ? 'Landscape' : 'Featured'}
+  <div class="portfolio-wrap">
+    <div class="portfolio-loading" id="portfolio-loading">Initializing masonry...</div>
+    
+    <div class="portfolio-items masonry-items" 
+         data-masonry-type="photography" 
+         data-gutter="3px"
+         data-ps="6"
+         style="position: relative;">
+      {salientImages.map((image, index) => (
+        <div class={`col elastic-portfolio-item ${image.size}`} 
+             data-delay-amount={index}>
+          <div class="inner-wrap">
+            <div class="work-item">
+              <img 
+                src={`/salient-demo-images/${image.src}`}
+                width={image.width}
+                height={image.height}
+                alt=""
+              />
+              <div class="work-info-bg"></div>
+              <div class="work-info">
+                <h3>Project Title</h3>
+                <p>{image.size === 'regular' ? 'Portrait' : 
+                   image.size === 'wide' ? 'Landscape' : 'Featured'}</p>
+              </div>
             </div>
           </div>
         </div>
-      );
-    })}
+      ))}
+    </div>
   </div>
 
-  <div class="debug-info">
-    <div>Masonry Type: Photography</div>
-    <div>Animation: 85ms stagger</div>
-    <div>Grid: CSS Grid (10px rows)</div>
-  </div>
-
+  <!-- Load Isotope from CDN -->
+  <script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
+  <script src="https://unpkg.com/isotope-layout@3/dist/isotope.pkgd.min.js"></script>
+  
   <script>
-    // Optional: Add Isotope.js for perfect gap-filling
-    // For now, using pure CSS Grid which works great for this layout
-    
-    // Log the layout for debugging
-    const items = document.querySelectorAll('.portfolio-items .col');
-    console.log('Salient Photography Demo Loaded');
-    console.log('Total items:', items.length);
-    console.log('Layout distribution:');
-    console.log('- Regular (1×1):', document.querySelectorAll('.col.regular').length);
-    console.log('- Wide (2×1):', document.querySelectorAll('.col.wide').length);
-    console.log('- Wide & Tall (2×2):', document.querySelectorAll('.col.wide_tall').length);
+    document.addEventListener('DOMContentLoaded', function() {
+      const container = document.querySelector('.portfolio-items');
+      const loading = document.getElementById('portfolio-loading');
+      
+      // Wait for images to load
+      imagesLoaded(container, function() {
+        // Hide loading
+        loading.style.display = 'none';
+        
+        // Initialize Isotope with Salient settings
+        const iso = new Isotope(container, {
+          itemSelector: '.col',
+          layoutMode: 'masonry',
+          masonry: {
+            columnWidth: '.col.regular',
+            gutter: 0
+          },
+          percentPosition: false,
+          transitionDuration: '0.3s',
+          hiddenStyle: {
+            opacity: 0,
+            transform: 'translateY(30px)'
+          },
+          visibleStyle: {
+            opacity: 1,
+            transform: 'translateY(0)'
+          }
+        });
+        
+        // Add class to show it's initialized
+        container.classList.add('isotope-initialized');
+        
+        // Trigger animation
+        setTimeout(() => {
+          container.classList.add('animated-in');
+        }, 100);
+        
+        // Handle window resize
+        let resizeTimer;
+        window.addEventListener('resize', function() {
+          clearTimeout(resizeTimer);
+          resizeTimer = setTimeout(function() {
+            iso.layout();
+          }, 250);
+        });
+        
+        console.log('Salient Photography Masonry initialized with Isotope.js');
+      });
+    });
   </script>
 </Layout>
