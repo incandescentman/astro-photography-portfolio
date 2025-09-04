@@ -56,7 +56,10 @@
       "Read(/Users/jay/Downloads/salient/salient/**)",
       "Read(/Users/jay/Downloads/salient/salient/**)",
       "Read(/Users/jay/Downloads/salient/salient/**)",
-      "Bash(identify:*)"
+      "Bash(identify:*)",
+      "Bash(for f in /Users/jay/Library/CloudStorage/Dropbox/github/photos-jaydixit/public/highlights/*.jpg)",
+      "Bash(do identify:*)",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

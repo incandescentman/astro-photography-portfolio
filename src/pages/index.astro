@@ -1,116 +1,15 @@
 ---
-import fs from 'fs';
-import path from 'path';
 import MainLayout from '../layouts/MainLayout.astro';
+// Import image configuration
+import { images } from '../data/homepage-images.js';
 
-// Get the highlights photos - EXACT ORDER AND SIZES from WordPress site
-const highlightsDir = path.join(process.cwd(), 'public/highlights');
-
-// Define photos with exact sizes matching WordPress site
-// Order optimized to minimize gaps in 5-column layout
-const highlightPhotos = [
-  // Start with wide_tall to anchor the layout
-  {
-    src: '/highlights/vanessa-kirby.jpg',
-    filename: 'vanessa-kirby.jpg',
-    caption: 'Vanessa Kirby',
-    size: 'wide_tall' // 2x2 - spans 2 columns, 2 rows
-  },
-  
-  // Fill around it with regular items
-  {
-    src: '/highlights/dixit_nobel-physics.jpg',
-    filename: 'dixit_nobel-physics.jpg',
-    caption: 'Nobel Prize in Physics Ceremony',
-    size: 'regular'
-  },
-  {
-    src: '/highlights/judd-apatow.jpg',
-    filename: 'judd-apatow.jpg', 
-    caption: 'Judd Apatow',
-    size: 'regular'
-  },
-  {
-    src: '/highlights/jeremy.jpg',
-    filename: 'jeremy.jpg',
-    caption: 'Jeremy Strong',
-    size: 'regular'
-  },
-  
-  // Add a wide to span 2 columns
-  {
-    src: '/highlights/Lisa_Gilroy_at_SXSW_in_2025-1.jpg',
-    filename: 'Lisa_Gilroy_at_SXSW_in_2025-1.jpg',
-    caption: 'Lisa Gilroy at SXSW in 2025',
-    size: 'wide' // 2x1 - spans 2 columns
-  },
-  
-  // More regular items to fill gaps
-  {
-    src: '/highlights/jeremy-3.jpg',
-    filename: 'jeremy-3.jpg',
-    caption: 'Jeremy Strong',
-    size: 'regular'
-  },
-  {
-    src: '/highlights/conan.jpg',
-    filename: 'conan.jpg',
-    caption: 'Conan O\'Brien',
-    size: 'regular'
-  },
-  
-  // Another wide_tall for visual interest
-  {
-    src: '/highlights/jay-dixit_red-carpet_01130.jpg',
-    filename: 'jay-dixit_red-carpet_01130.jpg',
-    caption: 'Jay Dixit on the Red Carpet',
-    size: 'wide_tall' // 2x2
-  },
-  
-  // Continue with rest of photos
-  {
-    src: '/highlights/jeremy-11.jpg',
-    filename: 'jeremy-11.jpg',
-    caption: 'Jeremy',
-    size: 'regular'
-  },
-  {
-    src: '/highlights/vinod.jpg',
-    filename: 'vinod.jpg',
-    caption: 'Vinod',
-    size: 'regular'
-  },
-  {
-    src: '/highlights/conan.jpg',
-    filename: 'conan.jpg',
-    caption: 'Conan O\'Brien',
-    size: 'regular'
-  },
-  {
-    src: '/highlights/jay-dixit_red-carpet_05923-1.jpg',
-    filename: 'jay-dixit_red-carpet_05923-1.jpg',
-    caption: 'Jay Dixit Red Carpet',
-    size: 'regular'
-  },
-  {
-    src: '/highlights/jeremy-6.jpg',
-    filename: 'jeremy-6.jpg',
-    caption: 'Jeremy',
-    size: 'regular'
-  },
-  {
-    src: '/highlights/jeremy-4.jpg',
-    filename: 'jeremy-4.jpg',
-    caption: 'Jeremy',
-    size: 'regular'
-  },
-  {
-    src: '/highlights/vinod-4.jpg',
-    filename: 'vinod-4.jpg',
-    caption: 'Vinod',
-    size: 'regular'
-  }
-];
+// Build the photo array from MDX configuration
+const highlightPhotos = images.map(img => ({
+  src: `/highlights/${img.filename}`,
+  filename: img.filename,
+  caption: img.caption,
+  size: img.size
+}));
 ---
 
 <MainLayout>
@@ -367,13 +266,15 @@ const highlightPhotos = [
     
     // Wait for images to load, then initialize Isotope
     imagesLoaded(container, function() {
-      // Initialize Isotope for masonry layout with mixed sizes
+      // Initialize Isotope with masonry layout
       const iso = new Isotope(container, {
         itemSelector: '.col',
         layoutMode: 'masonry',
         masonry: {
-          columnWidth: '.col.regular', // Use regular size as base unit
-          gutter: 0
+          columnWidth: '.col.regular',
+          gutter: 0,
+          fitWidth: false,
+          horizontalOrder: true // Items flow left-to-right first
         },
         percentPosition: false,
         transitionDuration: '0.3s',
