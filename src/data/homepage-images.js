@@ -5,6 +5,10 @@
 // - `portrait` - Standard portrait size (1 column × 1 row)
 // - `landscape` - Landscape/horizontal (2 columns × 1 row) 
 // - `xlportrait` - Extra-large portrait (2 columns × 2 rows) - featured images
+//
+// Order Control:
+// - Set `order: 1, 2, 3...` to force specific positions
+// - Images without `order` will be auto-arranged by the optimizer
 
 export const images = [
 

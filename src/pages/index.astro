@@ -3,6 +3,10 @@ import MainLayout from '../layouts/MainLayout.astro';
 // Import image configuration
 import { images } from '../data/homepage-images.js';
 
+// Set this to false to use your manual image order from homepage-images.js
+// Set to true to automatically optimize order to minimize gaps
+const AUTO_OPTIMIZE_ORDER = false;
+
 // Algorithm to optimize image order for minimal gaps
 function optimizeImageOrder(images) {
   // Separate images by size
@@ -100,11 +104,11 @@ const highlightPhotos = optimizedImages.map(img => ({
 </MainLayout>
 
 <style>
-/* Portfolio container - full width, no margins */
+/* Portfolio container - full width with top spacing for navbar */
 .portfolio-wrap {
   position: relative;
   margin: 0;
-  padding: 0;
+  padding: 80px 0 0 0; /* Top padding to account for fixed navbar */
   width: 100%;
 }
 
