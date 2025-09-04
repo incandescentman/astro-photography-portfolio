@@ -132,7 +132,7 @@ const highlightPhotos = [
 </MainLayout>
 
 <style>
-/* Portfolio container - full width */
+/* Portfolio container - full width, no margins */
 .portfolio-wrap {
   position: relative;
   margin: 0;
@@ -140,11 +140,11 @@ const highlightPhotos = [
   width: 100%;
 }
 
-/* Masonry Container - full width */
+/* Masonry Container */
 .portfolio-items {
   position: relative;
   width: 100%;
-  margin: 0;
+  margin: 0 auto;
   padding: 0;
   opacity: 0;
   transition: opacity 0.3s ease;
@@ -154,44 +154,66 @@ const highlightPhotos = [
   opacity: 1;
 }
 
-/* Base column width - 3 column layout as per WordPress site */
+/* Base column width - Responsive percentage based */
 .portfolio-items .col {
-  width: 33.333%; /* 3 columns base */
-  padding: 2px; /* Minimal gap between photos */
+  width: 20%; /* 5 columns to fill width */
+  padding: 3px;
   box-sizing: border-box;
+  float: left;
 }
 
-/* Size variations matching Salient Photography mode */
+/* Size variations */
 .portfolio-items .col.regular {
-  width: 33.333%; /* 1 column width */
+  width: 20%; /* 1 unit - 5 columns */
 }
 
 .portfolio-items .col.wide {
-  width: 66.666%; /* 2 columns width - landscape */
+  width: 40%; /* 2 units wide */
 }
 
 .portfolio-items .col.tall {
-  width: 33.333%; /* 1 column width but taller */
+  width: 20%; /* 1 unit width but taller */
 }
 
 .portfolio-items .col.wide_tall {
-  width: 66.666%; /* 2 columns width, 2x height - dominant 4x images */
+  width: 40%; /* 2 units wide */
 }
 
 /* Responsive breakpoints */
-@media only screen and (max-width: 990px) {
-  .portfolio-items .col,
+@media only screen and (max-width: 1600px) {
+  .portfolio-items .col.regular,
+  .portfolio-items .col.tall {
+    width: 25%; /* 4 columns */
+  }
+  .portfolio-items .col.wide,
+  .portfolio-items .col.wide_tall {
+    width: 50%; /* 2x width */
+  }
+}
+
+@media only screen and (max-width: 1200px) {
+  .portfolio-items .col.regular,
+  .portfolio-items .col.tall {
+    width: 33.333%; /* 3 columns */
+  }
+  .portfolio-items .col.wide,
+  .portfolio-items .col.wide_tall {
+    width: 66.666%; /* 2x width */
+  }
+}
+
+@media only screen and (max-width: 768px) {
   .portfolio-items .col.regular,
   .portfolio-items .col.tall {
     width: 50%; /* 2 columns */
   }
   .portfolio-items .col.wide,
   .portfolio-items .col.wide_tall {
-    width: 100%; /* Full width on smaller screens */
+    width: 100%; /* Full width */
   }
 }
 
-@media only screen and (max-width: 690px) {
+@media only screen and (max-width: 480px) {
   .portfolio-items .col,
   .portfolio-items .col.regular,
   .portfolio-items .col.wide,
