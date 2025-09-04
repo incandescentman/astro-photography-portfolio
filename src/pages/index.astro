@@ -3,47 +3,113 @@ import fs from 'fs';
 import path from 'path';
 import MainLayout from '../layouts/MainLayout.astro';
 
-// Get the highlights photos (downloaded from live site)
+// Get the highlights photos - EXACT ORDER AND SIZES from WordPress site
 const highlightsDir = path.join(process.cwd(), 'public/highlights');
-const highlightPhotos = [];
 
-if (fs.existsSync(highlightsDir)) {
-  const imageFiles = fs.readdirSync(highlightsDir).filter(f => /\.(jpg|jpeg|png|webp)$/i.test(f));
+// Define photos with exact sizes matching WordPress site
+// Sizes: regular (1x1), wide (2x1), tall (1x2), wide_tall (2x2), quad (2x2 but taller)
+const highlightPhotos = [
+  // Column 1 - Left (2 stacked portraits)
+  {
+    src: '/highlights/dixit_nobel-physics.jpg',
+    filename: 'dixit_nobel-physics.jpg',
+    caption: 'Nobel Prize in Physics Ceremony',
+    size: 'regular' // Takes ~50% of column height
+  },
+  {
+    src: '/highlights/judd-apatow.jpg',
+    filename: 'judd-apatow.jpg', 
+    caption: 'Judd Apatow',
+    size: 'regular' // Takes ~50% of column height
+  },
   
-  // Define specific captions for the live photos
-  const captions = {
-    'dixit_nobel-physics.jpg': 'Nobel Prize in Physics Ceremony',
-    'vanessa-kirby.jpg': 'Vanessa Kirby',
-    'Lisa_Gilroy_at_SXSW_in_2025-1.jpg': 'Lisa Gilroy at SXSW in 2025',
-    'jay-dixit_red-carpet_01130.jpg': 'Jay Dixit on the Red Carpet',
-    'jeremy.jpg': 'Jeremy',
-    'jeremy-11.jpg': 'Jeremy',
-    'judd-apatow.jpg': 'Judd Apatow',
-    'jeremy-3.jpg': 'Jeremy',
-    'vinod.jpg': 'Vinod',
-    'conan.jpg': 'Conan O\'Brien',
-    'jay-dixit_red-carpet_05923-1.jpg': 'Jay Dixit Red Carpet',
-    'jeremy-6.jpg': 'Jeremy',
-    'jeremy-4.jpg': 'Jeremy',
-    'vinod-4.jpg': 'Vinod'
-  };
+  // Column 2 - Middle (1 tall central portrait)
+  {
+    src: '/highlights/vanessa-kirby.jpg',
+    filename: 'vanessa-kirby.jpg',
+    caption: 'Vanessa Kirby',
+    size: 'wide_tall' // 4x size - dominant image spanning 2x2
+  },
   
-  imageFiles.forEach(file => {
-    highlightPhotos.push({
-      src: `/highlights/${file}`,
-      filename: file,
-      caption: captions[file] || path.parse(file).name,
-      tags: ['featured', 'highlights']
-    });
-  });
-}
+  // Column 3 - Right (3 stacked images)
+  {
+    src: '/highlights/Lisa_Gilroy_at_SXSW_in_2025-1.jpg',
+    filename: 'Lisa_Gilroy_at_SXSW_in_2025-1.jpg',
+    caption: 'Lisa Gilroy at SXSW in 2025',
+    size: 'wide' // Landscape orientation
+  },
+  {
+    src: '/highlights/jeremy.jpg',
+    filename: 'jeremy.jpg',
+    caption: 'Jeremy Strong',
+    size: 'regular' // Portrait, middle of right stack
+  },
+  {
+    src: '/highlights/jeremy-3.jpg',
+    filename: 'jeremy-3.jpg',
+    caption: 'Jeremy Strong',
+    size: 'regular' // Portrait, bottom of right stack
+  },
+  
+  // Column 4 continuation
+  {
+    src: '/highlights/jay-dixit_red-carpet_01130.jpg',
+    filename: 'jay-dixit_red-carpet_01130.jpg',
+    caption: 'Jay Dixit on the Red Carpet',
+    size: 'wide_tall' // 4x size - another dominant image
+  },
+  
+  // Continue with rest of photos
+  {
+    src: '/highlights/jeremy-11.jpg',
+    filename: 'jeremy-11.jpg',
+    caption: 'Jeremy',
+    size: 'regular'
+  },
+  {
+    src: '/highlights/vinod.jpg',
+    filename: 'vinod.jpg',
+    caption: 'Vinod',
+    size: 'regular'
+  },
+  {
+    src: '/highlights/conan.jpg',
+    filename: 'conan.jpg',
+    caption: 'Conan O\'Brien',
+    size: 'regular'
+  },
+  {
+    src: '/highlights/jay-dixit_red-carpet_05923-1.jpg',
+    filename: 'jay-dixit_red-carpet_05923-1.jpg',
+    caption: 'Jay Dixit Red Carpet',
+    size: 'regular'
+  },
+  {
+    src: '/highlights/jeremy-6.jpg',
+    filename: 'jeremy-6.jpg',
+    caption: 'Jeremy',
+    size: 'regular'
+  },
+  {
+    src: '/highlights/jeremy-4.jpg',
+    filename: 'jeremy-4.jpg',
+    caption: 'Jeremy',
+    size: 'regular'
+  },
+  {
+    src: '/highlights/vinod-4.jpg',
+    filename: 'vinod-4.jpg',
+    caption: 'Vinod',
+    size: 'regular'
+  }
+];
 ---
 
 <MainLayout>
   <div class="portfolio-wrap">
     <div class="portfolio-items masonry-items" data-masonry-type="photography">
       {highlightPhotos.map((photo, index) => (
-        <div class="col elastic-portfolio-item" data-delay-amount={index}>
+        <div class={`col elastic-portfolio-item ${photo.size}`} data-delay-amount={index}>
           <div class="inner-wrap">
             <div class="work-item">
               <a href={photo.src} data-gallery="main-gallery">
@@ -88,35 +154,50 @@ if (fs.existsSync(highlightsDir)) {
   opacity: 1;
 }
 
-/* Individual Items - More columns for full-width layout */
+/* Base column width - 3 column layout as per WordPress site */
 .portfolio-items .col {
-  width: 20%; /* 5 columns on large screens */
+  width: 33.333%; /* 3 columns base */
   padding: 2px; /* Minimal gap between photos */
   box-sizing: border-box;
 }
 
-/* Responsive columns */
-@media only screen and (max-width: 1600px) {
-  .portfolio-items .col {
-    width: 25%; /* 4 columns */
-  }
+/* Size variations matching Salient Photography mode */
+.portfolio-items .col.regular {
+  width: 33.333%; /* 1 column width */
 }
 
-@media only screen and (max-width: 1300px) {
-  .portfolio-items .col {
-    width: 33.333%; /* 3 columns */
-  }
+.portfolio-items .col.wide {
+  width: 66.666%; /* 2 columns width - landscape */
 }
 
+.portfolio-items .col.tall {
+  width: 33.333%; /* 1 column width but taller */
+}
+
+.portfolio-items .col.wide_tall {
+  width: 66.666%; /* 2 columns width, 2x height - dominant 4x images */
+}
+
+/* Responsive breakpoints */
 @media only screen and (max-width: 990px) {
-  .portfolio-items .col {
+  .portfolio-items .col,
+  .portfolio-items .col.regular,
+  .portfolio-items .col.tall {
     width: 50%; /* 2 columns */
+  }
+  .portfolio-items .col.wide,
+  .portfolio-items .col.wide_tall {
+    width: 100%; /* Full width on smaller screens */
   }
 }
 
 @media only screen and (max-width: 690px) {
-  .portfolio-items .col {
-    width: 100%; /* 1 column */
+  .portfolio-items .col,
+  .portfolio-items .col.regular,
+  .portfolio-items .col.wide,
+  .portfolio-items .col.tall,
+  .portfolio-items .col.wide_tall {
+    width: 100%; /* 1 column on mobile */
   }
 }
 
@@ -238,12 +319,12 @@ if (fs.existsSync(highlightsDir)) {
     
     // Wait for images to load, then initialize Isotope
     imagesLoaded(container, function() {
-      // Initialize Isotope for masonry layout
+      // Initialize Isotope for masonry layout with mixed sizes
       const iso = new Isotope(container, {
         itemSelector: '.col',
         layoutMode: 'masonry',
         masonry: {
-          columnWidth: '.col',
+          columnWidth: '.col.regular', // Use regular size as base unit
           gutter: 0
         },
         percentPosition: false,
