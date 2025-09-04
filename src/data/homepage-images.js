@@ -44,9 +44,14 @@ export const images = [
     size: 'regular'
   },
   {
+    filename: 'jeremy-6.jpg',
+    caption: 'Jeremy',
+    size: 'regular' // Fill the gap before the wide_tall
+  },
+  {
     filename: 'jay-dixit_red-carpet_01130.jpg',
     caption: 'Jay Dixit on the Red Carpet',
-    size: 'wide_tall' // FEATURE IMAGE
+    size: 'wide_tall' // FEATURE IMAGE - now no gap to its left
   },
   {
     filename: 'jeremy-11.jpg',
@@ -61,11 +66,6 @@ export const images = [
   {
     filename: 'jay-dixit_red-carpet_05923-1.jpg',
     caption: 'Jay Dixit Red Carpet',
-    size: 'regular'
-  },
-  {
-    filename: 'jeremy-6.jpg',
-    caption: 'Jeremy',
     size: 'regular'
   },
   {

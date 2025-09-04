@@ -3,8 +3,70 @@ import MainLayout from '../layouts/MainLayout.astro';
 // Import image configuration
 import { images } from '../data/homepage-images.js';
 
-// Build the photo array from MDX configuration
-const highlightPhotos = images.map(img => ({
+// Algorithm to optimize image order for minimal gaps
+function optimizeImageOrder(images) {
+  // Separate images by size
+  const sizeGroups = {
+    wide_tall: [], // 2x2 - largest, place first for anchor points
+    wide: [],      // 2x1 - landscape 
+    tall: [],      // 1x2 - tall portrait
+    regular: []    // 1x1 - standard, use to fill gaps
+  };
+  
+  images.forEach(img => {
+    sizeGroups[img.size].push(img);
+  });
+  
+  const optimized = [];
+  
+  // Strategy: Place large items first, then fill gaps with smaller items
+  // 1. Start with a wide_tall to anchor the layout
+  if (sizeGroups.wide_tall.length > 0) {
+    optimized.push(sizeGroups.wide_tall.shift());
+  }
+  
+  // 2. Add some regular items to fill around it (need 3-4 for a 5-column grid)
+  const regularToAdd = Math.min(3, sizeGroups.regular.length);
+  for (let i = 0; i < regularToAdd; i++) {
+    if (sizeGroups.regular.length > 0) {
+      optimized.push(sizeGroups.regular.shift());
+    }
+  }
+  
+  // 3. Add wide items (they fit well after regulars)
+  while (sizeGroups.wide.length > 0 && optimized.length < 7) {
+    optimized.push(sizeGroups.wide.shift());
+    // After each wide, add a regular to fill the gap
+    if (sizeGroups.regular.length > 0) {
+      optimized.push(sizeGroups.regular.shift());
+    }
+  }
+  
+  // 4. Place remaining wide_tall items with regular items between
+  while (sizeGroups.wide_tall.length > 0) {
+    // Add 1-2 regular items before the next wide_tall to prevent gaps
+    const fillCount = Math.min(2, sizeGroups.regular.length);
+    for (let i = 0; i < fillCount; i++) {
+      if (sizeGroups.regular.length > 0) {
+        optimized.push(sizeGroups.regular.shift());
+      }
+    }
+    optimized.push(sizeGroups.wide_tall.shift());
+  }
+  
+  // 5. Add remaining items
+  [...sizeGroups.wide, ...sizeGroups.tall, ...sizeGroups.regular].forEach(img => {
+    optimized.push(img);
+  });
+  
+  return optimized;
+}
+
+// Optimize the image order
+const optimizedImages = optimizeImageOrder(images);
+
+// Build the photo array from optimized configuration
+const highlightPhotos = optimizedImages.map(img => ({
   src: `/highlights/${img.filename}`,
   filename: img.filename,
   caption: img.caption,
@@ -266,7 +328,7 @@ const highlightPhotos = images.map(img => ({
     
     // Wait for images to load, then initialize Isotope
     imagesLoaded(container, function() {
-      // Initialize Isotope with masonry layout
+      // Initialize Isotope with optimized masonry layout
       const iso = new Isotope(container, {
         itemSelector: '.col',
         layoutMode: 'masonry',
@@ -274,10 +336,11 @@ const highlightPhotos = images.map(img => ({
           columnWidth: '.col.regular',
           gutter: 0,
           fitWidth: false,
-          horizontalOrder: true // Items flow left-to-right first
+          horizontalOrder: false // Vertical order fills columns top to bottom
         },
         percentPosition: false,
         transitionDuration: '0.3s',
+        sortBy: 'original-order',
         hiddenStyle: {
           opacity: 0,
           transform: 'translateY(30px)'
@@ -287,6 +350,11 @@ const highlightPhotos = images.map(img => ({
           transform: 'translateY(0)'
         }
       });
+      
+      // Optional: Force relayout after a delay to ensure proper positioning
+      setTimeout(() => {
+        iso.layout();
+      }, 100);
       
       // Add initialized class
       container.classList.add('isotope-initialized');
