@@ -215,12 +215,50 @@ function optimizeImageOrder(images) {
 
       if (xlIndex !== -1) {
         const [wide] = result.splice(xlIndex, 1);
-        // Enforce 4 | XL | 4 when runLen >= 8
-        const split = runLen >= 8 ? 4 : Math.floor(runLen / 2);
-        const insertAt = Math.min(start + split, result.length);
-        result.splice(insertAt, 0, wide);
-        // If we inserted an xlportrait and have exactly 8 portraits, this yields 4|XL|4
-        i = insertAt + 1;
+        // Build portrait-width columns for this run by pairing single portraits into stacked columns
+        const segment = result.slice(start, end);
+        const columns = [];
+        let carry = null;
+        for (const it of segment) {
+          if (it && it.type === 'stacked') {
+            // flush carry as single column before pushing stacked column
+            if (carry) { columns.push(carry); carry = null; }
+            columns.push(it);
+          } else if (it && !it.type && it.size === 'portrait') {
+            if (!carry) {
+              carry = it; // hold until we have a pair
+            } else {
+              columns.push({ type: 'stacked', items: [carry, it] });
+              carry = null;
+            }
+          } else {
+            // Non-portrait shouldn't be in this run, but guard anyway
+            if (carry) { columns.push(carry); carry = null; }
+            columns.push(it);
+          }
+        }
+        if (carry) { columns.push(carry); carry = null; }
+
+        // Decide insertion point at column level
+        const splitCols = columns.length >= 8 ? 4 : Math.floor(columns.length / 2);
+        const leftCols = columns.slice(0, splitCols);
+        const rightCols = columns.slice(splitCols);
+        const rebuilt = [...leftCols, wide, ...rightCols];
+
+        // Replace the original segment with rebuilt columns back into flat items
+        const flat = [];
+        for (const col of rebuilt) {
+          if (col && col.type === 'stacked') {
+            flat.push(col); // render as a single item (we have renderer for stacked)
+          } else {
+            flat.push(col);
+          }
+        }
+
+        // Splice back into result
+        result.splice(start, end - start, ...flat);
+        // Move i past the rebuilt block
+        i = start + flat.length;
         continue;
       }
     }
