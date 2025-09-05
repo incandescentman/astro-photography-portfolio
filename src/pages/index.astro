@@ -215,11 +215,11 @@ function optimizeImageOrder(images) {
 
       if (xlIndex !== -1) {
         const [wide] = result.splice(xlIndex, 1);
-        // If very long run, split roughly in half; for 8 columns, place after 4
+        // Enforce 4 | XL | 4 when runLen >= 8
         const split = runLen >= 8 ? 4 : Math.floor(runLen / 2);
         const insertAt = Math.min(start + split, result.length);
         result.splice(insertAt, 0, wide);
-        // Advance i past the inserted item
+        // If we inserted an xlportrait and have exactly 8 portraits, this yields 4|XL|4
         i = insertAt + 1;
         continue;
       }
