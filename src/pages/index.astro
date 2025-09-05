@@ -43,20 +43,28 @@ function optimizeImageOrder(images) {
   const optimizedUnordered = [];
   
   // Strategy: Place large items first, then fill gaps with smaller items
-  // 1. Start with an xlportrait to anchor the layout
-  if (sizeGroups.xlportrait.length > 0) {
-    optimizedUnordered.push(sizeGroups.xlportrait.shift());
-  }
-  
-  // 2. Add some portrait items to fill around it (need 3-4 for a 5-column grid)
-  const portraitToAdd = Math.min(3, sizeGroups.portrait.length);
-  for (let i = 0; i < portraitToAdd; i++) {
+  // 1. Add 2 portrait items first
+  const initialPortraits = Math.min(2, sizeGroups.portrait.length);
+  for (let i = 0; i < initialPortraits; i++) {
     if (sizeGroups.portrait.length > 0) {
       optimizedUnordered.push(sizeGroups.portrait.shift());
     }
   }
   
-  // 3. Add landscape items (they fit well after portraits)
+  // 2. Then add an xlportrait to anchor the layout
+  if (sizeGroups.xlportrait.length > 0) {
+    optimizedUnordered.push(sizeGroups.xlportrait.shift());
+  }
+  
+  // 3. Add 2 more portrait items to fill the right side
+  const additionalPortraits = Math.min(2, sizeGroups.portrait.length);
+  for (let i = 0; i < additionalPortraits; i++) {
+    if (sizeGroups.portrait.length > 0) {
+      optimizedUnordered.push(sizeGroups.portrait.shift());
+    }
+  }
+  
+  // 4. Add landscape items (they fit well after portraits)
   while (sizeGroups.landscape.length > 0 && optimizedUnordered.length < 7) {
     optimizedUnordered.push(sizeGroups.landscape.shift());
     // After each landscape, add a portrait to fill the gap
@@ -65,7 +73,7 @@ function optimizeImageOrder(images) {
     }
   }
   
-  // 4. Place remaining xlportrait items with portrait items between
+  // 5. Place remaining xlportrait items with portrait items between
   while (sizeGroups.xlportrait.length > 0) {
     // Add 1-2 portrait items before the next xlportrait to prevent gaps
     const fillCount = Math.min(2, sizeGroups.portrait.length);
@@ -77,7 +85,7 @@ function optimizeImageOrder(images) {
     optimizedUnordered.push(sizeGroups.xlportrait.shift());
   }
   
-  // 5. Add remaining items
+  // 6. Add remaining items
   [...sizeGroups.landscape, ...sizeGroups.portrait].forEach(img => {
     optimizedUnordered.push(img);
   });
@@ -239,6 +247,7 @@ const highlightPhotos = processedImages.map(img => ({
   position: relative;
   overflow: hidden;
   cursor: pointer;
+  margin-bottom: 10px; /* Add vertical spacing between items */
 }
 
 /* Images - fixed aspect ratio with cropping */
