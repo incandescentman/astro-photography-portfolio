@@ -167,7 +167,7 @@ const highlightPhotos = processedImages.map(img => ({
 
 /* Base column width - Responsive percentage based */
 .portfolio-items .col {
-  width: 20%; /* 5 columns to fill width */
+  width: 283px; /* Fixed width for exact 424px height at 2:3 ratio */
   padding: 2px;
   box-sizing: border-box;
   float: left;
@@ -175,45 +175,55 @@ const highlightPhotos = processedImages.map(img => ({
 
 /* Size variations - User-friendly names */
 .portfolio-items .col.portrait {
-  width: 20%; /* 1 unit - 5 columns */
+  width: 283px; /* Fixed width for 424px height */
 }
 
 .portfolio-items .col.landscape {
-  width: 40%; /* 2 units wide */
+  width: 566px; /* 2 units wide */
 }
 
 .portfolio-items .col.xlportrait {
-  width: 40%; /* 2 units wide */
+  width: 566px; /* 2 units wide */
 }
 
 /* Responsive breakpoints */
-@media only screen and (max-width: 1600px) {
+@media only screen and (max-width: 1700px) {
   .portfolio-items .col.portrait {
-    width: 25%; /* 4 columns */
+    width: 250px; /* Slightly smaller */
   }
   .portfolio-items .col.landscape,
   .portfolio-items .col.xlportrait {
-    width: 50%; /* 2x width */
+    width: 500px; /* 2x width */
+  }
+}
+
+@media only screen and (max-width: 1400px) {
+  .portfolio-items .col.portrait {
+    width: 220px; /* Smaller for medium screens */
+  }
+  .portfolio-items .col.landscape,
+  .portfolio-items .col.xlportrait {
+    width: 440px; /* 2x width */
   }
 }
 
 @media only screen and (max-width: 1200px) {
   .portfolio-items .col.portrait {
-    width: 33.333%; /* 3 columns */
+    width: 200px; /* Smaller */
   }
   .portfolio-items .col.landscape,
   .portfolio-items .col.xlportrait {
-    width: 66.666%; /* 2x width */
+    width: 400px; /* 2x width */
   }
 }
 
 @media only screen and (max-width: 768px) {
   .portfolio-items .col.portrait {
-    width: 50%; /* 2 columns */
+    width: 45%; /* 2 columns */
   }
   .portfolio-items .col.landscape,
   .portfolio-items .col.xlportrait {
-    width: 100%; /* Full width */
+    width: 90%; /* Almost full width */
   }
 }
 
