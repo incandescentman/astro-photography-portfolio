@@ -60,7 +60,8 @@
       "Bash(for f in /Users/jay/Library/CloudStorage/Dropbox/github/photos-jaydixit/public/highlights/*.jpg)",
       "Bash(do identify:*)",
       "Bash(done)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []
