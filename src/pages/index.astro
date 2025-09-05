@@ -164,6 +164,70 @@ function optimizeImageOrder(images) {
     }
   }
   
+  // Post-pass: break up long runs of portrait-width columns
+  // Treat both single portraits and stacked pairs as portrait-width columns
+  function isPortraitColumn(item) {
+    if (!item) return false;
+    if (item.type === 'stacked') return true;
+    return !item.type && item.size === 'portrait';
+  }
+  function isXlPortrait(item) {
+    return item && !item.type && item.size === 'xlportrait';
+  }
+  function isLandscape(item) {
+    return item && !item.type && item.size === 'landscape';
+  }
+  
+  let i = 0;
+  while (i < result.length) {
+    // Find a run of consecutive portrait-width columns
+    if (!isPortraitColumn(result[i])) { i++; continue; }
+    const start = i;
+    let end = i;
+    while (end < result.length && isPortraitColumn(result[end])) end++;
+    const runLen = end - start;
+    
+    // If there are too many portrait-width columns in a row, insert a wide item in the middle
+    if (runLen >= 6) {
+      // Prefer an xlportrait; fallback to a landscape
+      let xlIndex = -1;
+      for (let k = end; k < result.length; k++) {
+        if (isXlPortrait(result[k])) { xlIndex = k; break; }
+      }
+      // If none after, try before the run
+      if (xlIndex === -1) {
+        for (let k = start - 1; k >= 0; k--) {
+          if (isXlPortrait(result[k])) { xlIndex = k; break; }
+        }
+      }
+      // If still none, try landscape
+      let wideWasLandscape = false;
+      if (xlIndex === -1) {
+        for (let k = end; k < result.length; k++) {
+          if (isLandscape(result[k])) { xlIndex = k; wideWasLandscape = true; break; }
+        }
+        if (xlIndex === -1) {
+          for (let k = start - 1; k >= 0; k--) {
+            if (isLandscape(result[k])) { xlIndex = k; wideWasLandscape = true; break; }
+          }
+        }
+      }
+
+      if (xlIndex !== -1) {
+        const [wide] = result.splice(xlIndex, 1);
+        // If very long run, split roughly in half; for 8 columns, place after 4
+        const split = runLen >= 8 ? 4 : Math.floor(runLen / 2);
+        const insertAt = Math.min(start + split, result.length);
+        result.splice(insertAt, 0, wide);
+        // Advance i past the inserted item
+        i = insertAt + 1;
+        continue;
+      }
+    }
+    
+    i = end; // skip past this run
+  }
+  
   return result;
 }
 
@@ -521,7 +585,7 @@ function mapSingle(img) {
           columnWidth: 320, // Fixed column width
           gutter: 10, // 10px gap between columns
           fitWidth: true, // Center the grid
-          horizontalOrder: false // Vertical order fills columns completely before moving to next
+          horizontalOrder: true // Preserve left-to-right order to reflect optimizer grouping
         },
         percentPosition: false,
         transitionDuration: '0.3s',
