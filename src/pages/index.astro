@@ -9,17 +9,9 @@ const AUTO_OPTIMIZE_ORDER = true;
 
 // Algorithm to optimize image order for minimal gaps
 function optimizeImageOrder(images) {
-  // Separate images into ordered and unordered
+  // In AUTO_OPTIMIZE_ORDER, ignore manual order and treat all as unordered
   const orderedImages = [];
-  const unorderedImages = [];
-  
-  images.forEach(img => {
-    if (img.order !== undefined) {
-      orderedImages.push(img);
-    } else {
-      unorderedImages.push(img);
-    }
-  });
+  const unorderedImages = images.slice();
   
   // Sort ordered images by their order value
   orderedImages.sort((a, b) => a.order - b.order);
@@ -49,8 +41,12 @@ function optimizeImageOrder(images) {
   // Row 2: xlportrait, landscape (above another xlportrait), landscape
   
   // Row 1 implementation
-  // First column: 2 portraits stacked
-  for (let i = 0; i < 2 && sizeGroups.portrait.length > 0; i++) {
+  // First column: 2 portraits stacked (composite item)
+  if (sizeGroups.portrait.length >= 2) {
+    const p1 = sizeGroups.portrait.shift();
+    const p2 = sizeGroups.portrait.shift();
+    optimizedUnordered.push({ type: 'stacked', items: [p1, p2] });
+  } else if (sizeGroups.portrait.length === 1) {
     optimizedUnordered.push(sizeGroups.portrait.shift());
   }
   
@@ -59,9 +55,15 @@ function optimizeImageOrder(images) {
     optimizedUnordered.push(sizeGroups.xlportrait.shift());
   }
   
-  // Third column: 2 portraits stacked
-  for (let i = 0; i < 2 && sizeGroups.portrait.length > 0; i++) {
-    optimizedUnordered.push(sizeGroups.portrait.shift());
+  // Third column: 2 portraits stacked (composite item)
+  if (sizeGroups.portrait.length >= 2) {
+    const p3 = sizeGroups.portrait.shift();
+    const p4 = sizeGroups.portrait.shift();
+    optimizedUnordered.push({ type: 'stacked', items: [p3, p4] });
+  } else {
+    while (sizeGroups.portrait.length > 0) {
+      optimizedUnordered.push(sizeGroups.portrait.shift());
+    }
   }
   
   // Fourth column: xlportrait
@@ -168,38 +170,63 @@ function optimizeImageOrder(images) {
 // Decide whether to optimize or use manual order
 const processedImages = AUTO_OPTIMIZE_ORDER ? optimizeImageOrder(images) : images;
 
-// Build the photo array from configuration
-const highlightPhotos = processedImages.map(img => ({
-  src: `/highlights/${img.filename}`,
-  filename: img.filename,
-  caption: img.caption || img.filename.replace(/[-_]/g, ' ').replace(/\.\w+$/, ''),
-  size: img.size
-}));
+// Helper to map a single image to render data
+function mapSingle(img) {
+  return {
+    src: `/highlights/${img.filename}`,
+    filename: img.filename,
+    caption: img.caption || img.filename.replace(/[-_]/g, ' ').replace(/\.\w+$/, ''),
+    size: img.size
+  };
+}
 ---
 
 <MainLayout>
   <div class="portfolio-wrap">
     <div class="portfolio-items masonry-items" data-masonry-type="photography">
-      {highlightPhotos.map((photo, index) => (
-        <div class={`col elastic-portfolio-item ${photo.size}`} data-delay-amount={index}>
-          <div class="inner-wrap">
-            <div class="work-item">
-              <a href={photo.src} class="portfolio-lightbox">
-                <img 
-                  src={photo.src} 
-                  alt={photo.caption}
-                  loading="lazy"
-                  data-caption={photo.caption}
-                />
-              </a>
-              <div class="work-info-bg"></div>
-              <div class="work-info">
-                <h3>{photo.caption}</h3>
+      {processedImages.map((item, index) => {
+        if (item && item.type === 'stacked' && Array.isArray(item.items)) {
+          const a = mapSingle(item.items[0]);
+          const b = mapSingle(item.items[1] || item.items[0]);
+          return (
+            <div class={`col elastic-portfolio-item stacked`} data-delay-amount={index}>
+              <div class="inner-wrap">
+                <div class="work-item">
+                  <div class="stacked-pair">
+                    <a href={a.src} class="portfolio-lightbox">
+                      <img src={a.src} alt={a.caption} loading="lazy" data-caption={a.caption} />
+                    </a>
+                    <a href={b.src} class="portfolio-lightbox">
+                      <img src={b.src} alt={b.caption} loading="lazy" data-caption={b.caption} />
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        }
+        const photo = mapSingle(item);
+        return (
+          <div class={`col elastic-portfolio-item ${photo.size}`} data-delay-amount={index}>
+            <div class="inner-wrap">
+              <div class="work-item">
+                <a href={photo.src} class="portfolio-lightbox">
+                  <img 
+                    src={photo.src} 
+                    alt={photo.caption}
+                    loading="lazy"
+                    data-caption={photo.caption}
+                  />
+                </a>
+                <div class="work-info-bg"></div>
+                <div class="work-info">
+                  <h3>{photo.caption}</h3>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   </div>
 </MainLayout>
@@ -241,6 +268,10 @@ const highlightPhotos = processedImages.map(img => ({
   width: 320px; /* 1 column width */
 }
 
+.portfolio-items .col.stacked {
+  width: 320px; /* 1 column width (two portraits stacked) */
+}
+
 .portfolio-items .col.landscape {
   width: 650px; /* 2 columns + gap (320*2 + 10) */
 }
@@ -254,6 +285,9 @@ const highlightPhotos = processedImages.map(img => ({
   .portfolio-items .col.portrait {
     width: 25%; /* 4 columns */
   }
+  .portfolio-items .col.stacked {
+    width: 25%;
+  }
   .portfolio-items .col.landscape,
   .portfolio-items .col.xlportrait {
     width: 50%; /* 2x width */
@@ -263,6 +297,9 @@ const highlightPhotos = processedImages.map(img => ({
 @media only screen and (max-width: 1200px) {
   .portfolio-items .col.portrait {
     width: 33.333%; /* 3 columns */
+  }
+  .portfolio-items .col.stacked {
+    width: 33.333%;
   }
   .portfolio-items .col.landscape,
   .portfolio-items .col.xlportrait {
@@ -274,6 +311,9 @@ const highlightPhotos = processedImages.map(img => ({
   .portfolio-items .col.portrait {
     width: 50%; /* 2 columns */
   }
+  .portfolio-items .col.stacked {
+    width: 50%;
+  }
   .portfolio-items .col.landscape,
   .portfolio-items .col.xlportrait {
     width: 100%; /* Full width */
@@ -283,6 +323,7 @@ const highlightPhotos = processedImages.map(img => ({
 @media only screen and (max-width: 480px) {
   .portfolio-items .col,
   .portfolio-items .col.portrait,
+  .portfolio-items .col.stacked,
   .portfolio-items .col.landscape,
   .portfolio-items .col.xlportrait {
     width: 100%; /* 1 column on mobile */
@@ -315,6 +356,31 @@ const highlightPhotos = processedImages.map(img => ({
 /* Set fixed aspect ratios for each size */
 .portfolio-items .col.portrait .work-item {
   aspect-ratio: 2 / 3; /* Vertical orientation */
+}
+
+.portfolio-items .col.stacked .work-item {
+  height: 970px; /* two portraits + 10px gap */
+}
+
+.portfolio-items .col.stacked .stacked-pair {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* must match masonry gutter */
+  height: 970px;
+}
+
+.portfolio-items .col.stacked .stacked-pair a {
+  display: block;
+  width: 100%;
+  height: 480px; /* each portrait height */
+  overflow: hidden;
+}
+
+.portfolio-items .col.stacked .stacked-pair img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .portfolio-items .col.landscape .work-item {
