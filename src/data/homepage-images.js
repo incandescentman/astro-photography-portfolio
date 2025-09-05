@@ -127,5 +127,10 @@ export const images = [
     filename: 'jeremy-2.jpg',
     size: 'portrait', // 2048x2560 (0.8 ratio - portrait)
     caption: 'Jeremy Strong'
+  },
+  {
+    filename: 'Sydney_Sweeney_at_the_2024_Toronto_International_Film_Festival_(cropped_2).jpg',
+    size: 'xlportrait', // Featured double-size image
+    caption: 'Sydney Sweeney at the 2024 Toronto International Film Festival'
   }
 ];
