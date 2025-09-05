@@ -8,12 +8,14 @@ import NavBar from '../components/NavBar.astro';
 const owner = siteConfig.owner;
 const favicon = siteConfig.favicon;
 const base = import.meta.env.BASE_URL;
+const { frontmatter } = Astro.props as { frontmatter?: Record<string, any> };
+const pageTitle = frontmatter?.title ? `${frontmatter.title} — ${owner}` : owner;
 ---
 
 <html lang="en" class="h-full">
 	<head>
 		<meta charset="utf-8" />
-		<link rel="icon" type="image/x-icon" href={`${base}/${favicon}`} />
+		<link rel="icon" type="image/x-icon" href={`${base}${favicon}`} />
 
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -25,7 +27,7 @@ const base = import.meta.env.BASE_URL;
 
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
-		<title>{owner}</title>
+		<title>{pageTitle}</title>
 	</head>
 	<body>
 		<NavBar />
