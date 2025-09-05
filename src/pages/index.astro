@@ -177,7 +177,8 @@ body {
 /* Base column width - Responsive percentage based */
 .portfolio-items .col {
   width: 283px; /* Fixed width for exact 424px height at 2:3 ratio */
-  padding: 5px; /* 5px on each side -> 10px between items */
+  padding: 0; /* Use Isotope gutter for horizontal spacing */
+  margin-bottom: 10px; /* Vertical spacing between items */
   box-sizing: border-box;
   float: left;
 }
@@ -405,7 +406,7 @@ body {
         layoutMode: 'masonry',
         masonry: {
           columnWidth: '.col.portrait', // Use portrait as base unit
-          gutter: 0,
+          gutter: 10, // 10px horizontal gap between columns, no outer gutter
           fitWidth: true, // Fit to content width so we can center
           horizontalOrder: false // Vertical order fills columns top to bottom
         },

@@ -115,7 +115,7 @@ export const images = [
   {
     filename: 'Jason_Collett_at_Ottawa_Jazz_Festival_in_2025_-_3.jpg',
     caption: 'Jason Collett at Ottawa Jazz Festival in 2025',
-    size: 'landscape'
+    size: 'portrait'
   },
   {
     filename: 'jeremy-7.jpg',
@@ -125,7 +125,7 @@ export const images = [
   {
     filename: 'jay-dixit_red-carpet_08042.jpg',
     caption: 'Jay Dixit Red Carpet',
-    size: 'portrait'
+    size: 'landscape'
   },
   {
     filename: 'jeremy-2.jpg',
