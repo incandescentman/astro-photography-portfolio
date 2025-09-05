@@ -3,187 +3,406 @@ layout: ../layouts/MainLayout.astro
 title: The Story of WikiPortraits
 ---
 
-<div class="max-w-4xl mx-auto px-6 py-16">
-# The Story of WikiPortraits
+<div class="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+  {/* Hero Section */}
+  <section class="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <div class="absolute inset-0">
+      <img 
+        src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=1920" 
+        alt="Camera lens" 
+        class="w-full h-full object-cover"
+      />
+      <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-transparent"></div>
+    </div>
+    
+    <div class="relative z-10 max-w-5xl mx-auto px-6 text-center text-white">
+      <h1 class="text-5xl md:text-7xl font-black mb-6 tracking-tight">
+        WikiPortraits
+      </h1>
+      <p class="text-xl md:text-2xl font-light mb-8 max-w-3xl mx-auto">
+        Fixing Wikipedia's famously bad celebrity portraits, one photo at a time
+      </p>
+      <div class="flex gap-4 justify-center">
+        <a href="#mission" class="px-8 py-4 bg-white text-gray-900 rounded-full font-semibold hover:bg-gray-100 transition-all duration-300 transform hover:scale-105">
+          Learn Our Story
+        </a>
+        <a href="#impact" class="px-8 py-4 bg-transparent border-2 border-white text-white rounded-full font-semibold hover:bg-white hover:text-gray-900 transition-all duration-300">
+          See Our Impact
+        </a>
+      </div>
+    </div>
+    
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+      <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+      </svg>
+    </div>
+  </section>
 
-## How a Vision for Open Knowledge Became Reality
+  {/* Problem Section */}
+  <section id="problem" class="py-24 px-6">
+    <div class="max-w-6xl mx-auto">
+      <div class="grid lg:grid-cols-2 gap-12 items-center">
+        <div>
+          <h2 class="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
+            The Wikipedia Portrait Problem
+          </h2>
+          <p class="text-lg text-gray-600 mb-6">
+            Wikipedia portraits are so famously bad that there's an Instagram page dedicated to them. 
+            Professional photographers rarely contribute because they need to make money from their work.
+          </p>
+          <p class="text-lg text-gray-600 mb-8">
+            The result? Most celebrities have poor photos on Wikipedia—if they have photos at all. 
+            It's often just someone with an iPhone catching a celebrity at an airport.
+          </p>
+          <div class="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-lg">
+            <p class="text-blue-900 italic">
+              "No professional photographers ever have their photos on Wikipedia, because they want to make money from the photos."
+            </p>
+            <p class="text-blue-700 mt-2 text-sm">— Jay Dixit, WikiPortraits Photographer</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <img 
+            src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=400" 
+            alt="Bad photo example" 
+            class="rounded-lg shadow-lg transform rotate-2 hover:rotate-0 transition-transform duration-300"
+          />
+          <img 
+            src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400" 
+            alt="Blurry photo" 
+            class="rounded-lg shadow-lg transform -rotate-2 hover:rotate-0 transition-transform duration-300"
+          />
+          <img 
+            src="https://images.unsplash.com/photo-1598387846419-a2c870ad3ecd?w=400" 
+            alt="Poor lighting" 
+            class="rounded-lg shadow-lg transform -rotate-1 hover:rotate-0 transition-transform duration-300"
+          />
+          <img 
+            src="https://images.unsplash.com/photo-1606933248051-5ce5af7a48b7?w=400" 
+            alt="Low quality" 
+            class="rounded-lg shadow-lg transform rotate-1 hover:rotate-0 transition-transform duration-300"
+          />
+        </div>
+      </div>
+    </div>
+  </section>
 
-Welcome to the story of WikiPortraits – a project born from the belief that high-quality photography should be freely available to document the world's most notable people.
+  {/* Mission Section */}
+  <section id="mission" class="py-24 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="text-center mb-16">
+        <h2 class="text-4xl md:text-5xl font-bold mb-6">Our Mission</h2>
+        <p class="text-xl max-w-3xl mx-auto">
+          WikiPortraits is a team of volunteer photographers on a mission to provide high-quality, 
+          freely-licensed portraits for Wikipedia and the public domain.
+        </p>
+      </div>
+      
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="bg-white/10 backdrop-blur-md rounded-xl p-8 hover:bg-white/20 transition-all duration-300">
+          <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-4">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold mb-2">Professional Quality</h3>
+          <p class="text-white/90">
+            We bring studio-quality equipment and expertise to capture celebrities in their best light.
+          </p>
+        </div>
+        
+        <div class="bg-white/10 backdrop-blur-md rounded-xl p-8 hover:bg-white/20 transition-all duration-300">
+          <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-4">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold mb-2">Global Reach</h3>
+          <p class="text-white/90">
+            Our photos are used on Wikipedia articles in over 120 languages, viewed 80+ million times monthly.
+          </p>
+        </div>
+        
+        <div class="bg-white/10 backdrop-blur-md rounded-xl p-8 hover:bg-white/20 transition-all duration-300">
+          <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-4">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold mb-2">Diversity Focus</h3>
+          <p class="text-white/90">
+            We prioritize photographing underrepresented people to address Wikipedia's diversity gaps.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-### The Beginning
+  {/* Success Story */}
+  <section class="py-24 px-6">
+    <div class="max-w-6xl mx-auto">
+      <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl p-8 md:p-12">
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <span class="inline-block px-4 py-2 bg-green-100 text-green-700 rounded-full text-sm font-semibold mb-4">
+              Success Story
+            </span>
+            <h3 class="text-3xl font-bold mb-4 text-gray-900">Jeremy Strong's Wikipedia Transformation</h3>
+            <p class="text-lg text-gray-600 mb-6">
+              When we found Jeremy Strong of Succession at a New York screening, his Wikipedia photo was from 2014. 
+              His publicist said no to a new photo, but Jeremy overruled:
+            </p>
+            <blockquote class="border-l-4 border-green-500 pl-6 py-4 bg-white rounded-r-lg">
+              <p class="text-gray-800 text-lg italic mb-2">
+                "Wait, you're from Wikipedia? For the love of God, please take down that photo. 
+                You'd be doing me a service."
+              </p>
+              <p class="text-gray-600 text-sm">— Jeremy Strong</p>
+            </blockquote>
+          </div>
+          <div class="relative">
+            <img 
+              src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600" 
+              alt="Jeremy Strong portrait" 
+              class="rounded-2xl shadow-2xl"
+            />
+            <div class="absolute -bottom-4 -right-4 bg-green-500 text-white px-6 py-3 rounded-full font-bold shadow-lg">
+              Updated 2024
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-It started with a simple observation: Wikipedia, the world's largest encyclopedia, often lacks professional portraits of contemporary figures. While historical figures have paintings and photographs in the public domain, modern personalities are often represented by low-quality snapshots or no images at all.
+  {/* Impact Numbers */}
+  <section id="impact" class="py-24 bg-gray-50">
+    <div class="max-w-6xl mx-auto px-6">
+      <h2 class="text-4xl md:text-5xl font-bold text-center mb-16 text-gray-900">
+        Our Impact in Numbers
+      </h2>
+      
+      <div class="grid md:grid-cols-4 gap-8">
+        <div class="text-center group">
+          <div class="text-5xl md:text-6xl font-black text-blue-600 mb-2 group-hover:scale-110 transition-transform duration-300">
+            5,000+
+          </div>
+          <p class="text-gray-600">Photos Taken</p>
+        </div>
+        
+        <div class="text-center group">
+          <div class="text-5xl md:text-6xl font-black text-purple-600 mb-2 group-hover:scale-110 transition-transform duration-300">
+            120+
+          </div>
+          <p class="text-gray-600">Languages Covered</p>
+        </div>
+        
+        <div class="text-center group">
+          <div class="text-5xl md:text-6xl font-black text-green-600 mb-2 group-hover:scale-110 transition-transform duration-300">
+            80M
+          </div>
+          <p class="text-gray-600">Monthly Views</p>
+        </div>
+        
+        <div class="text-center group">
+          <div class="text-5xl md:text-6xl font-black text-orange-600 mb-2 group-hover:scale-110 transition-transform duration-300">
+            30+
+          </div>
+          <p class="text-gray-600">Volunteer Photographers</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-### The Mission
+  {/* Events Gallery */}
+  <section class="py-24 px-6">
+    <div class="max-w-6xl mx-auto">
+      <h2 class="text-4xl md:text-5xl font-bold text-center mb-6 text-gray-900">
+        Covering Major Events Worldwide
+      </h2>
+      <p class="text-xl text-gray-600 text-center mb-16 max-w-3xl mx-auto">
+        From Sundance to the Jaipur Literature Festival, our photographers capture celebrities and thought leaders at the world's most prestigious events.
+      </p>
+      
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div class="relative group overflow-hidden rounded-lg">
+          <img 
+            src="https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=400" 
+            alt="Sundance Film Festival" 
+            class="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div class="absolute bottom-4 left-4 text-white">
+              <h3 class="font-bold text-lg">Sundance Film Festival</h3>
+              <p class="text-sm">2024</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="relative group overflow-hidden rounded-lg">
+          <img 
+            src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=400" 
+            alt="Toronto International Film Festival" 
+            class="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div class="absolute bottom-4 left-4 text-white">
+              <h3 class="font-bold text-lg">TIFF</h3>
+              <p class="text-sm">Toronto</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="relative group overflow-hidden rounded-lg">
+          <img 
+            src="https://images.unsplash.com/photo-1598387180437-80388ae0df12?w=400" 
+            alt="Cannes Film Festival" 
+            class="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div class="absolute bottom-4 left-4 text-white">
+              <h3 class="font-bold text-lg">Cannes Film Festival</h3>
+              <p class="text-sm">France</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="relative group overflow-hidden rounded-lg">
+          <img 
+            src="https://images.unsplash.com/photo-1569163139394-de4798aa62b6?w=400" 
+            alt="Venice Film Festival" 
+            class="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div class="absolute bottom-4 left-4 text-white">
+              <h3 class="font-bold text-lg">Venice Film Festival</h3>
+              <p class="text-sm">Italy</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="relative group overflow-hidden rounded-lg">
+          <img 
+            src="https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=400" 
+            alt="Music Festival" 
+            class="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div class="absolute bottom-4 left-4 text-white">
+              <h3 class="font-bold text-lg">SXSW</h3>
+              <p class="text-sm">Austin</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="relative group overflow-hidden rounded-lg">
+          <img 
+            src="https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?w=400" 
+            alt="Tech Conference" 
+            class="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div class="absolute bottom-4 left-4 text-white">
+              <h3 class="font-bold text-lg">CES Las Vegas</h3>
+              <p class="text-sm">Tech Conference</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-WikiPortraits aims to change this by:
+  {/* Quote Section */}
+  <section class="py-24 bg-gradient-to-r from-purple-600 to-blue-600">
+    <div class="max-w-4xl mx-auto px-6 text-center text-white">
+      <svg class="w-12 h-12 mx-auto mb-6 opacity-50" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+      </svg>
+      <blockquote class="text-2xl md:text-3xl font-light mb-6 leading-relaxed">
+        "This is cheesy, but a picture's worth a thousand words. The picture you see that comes up first in Google results is Wikipedia—that's the thing people are going to see first and recognize you as."
+      </blockquote>
+      <cite class="text-lg opacity-90">— Kevin Payravi, WikiPortraits Cofounder</cite>
+    </div>
+  </section>
 
-- Creating professional, high-quality portraits of notable individuals
-- Releasing all images under Creative Commons licenses
-- Making these portraits freely available for educational and journalistic use
-- Contributing to the global commons of human knowledge
+  {/* Join Us Section */}
+  <section class="py-24 px-6">
+    <div class="max-w-4xl mx-auto text-center">
+      <h2 class="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
+        Join the Movement
+      </h2>
+      <p class="text-xl text-gray-600 mb-12">
+        Whether you're a photographer, a subject, or someone who believes in free knowledge for all, 
+        there are many ways to support WikiPortraits.
+      </p>
+      
+      <div class="grid md:grid-cols-3 gap-8 mb-12">
+        <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
+          <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4 mx-auto">
+            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-bold mb-2">Volunteer as a Photographer</h3>
+          <p class="text-gray-600">
+            Join our team of 30+ photographers covering events worldwide.
+          </p>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
+          <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4 mx-auto">
+            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-bold mb-2">Support Our Mission</h3>
+          <p class="text-gray-600">
+            Help fund travel and equipment for volunteer photographers.
+          </p>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
+          <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-4 mx-auto">
+            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m9.032 4.026A9.001 9.001 0 1112 3a9.001 9.001 0 015.716 14.684m-9.032-4.026A3 3 0 009 12m3 3a3 3 0 100-6 3 3 0 000 6z" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-bold mb-2">Spread the Word</h3>
+          <p class="text-gray-600">
+            Share our mission and help improve Wikipedia for everyone.
+          </p>
+        </div>
+      </div>
+      
+      <div class="flex gap-4 justify-center">
+        <a 
+          href="https://www.wikiportraits.org" 
+          class="px-8 py-4 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
+        >
+          Visit WikiPortraits.org
+        </a>
+        <a 
+          href="mailto:jay@jaydixit.com" 
+          class="px-8 py-4 bg-gray-200 text-gray-800 rounded-full font-semibold hover:bg-gray-300 transition-all duration-300"
+        >
+          Contact Us
+        </a>
+      </div>
+    </div>
+  </section>
 
-### The Journey
-
-*[Add your personal story here about how you started taking these portraits, memorable encounters, challenges you've faced, and victories you've celebrated.]*
-
-### Notable Portraits
-
-Some of the most impactful portraits in the collection include:
-
-- **Nobel Laureates** – Capturing the minds that shape our understanding of the world
-- **Artists & Creators** – Documenting the faces behind cultural movements
-- **Innovators & Thinkers** – Preserving the image of those who push boundaries
-
-### The Impact
-
-Since its inception, WikiPortraits has:
-
-- Contributed over [X] portraits to Wikipedia
-- Been viewed by millions of readers worldwide
-- Helped tell the stories of remarkable individuals
-- Inspired other photographers to contribute to open knowledge
-
-### Join the Movement
-
-WikiPortraits is more than a photography project – it's a contribution to human knowledge that will last for generations. Every portrait tells a story, and together, they create a visual encyclopedia of our time.
-
-*[Add more sections as needed. You can include images using standard markdown syntax:]*
-
-```markdown
-![Description of image](/path/to/image.jpg)
-```
-
-*[You can also add interactive elements or custom components if needed.]*
-
-### Get Involved
-
-Whether you're a photographer, a subject, or simply someone who believes in open knowledge, there are many ways to support WikiPortraits:
-
-- **Share** the project with others who might be interested
-- **Suggest** notable individuals who should be photographed
-- **Support** the project through [your preferred method]
-- **Use** these images to improve Wikipedia articles
-
-### Contact
-
-For more information about WikiPortraits, collaboration opportunities, or to schedule a portrait session:
-
-[jay@jaydixit.com](mailto:jay@jaydixit.com)
-
----
-
-*WikiPortraits: Documenting humanity, one portrait at a time.*
+  {/* Footer */}
+  <footer class="py-12 bg-gray-900 text-white">
+    <div class="max-w-6xl mx-auto px-6 text-center">
+      <p class="text-lg mb-4">
+        WikiPortraits: Documenting humanity, one portrait at a time.
+      </p>
+      <p class="text-gray-400">
+        A volunteer initiative improving Wikipedia's visual representation of notable people worldwide.
+      </p>
+    </div>
+  </footer>
 </div>
-
-<style>
-{`
-  .max-w-4xl h1 {
-    font-family: 'Inter Tight', sans-serif;
-    font-weight: 800;
-    font-size: 3.5rem;
-    line-height: 1.1;
-    margin-bottom: 1rem;
-    color: #111;
-  }
-
-  .max-w-4xl h2 {
-    font-family: 'Inter Tight', sans-serif;
-    font-weight: 600;
-    font-size: 1.75rem;
-    margin-top: 3rem;
-    margin-bottom: 1.5rem;
-    color: #333;
-  }
-
-  .max-w-4xl h3 {
-    font-family: 'Inter Tight', sans-serif;
-    font-weight: 600;
-    font-size: 1.5rem;
-    margin-top: 2.5rem;
-    margin-bottom: 1rem;
-    color: #444;
-  }
-
-  .max-w-4xl p {
-    font-family: Georgia, serif;
-    font-size: 1.125rem;
-    line-height: 1.8;
-    margin-bottom: 1.5rem;
-    color: #555;
-  }
-
-  .max-w-4xl ul {
-    margin: 1.5rem 0;
-    padding-left: 2rem;
-  }
-
-  .max-w-4xl li {
-    font-family: Georgia, serif;
-    font-size: 1.125rem;
-    line-height: 1.8;
-    margin-bottom: 0.75rem;
-    color: #555;
-  }
-
-  .max-w-4xl strong {
-    font-weight: 600;
-    color: #333;
-  }
-
-  .max-w-4xl em {
-    font-style: italic;
-    color: #666;
-  }
-
-  .max-w-4xl a {
-    color: #0066cc;
-    text-decoration: underline;
-    transition: color 0.2s;
-  }
-
-  .max-w-4xl a:hover {
-    color: #0052a3;
-  }
-
-  .max-w-4xl hr {
-    margin: 3rem 0;
-    border: none;
-    border-top: 1px solid #e0e0e0;
-  }
-
-  .max-w-4xl code {
-    background: #f5f5f5;
-    padding: 0.125rem 0.375rem;
-    border-radius: 0.25rem;
-    font-size: 0.875rem;
-  }
-
-  .max-w-4xl pre {
-    background: #f5f5f5;
-    padding: 1rem;
-    border-radius: 0.5rem;
-    overflow-x: auto;
-    margin: 1.5rem 0;
-  }
-
-  @media (max-width: 768px) {
-    .max-w-4xl h1 {
-      font-size: 2.5rem;
-    }
-    
-    .max-w-4xl h2 {
-      font-size: 1.5rem;
-    }
-    
-    .max-w-4xl h3 {
-      font-size: 1.25rem;
-    }
-    
-    .max-w-4xl p,
-    .max-w-4xl li {
-      font-size: 1rem;
-    }
-  }
-`}
-</style>
