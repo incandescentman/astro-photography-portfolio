@@ -42,40 +42,35 @@ function optimizeImageOrder(images) {
   
   const optimizedUnordered = [];
   
-  // Better strategy: Interleave items more intelligently
+  // Simple strategy: Mix sizes for optimal packing
+  // Start with xlportrait items spread throughout
+  const totalItems = unorderedImages.length;
+  const xlSpacing = Math.floor(totalItems / (sizeGroups.xlportrait.length + 1));
   
-  // Process all items in batches for better packing
+  let itemCount = 0;
+  
+  // Place items with good distribution
   while (sizeGroups.portrait.length > 0 || sizeGroups.landscape.length > 0 || sizeGroups.xlportrait.length > 0) {
-    // Pattern: 2 portraits, xlportrait, 2 portraits, landscape
+    // Add portraits as base fill
+    for (let i = 0; i < 4 && sizeGroups.portrait.length > 0; i++) {
+      optimizedUnordered.push(sizeGroups.portrait.shift());
+      itemCount++;
+    }
     
-    // Add 2 portraits
+    // Add xlportrait periodically
+    if (itemCount >= xlSpacing && sizeGroups.xlportrait.length > 0) {
+      optimizedUnordered.push(sizeGroups.xlportrait.shift());
+      itemCount = 0;
+    }
+    
+    // Add landscape to vary the layout
+    if (sizeGroups.landscape.length > 0) {
+      optimizedUnordered.push(sizeGroups.landscape.shift());
+    }
+    
+    // Fill with more portraits
     for (let i = 0; i < 2 && sizeGroups.portrait.length > 0; i++) {
       optimizedUnordered.push(sizeGroups.portrait.shift());
-    }
-    
-    // Add xlportrait if available
-    if (sizeGroups.xlportrait.length > 0) {
-      optimizedUnordered.push(sizeGroups.xlportrait.shift());
-      
-      // Add 2 more portraits after xlportrait
-      for (let i = 0; i < 2 && sizeGroups.portrait.length > 0; i++) {
-        optimizedUnordered.push(sizeGroups.portrait.shift());
-      }
-    }
-    
-    // Add a landscape if available
-    if (sizeGroups.landscape.length > 0) {
-      optimizedUnordered.push(sizeGroups.landscape.shift());
-    }
-    
-    // Add more portraits to fill gaps
-    for (let i = 0; i < 3 && sizeGroups.portrait.length > 0; i++) {
-      optimizedUnordered.push(sizeGroups.portrait.shift());
-    }
-    
-    // If no xlportrait was added, try adding landscape
-    if (sizeGroups.landscape.length > 0) {
-      optimizedUnordered.push(sizeGroups.landscape.shift());
     }
   }
   
@@ -236,7 +231,6 @@ const highlightPhotos = processedImages.map(img => ({
   position: relative;
   overflow: hidden;
   cursor: pointer;
-  margin-bottom: 10px; /* Add vertical spacing between items */
 }
 
 /* Images - fixed aspect ratio with cropping */
@@ -258,7 +252,11 @@ const highlightPhotos = processedImages.map(img => ({
 }
 
 .portfolio-items .col.xlportrait .work-item {
-  aspect-ratio: 2 / 3; /* Vertical orientation, 2x size */
+  /* Height = (2 portraits + gap between)
+     For 320px width at 2:3 ratio = 480px per portrait
+     480px + 480px + 10px gap = 970px height */
+  height: 970px; /* Exactly 2 portrait heights + gap */
+  width: 100%;
 }
 
 /* Hover effects */
