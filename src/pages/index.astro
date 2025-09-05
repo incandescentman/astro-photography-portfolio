@@ -42,35 +42,44 @@ function optimizeImageOrder(images) {
   
   const optimizedUnordered = [];
   
-  // Simple strategy: Mix sizes for optimal packing
-  // Start with xlportrait items spread throughout
-  const totalItems = unorderedImages.length;
-  const xlSpacing = Math.floor(totalItems / (sizeGroups.xlportrait.length + 1));
+  // Strategy: Place xlportrait items early so they get filled around
   
-  let itemCount = 0;
+  // Calculate spacing between xlportrait items
+  const totalXl = sizeGroups.xlportrait.length;
+  const portraitsPerXl = Math.floor(sizeGroups.portrait.length / (totalXl + 1));
   
-  // Place items with good distribution
+  // Place items with xlportraits distributed but early enough to get filled
   while (sizeGroups.portrait.length > 0 || sizeGroups.landscape.length > 0 || sizeGroups.xlportrait.length > 0) {
-    // Add portraits as base fill
-    for (let i = 0; i < 4 && sizeGroups.portrait.length > 0; i++) {
-      optimizedUnordered.push(sizeGroups.portrait.shift());
-      itemCount++;
+    
+    // Place 2-4 portraits first
+    const portraitBatch = Math.min(4, sizeGroups.portrait.length);
+    for (let i = 0; i < portraitBatch; i++) {
+      if (sizeGroups.portrait.length > 0) {
+        optimizedUnordered.push(sizeGroups.portrait.shift());
+      }
     }
     
-    // Add xlportrait periodically
-    if (itemCount >= xlSpacing && sizeGroups.xlportrait.length > 0) {
+    // Place xlportrait early (but not too early)
+    if (sizeGroups.xlportrait.length > 0 && 
+        (optimizedUnordered.length <= 10 || // Place first xlportrait early
+         optimizedUnordered.length % 8 === 0)) { // Then every 8 items
       optimizedUnordered.push(sizeGroups.xlportrait.shift());
-      itemCount = 0;
     }
     
-    // Add landscape to vary the layout
+    // Add landscape items
     if (sizeGroups.landscape.length > 0) {
       optimizedUnordered.push(sizeGroups.landscape.shift());
     }
     
-    // Fill with more portraits
+    // Add more portraits
     for (let i = 0; i < 2 && sizeGroups.portrait.length > 0; i++) {
       optimizedUnordered.push(sizeGroups.portrait.shift());
+    }
+    
+    // Place remaining xlportraits before we run out of other items
+    if (sizeGroups.xlportrait.length > 0 && 
+        sizeGroups.portrait.length < 4) {
+      optimizedUnordered.push(sizeGroups.xlportrait.shift());
     }
   }
   
