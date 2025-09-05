@@ -585,7 +585,7 @@ function mapSingle(img) {
           columnWidth: 320, // Fixed column width
           gutter: 10, // 10px gap between columns
           fitWidth: true, // Center the grid
-          horizontalOrder: true // Preserve left-to-right order to reflect optimizer grouping
+          horizontalOrder: false // Use shortest-column placement to reduce bottom gaps
         },
         percentPosition: false,
         transitionDuration: '0.3s',
