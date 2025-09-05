@@ -42,44 +42,105 @@ function optimizeImageOrder(images) {
   
   const optimizedUnordered = [];
   
-  // Strategy: Place xlportrait items early so they get filled around
+  // Strategy: Follow specific pattern for top of page, then distribute remaining items
   
-  // Calculate spacing between xlportrait items
+  // Pattern for top section:
+  // Row 1: 2 portraits (stacked), xlportrait, 2 portraits (stacked), xlportrait
+  // Row 2: xlportrait, landscape (above another xlportrait), landscape
+  
+  // Row 1 implementation
+  // First column: 2 portraits stacked
+  for (let i = 0; i < 2 && sizeGroups.portrait.length > 0; i++) {
+    optimizedUnordered.push(sizeGroups.portrait.shift());
+  }
+  
+  // Second column: xlportrait
+  if (sizeGroups.xlportrait.length > 0) {
+    optimizedUnordered.push(sizeGroups.xlportrait.shift());
+  }
+  
+  // Third column: 2 portraits stacked
+  for (let i = 0; i < 2 && sizeGroups.portrait.length > 0; i++) {
+    optimizedUnordered.push(sizeGroups.portrait.shift());
+  }
+  
+  // Fourth column: xlportrait
+  if (sizeGroups.xlportrait.length > 0) {
+    optimizedUnordered.push(sizeGroups.xlportrait.shift());
+  }
+  
+  // Row 2 implementation
+  // First: xlportrait
+  if (sizeGroups.xlportrait.length > 0) {
+    optimizedUnordered.push(sizeGroups.xlportrait.shift());
+  }
+  
+  // Second: landscape
+  if (sizeGroups.landscape.length > 0) {
+    optimizedUnordered.push(sizeGroups.landscape.shift());
+  }
+  
+  // Third: another landscape
+  if (sizeGroups.landscape.length > 0) {
+    optimizedUnordered.push(sizeGroups.landscape.shift());
+  }
+  
+  // Now continue with remaining items, distributing xlportraits with spacing
   const totalXl = sizeGroups.xlportrait.length;
-  const portraitsPerXl = Math.floor(sizeGroups.portrait.length / (totalXl + 1));
+  const totalOtherItems = sizeGroups.portrait.length + sizeGroups.landscape.length;
+  const minSpacing = totalXl > 0 ? Math.max(4, Math.floor(totalOtherItems / (totalXl + 1))) : 0;
   
-  // Place items with xlportraits distributed but early enough to get filled
+  let itemsSinceLastXl = 0;
+  
+  // Place remaining items with xlportraits distributed
   while (sizeGroups.portrait.length > 0 || sizeGroups.landscape.length > 0 || sizeGroups.xlportrait.length > 0) {
     
-    // Place 2-4 portraits first
-    const portraitBatch = Math.min(4, sizeGroups.portrait.length);
-    for (let i = 0; i < portraitBatch; i++) {
-      if (sizeGroups.portrait.length > 0) {
+    // Check if we should place an xlportrait (with proper spacing)
+    if (sizeGroups.xlportrait.length > 0 && itemsSinceLastXl >= minSpacing) {
+      // Place some portraits before xlportrait
+      for (let i = 0; i < 2 && sizeGroups.portrait.length > 0; i++) {
         optimizedUnordered.push(sizeGroups.portrait.shift());
+      }
+      
+      // Place the xlportrait
+      optimizedUnordered.push(sizeGroups.xlportrait.shift());
+      itemsSinceLastXl = 0;
+      
+      // Place some portraits after xlportrait
+      for (let i = 0; i < 2 && sizeGroups.portrait.length > 0; i++) {
+        optimizedUnordered.push(sizeGroups.portrait.shift());
+      }
+      
+      // Add a landscape if available
+      if (sizeGroups.landscape.length > 0) {
+        optimizedUnordered.push(sizeGroups.landscape.shift());
+        itemsSinceLastXl++;
+      }
+    } else {
+      // Add regular items between xlportraits
+      
+      // Add portraits in small batches
+      const portraitBatch = Math.min(2, sizeGroups.portrait.length);
+      for (let i = 0; i < portraitBatch; i++) {
+        if (sizeGroups.portrait.length > 0) {
+          optimizedUnordered.push(sizeGroups.portrait.shift());
+          itemsSinceLastXl++;
+        }
+      }
+      
+      // Add landscape
+      if (sizeGroups.landscape.length > 0) {
+        optimizedUnordered.push(sizeGroups.landscape.shift());
+        itemsSinceLastXl++;
       }
     }
     
-    // Place xlportrait early (but not too early)
+    // Safety: place remaining xlportraits if we're running low on other items
     if (sizeGroups.xlportrait.length > 0 && 
-        (optimizedUnordered.length <= 10 || // Place first xlportrait early
-         optimizedUnordered.length % 8 === 0)) { // Then every 8 items
-      optimizedUnordered.push(sizeGroups.xlportrait.shift());
-    }
-    
-    // Add landscape items
-    if (sizeGroups.landscape.length > 0) {
-      optimizedUnordered.push(sizeGroups.landscape.shift());
-    }
-    
-    // Add more portraits
-    for (let i = 0; i < 2 && sizeGroups.portrait.length > 0; i++) {
-      optimizedUnordered.push(sizeGroups.portrait.shift());
-    }
-    
-    // Place remaining xlportraits before we run out of other items
-    if (sizeGroups.xlportrait.length > 0 && 
-        sizeGroups.portrait.length < 4) {
-      optimizedUnordered.push(sizeGroups.xlportrait.shift());
+        sizeGroups.portrait.length + sizeGroups.landscape.length < 2) {
+      while (sizeGroups.xlportrait.length > 0) {
+        optimizedUnordered.push(sizeGroups.xlportrait.shift());
+      }
     }
   }
   

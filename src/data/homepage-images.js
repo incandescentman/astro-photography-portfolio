@@ -40,7 +40,7 @@ export const images = [
   },
   {
     filename: 'Lisa_Gilroy_at_SXSW_in_2025-1.jpg',
-    size: 'portrait', // 1707x2560 (0.67 ratio - portrait)
+    size: 'xlportrait', // 1707x2560 (0.67 ratio - portrait)
     caption: 'Lisa Gilroy at SXSW in 2025'
   },
   {
