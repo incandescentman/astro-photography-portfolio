@@ -4,34 +4,97 @@ import Layout from '../layouts/MainLayout.astro';
 // Salient demo images - reordered for optimal masonry layout (minimize gaps)
 // Strategy: Mix sizes to fill columns evenly
 const salientImages = [
-  // Column 1 start - tall item
-  { src: "featured-portrait-1-900x1200.jpg", size: "wide_tall", width: 900, height: 1200 },
-  
-  // Next items fill gaps
-  { src: "fashion-portrait-450x600.jpg", size: "regular", width: 450, height: 600 },
-  { src: "restaurant-scene-450x600.jpg", size: "regular", width: 450, height: 600 },
-  
-  // Wide item spans 2 columns
-  { src: "swimming-pool-900x600.jpg", size: "wide", width: 900, height: 600 },
-  
-  // Regular items
-  { src: "abstract-art-450x600.jpg", size: "regular", width: 450, height: 600 },
-  
-  // Another tall item for balance
-  { src: "featured-portrait-2-900x1200.jpg", size: "wide_tall", width: 900, height: 1200 },
-  
-  // Fill with regular items  
-  { src: "creative-portrait-450x600.jpg", size: "regular", width: 450, height: 600 },
-  
-  // Wide landscape
-  { src: "nature-landscape-900x600.jpg", size: "wide", width: 900, height: 600 },
-  
-  // More regular items to fill
-  { src: "high-end-fashion-450x600.jpg", size: "regular", width: 450, height: 600 },
-  { src: "lifestyle-portrait-450x600.jpg", size: "regular", width: 450, height: 600 },
-  { src: "portrait-session-450x600.jpg", size: "regular", width: 450, height: 600 },
-  { src: "restaurant-week-450x600.jpg", size: "regular", width: 450, height: 600 },
-  { src: "urban-lifestyle-450x600.jpg", size: "regular", width: 450, height: 600 },
+  {
+    order: 1,
+    src: "featured-portrait-1-900x1200.jpg",
+    size: "wide_tall",
+    width: 900,
+    height: 1200
+  },
+  {
+    order: 2,
+    src: "fashion-portrait-450x600.jpg",
+    size: "regular",
+    width: 450,
+    height: 600
+  },
+  {
+    order: 3,
+    src: "restaurant-scene-450x600.jpg",
+    size: "regular",
+    width: 450,
+    height: 600
+  },
+  {
+    order: 4,
+    src: "swimming-pool-900x600.jpg",
+    size: "wide",
+    width: 900,
+    height: 600
+  },
+  {
+    order: 5,
+    src: "abstract-art-450x600.jpg",
+    size: "regular",
+    width: 450,
+    height: 600
+  },
+  {
+    order: 6,
+    src: "featured-portrait-2-900x1200.jpg",
+    size: "wide_tall",
+    width: 900,
+    height: 1200
+  },
+  {
+    order: 7,
+    src: "creative-portrait-450x600.jpg",
+    size: "regular",
+    width: 450,
+    height: 600
+  },
+  {
+    order: 8,
+    src: "nature-landscape-900x600.jpg",
+    size: "wide",
+    width: 900,
+    height: 600
+  },
+  {
+    order: 9,
+    src: "high-end-fashion-450x600.jpg",
+    size: "regular",
+    width: 450,
+    height: 600
+  },
+  {
+    order: 10,
+    src: "lifestyle-portrait-450x600.jpg",
+    size: "regular",
+    width: 450,
+    height: 600
+  },
+  {
+    order: 11,
+    src: "portrait-session-450x600.jpg",
+    size: "regular",
+    width: 450,
+    height: 600
+  },
+  {
+    order: 12,
+    src: "restaurant-week-450x600.jpg",
+    size: "regular",
+    width: 450,
+    height: 600
+  },
+  {
+    order: 13,
+    src: "urban-lifestyle-450x600.jpg",
+    size: "regular",
+    width: 450,
+    height: 600
+  }
 ];
 ---
 
@@ -152,6 +215,12 @@ const salientImages = [
       position: relative;
       overflow: hidden;
       cursor: pointer;
+    }
+    
+    /* Link Styles */
+    .portfolio-items .col a {
+      display: block;
+      text-decoration: none;
     }
     
     /* Image Styles */
@@ -305,12 +374,14 @@ const salientImages = [
              data-delay-amount={index}>
           <div class="inner-wrap">
             <div class="work-item">
-              <img 
-                src={`/salient-demo-images/${image.src}`}
-                width={image.width}
-                height={image.height}
-                alt=""
-              />
+              <a href={`/salient-demo-images/${image.src}`} class="portfolio-lightbox" data-pswp-width={image.width} data-pswp-height={image.height}>
+                <img 
+                  src={`/salient-demo-images/${image.src}`}
+                  width={image.width}
+                  height={image.height}
+                  alt=""
+                />
+              </a>
               <div class="work-info-bg"></div>
               <div class="work-info">
                 <h3>Project Title</h3>
@@ -329,9 +400,25 @@ const salientImages = [
   <script src="https://unpkg.com/isotope-layout@3/dist/isotope.pkgd.min.js"></script>
   
   <script>
+    import PhotoSwipeLightbox from 'photoswipe/lightbox';
+    import 'photoswipe/style.css';
+    
     document.addEventListener('DOMContentLoaded', function() {
       const container = document.querySelector('.portfolio-items');
       const loading = document.getElementById('portfolio-loading');
+      
+      // Initialize PhotoSwipe Lightbox
+      const lightbox = new PhotoSwipeLightbox({
+        gallery: '.portfolio-items',
+        children: '.portfolio-lightbox',
+        pswpModule: () => import('photoswipe'),
+        padding: { top: 20, bottom: 20, left: 20, right: 20 },
+        wheelToZoom: true,
+        imageClickAction: 'close',
+        tapAction: 'toggle-controls',
+        doubleTapAction: 'zoom'
+      });
+      lightbox.init();
       
       // Wait for images to load
       imagesLoaded(container, function() {

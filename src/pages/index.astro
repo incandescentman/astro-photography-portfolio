@@ -122,11 +122,12 @@ const highlightPhotos = processedImages.map(img => ({
         <div class={`col elastic-portfolio-item ${photo.size}`} data-delay-amount={index}>
           <div class="inner-wrap">
             <div class="work-item">
-              <a href={photo.src} data-gallery="main-gallery">
+              <a href={photo.src} class="portfolio-lightbox">
                 <img 
                   src={photo.src} 
                   alt={photo.caption}
                   loading="lazy"
+                  data-caption={photo.caption}
                 />
               </a>
               <div class="work-info-bg"></div>
@@ -250,15 +251,15 @@ const highlightPhotos = processedImages.map(img => ({
 
 /* Set fixed aspect ratios for each size */
 .portfolio-items .col.portrait .work-item {
-  aspect-ratio: 3 / 4; /* Portrait ratio like 320x430 */
+  aspect-ratio: 2 / 3; /* Unified aspect ratio */
 }
 
 .portfolio-items .col.landscape .work-item {
-  aspect-ratio: 3 / 2; /* Landscape ratio */
+  aspect-ratio: 2 / 3; /* Unified aspect ratio */
 }
 
 .portfolio-items .col.xlportrait .work-item {
-  aspect-ratio: 3 / 4; /* Same as portrait but bigger (2x2) */
+  aspect-ratio: 2 / 3; /* Unified aspect ratio */
 }
 
 /* Hover effects */
@@ -340,20 +341,42 @@ const highlightPhotos = processedImages.map(img => ({
 <script src="https://unpkg.com/isotope-layout@3/dist/isotope.pkgd.min.js"></script>
 
 <script>
-  import GLightbox from 'glightbox';
+  import PhotoSwipeLightbox from 'photoswipe/lightbox';
+  import 'photoswipe/style.css';
   
   document.addEventListener('DOMContentLoaded', function() {
     const container = document.querySelector('.portfolio-items');
     
-    // Initialize GLightbox
-    const lightbox = GLightbox({
-      selector: '[data-gallery="main-gallery"]',
-      touchNavigation: true,
-      loop: true,
-      autoplayVideos: false,
-      zoomable: true,
-      draggable: true,
+    // Initialize PhotoSwipe Lightbox
+    const lightbox = new PhotoSwipeLightbox({
+      gallery: '.portfolio-items',
+      children: '.portfolio-lightbox',
+      pswpModule: () => import('photoswipe'),
+      padding: { top: 20, bottom: 20, left: 20, right: 20 },
+      wheelToZoom: true,
+      imageClickAction: 'close',
+      tapAction: 'toggle-controls',
+      doubleTapAction: 'zoom',
+      preloaderDelay: 0
     });
+    
+    // Dynamically set image dimensions
+    lightbox.addFilter('itemData', (itemData, index) => {
+      const linkEl = itemData.element;
+      const imgEl = linkEl.querySelector('img');
+      
+      if (imgEl) {
+        // Use natural dimensions or fallback
+        itemData.w = imgEl.naturalWidth || 1600;
+        itemData.h = imgEl.naturalHeight || 1200;
+        itemData.alt = imgEl.alt;
+        itemData.title = imgEl.dataset.caption || imgEl.alt;
+      }
+      
+      return itemData;
+    });
+    
+    lightbox.init();
     
     // Wait for images to load, then initialize Isotope
     imagesLoaded(container, function() {

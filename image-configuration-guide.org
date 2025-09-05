@@ -1,0 +1,160 @@
+* Photography Portfolio - Image Configuration Guide
+
+** File Paths
+
+*** Main Page Images
+- *Path:* ~/Users/jay/Library/CloudStorage/Dropbox/github/photos-jaydixit/src/data/homepage-images.js~
+- *Purpose:* Controls which images appear on the main page and their display properties
+
+*** Salient Photography Demo Page
+- *Path:* ~/Users/jay/Library/CloudStorage/Dropbox/github/photos-jaydixit/src/pages/salient-photography-demo.astro~
+- *Purpose:* Contains the image array for the Salient demo page (lines 6-98)
+
+** Configuration Format
+
+Both files now use a consistent format with ~order~ as the first property:
+
+#+BEGIN_SRC javascript
+{
+  order: 1,                    // Optional: Forces specific position (1, 2, 3...)
+  filename: 'image-name.jpg',  // Required: Image filename in public/highlights/
+  size: 'portrait',            // Required: Display size (see options below)
+  caption: 'Image Caption'     // Optional: Custom caption (defaults to filename)
+}
+#+END_SRC
+
+** Size Options
+
+*** Main Page (homepage-images.js)
+- ~portrait~ - Standard portrait (1 column × standard height)
+- ~landscape~ - Horizontal layout (2 columns × standard height)
+- ~xlportrait~ - Extra-large featured image (2 columns × 2x height)
+
+*** Salient Demo Page
+- ~regular~ - Standard size (1 column)
+- ~wide~ - Landscape/horizontal (2 columns)
+- ~wide_tall~ - Featured large image (2 columns × 2x height)
+
+** Usage Examples
+
+*** Example 1: Adding a New Featured Image to Main Page
+
+Edit ~/src/data/homepage-images.js~:
+
+#+BEGIN_SRC javascript
+export const images = [
+  {
+    order: 1,  // This will be first
+    filename: 'new-featured-photo.jpg',
+    size: 'xlportrait',  // Large featured size
+    caption: 'Award Ceremony 2024'
+  },
+  // ... rest of images
+];
+#+END_SRC
+
+*** Example 2: Rearranging Images with Order
+
+#+BEGIN_SRC javascript
+export const images = [
+  {
+    order: 1,
+    filename: 'photo-a.jpg',
+    size: 'portrait',
+    caption: 'First Photo'
+  },
+  {
+    order: 5,  // Will appear 5th
+    filename: 'photo-b.jpg',
+    size: 'landscape',
+    caption: 'Fifth Photo'
+  },
+  {
+    // No order - will fill gaps automatically
+    filename: 'photo-c.jpg',
+    size: 'portrait',
+    caption: 'Auto-positioned Photo'
+  }
+];
+#+END_SRC
+
+*** Example 3: Salient Demo Page Configuration
+
+Edit ~/src/pages/salient-photography-demo.astro~ (lines 6-98):
+
+#+BEGIN_SRC javascript
+const salientImages = [
+  {
+    order: 1,
+    src: "featured-image.jpg",  // Note: uses 'src' not 'filename'
+    size: "wide_tall",           // Large featured
+    width: 900,                  // Actual pixel width
+    height: 1200                 // Actual pixel height
+  },
+  {
+    order: 2,
+    src: "portrait.jpg",
+    size: "regular",
+    width: 450,
+    height: 600
+  }
+];
+#+END_SRC
+
+** How the System Works
+
+1. *Order Priority*: Images with ~order~ values are placed first at their specified positions
+2. *Auto-fill*: Images without ~order~ automatically fill remaining gaps
+3. *Optimization*: The algorithm minimizes visual gaps by intelligently arranging unordered images
+4. *Responsive*: Layout adjusts for mobile/tablet/desktop automatically
+
+** Quick Reference
+
+*** To Make an Image Featured/Prominent:
+- Main page: Use ~size: 'xlportrait'~
+- Salient demo: Use ~size: 'wide_tall'~
+
+*** To Control Exact Position:
+- Add ~order: N~ where N is the position number
+
+*** To Let System Auto-Arrange:
+- Omit the ~order~ property
+
+** Tips
+
+1. *Mix Sizes* for best visual layout:
+   - Start with a featured image (~xlportrait~)
+   - Add 3-4 portraits around it
+   - Insert landscapes between portrait groups
+   
+2. *Use Order Sparingly*:
+   - Only set ~order~ for images you specifically want in certain positions
+   - Let the optimizer handle the rest for better gap-filling
+
+3. *Caption Best Practices*:
+   - Keep captions concise
+   - Include person's name and event/location if relevant
+   - Year is optional but helpful
+
+** File Locations
+
+*** Images Directory
+- Main page images: ~/public/highlights/~
+- Salient demo images: ~/public/salient-demo-images/~
+
+*** To Add New Images:
+1. Place image file in appropriate directory
+2. Add configuration to respective file
+3. View at ~http://localhost:4321/~ (main) or ~/salient-photography-demo~
+
+** Development Commands
+
+#+BEGIN_SRC bash
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# The site auto-refreshes when you save changes
+#+END_SRC

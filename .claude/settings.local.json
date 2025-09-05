@@ -59,7 +59,8 @@
       "Bash(identify:*)",
       "Bash(for f in /Users/jay/Library/CloudStorage/Dropbox/github/photos-jaydixit/public/highlights/*.jpg)",
       "Bash(do identify:*)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(mv:*)"
     ],
     "deny": [],
     "ask": []
