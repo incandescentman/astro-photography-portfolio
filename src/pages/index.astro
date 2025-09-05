@@ -189,11 +189,11 @@ body {
 }
 
 .portfolio-items .col.landscape {
-  width: 566px; /* 2 units wide */
+  width: 576px; /* 2*283 + 10 gutter */
 }
 
 .portfolio-items .col.xlportrait {
-  width: 566px; /* 2 units wide */
+  width: 576px; /* 2*283 + 10 gutter */
 }
 
 /* Responsive breakpoints */
@@ -203,7 +203,7 @@ body {
   }
   .portfolio-items .col.landscape,
   .portfolio-items .col.xlportrait {
-    width: 500px; /* 2x width */
+    width: 510px; /* 2*250 + 10 gutter */
   }
 }
 
@@ -213,7 +213,7 @@ body {
   }
   .portfolio-items .col.landscape,
   .portfolio-items .col.xlportrait {
-    width: 440px; /* 2x width */
+    width: 450px; /* 2*220 + 10 gutter */
   }
 }
 
@@ -223,17 +223,15 @@ body {
   }
   .portfolio-items .col.landscape,
   .portfolio-items .col.xlportrait {
-    width: 400px; /* 2x width */
+    width: 410px; /* 2*200 + 10 gutter */
   }
 }
 
 @media only screen and (max-width: 768px) {
-  .portfolio-items .col.portrait {
-    width: 45%; /* 2 columns */
-  }
+  .portfolio-items .col.portrait,
   .portfolio-items .col.landscape,
   .portfolio-items .col.xlportrait {
-    width: 90%; /* Almost full width */
+    width: 100%; /* Single column on small screens */
   }
 }
 
