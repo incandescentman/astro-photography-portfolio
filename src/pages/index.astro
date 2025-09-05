@@ -42,53 +42,42 @@ function optimizeImageOrder(images) {
   
   const optimizedUnordered = [];
   
-  // Strategy: Place large items first, then fill gaps with smaller items
-  // 1. Add 2 portrait items first
-  const initialPortraits = Math.min(2, sizeGroups.portrait.length);
-  for (let i = 0; i < initialPortraits; i++) {
-    if (sizeGroups.portrait.length > 0) {
+  // Better strategy: Interleave items more intelligently
+  
+  // Process all items in batches for better packing
+  while (sizeGroups.portrait.length > 0 || sizeGroups.landscape.length > 0 || sizeGroups.xlportrait.length > 0) {
+    // Pattern: 2 portraits, xlportrait, 2 portraits, landscape
+    
+    // Add 2 portraits
+    for (let i = 0; i < 2 && sizeGroups.portrait.length > 0; i++) {
       optimizedUnordered.push(sizeGroups.portrait.shift());
     }
-  }
-  
-  // 2. Then add an xlportrait to anchor the layout
-  if (sizeGroups.xlportrait.length > 0) {
-    optimizedUnordered.push(sizeGroups.xlportrait.shift());
-  }
-  
-  // 3. Add 2 more portrait items to fill the right side
-  const additionalPortraits = Math.min(2, sizeGroups.portrait.length);
-  for (let i = 0; i < additionalPortraits; i++) {
-    if (sizeGroups.portrait.length > 0) {
-      optimizedUnordered.push(sizeGroups.portrait.shift());
-    }
-  }
-  
-  // 4. Add landscape items (they fit well after portraits)
-  while (sizeGroups.landscape.length > 0 && optimizedUnordered.length < 7) {
-    optimizedUnordered.push(sizeGroups.landscape.shift());
-    // After each landscape, add a portrait to fill the gap
-    if (sizeGroups.portrait.length > 0) {
-      optimizedUnordered.push(sizeGroups.portrait.shift());
-    }
-  }
-  
-  // 5. Place remaining xlportrait items with portrait items between
-  while (sizeGroups.xlportrait.length > 0) {
-    // Add 1-2 portrait items before the next xlportrait to prevent gaps
-    const fillCount = Math.min(2, sizeGroups.portrait.length);
-    for (let i = 0; i < fillCount; i++) {
-      if (sizeGroups.portrait.length > 0) {
+    
+    // Add xlportrait if available
+    if (sizeGroups.xlportrait.length > 0) {
+      optimizedUnordered.push(sizeGroups.xlportrait.shift());
+      
+      // Add 2 more portraits after xlportrait
+      for (let i = 0; i < 2 && sizeGroups.portrait.length > 0; i++) {
         optimizedUnordered.push(sizeGroups.portrait.shift());
       }
     }
-    optimizedUnordered.push(sizeGroups.xlportrait.shift());
+    
+    // Add a landscape if available
+    if (sizeGroups.landscape.length > 0) {
+      optimizedUnordered.push(sizeGroups.landscape.shift());
+    }
+    
+    // Add more portraits to fill gaps
+    for (let i = 0; i < 3 && sizeGroups.portrait.length > 0; i++) {
+      optimizedUnordered.push(sizeGroups.portrait.shift());
+    }
+    
+    // If no xlportrait was added, try adding landscape
+    if (sizeGroups.landscape.length > 0) {
+      optimizedUnordered.push(sizeGroups.landscape.shift());
+    }
   }
-  
-  // 6. Add remaining items
-  [...sizeGroups.landscape, ...sizeGroups.portrait].forEach(img => {
-    optimizedUnordered.push(img);
-  });
   
   // Merge ordered and optimized unordered images
   const result = [];
@@ -398,7 +387,7 @@ const highlightPhotos = processedImages.map(img => ({
           columnWidth: 320, // Fixed column width
           gutter: 10, // 10px gap between columns
           fitWidth: true, // Center the grid
-          horizontalOrder: false // Vertical order fills columns top to bottom for tighter packing
+          horizontalOrder: false // Vertical order fills columns completely before moving to next
         },
         percentPosition: false,
         transitionDuration: '0.3s',
