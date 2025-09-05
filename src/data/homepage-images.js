@@ -15,117 +15,121 @@
 // - If not provided, the filename will be used (with dashes/underscores converted to spaces)
 
 export const images = [
-  {
+
+{
     order: 1,
     filename: 'dixit_nobel-physics.jpg',
     size: 'portrait',
     caption: 'Nobel Prize in Physics Ceremony'
   },
   {
-    order: 2,
     filename: 'judd-apatow.jpg',
+    caption: 'Judd Apatow',
     size: 'portrait',
-    caption: 'Judd Apatow'
+    order: 2
   },
-  {
-    order: 3,
+
+{
+    order: 3, 
     filename: 'vanessa-kirby.jpg',
-    size: 'xlportrait', // FEATURE IMAGE
-    caption: 'Vanessa Kirby'
+    caption: 'Vanessa Kirby',
+    size: 'xlportrait' 
   },
-  {
+{
+    order:4,
     filename: 'jeremy.jpg',
-    size: 'portrait',
-    caption: 'Jeremy Strong'
+    caption: 'Jeremy Strong',
+    size: 'portrait'
   },
   {
+      order:5,
     filename: 'Lisa_Gilroy_at_SXSW_in_2025-1.jpg',
-    size: 'portrait',
-    caption: 'Lisa Gilroy at SXSW in 2025'
+    caption: 'Lisa Gilroy at SXSW in 2025',
+    size: 'portrait' // Portrait, not landscape
   },
   {
     filename: 'jeremy-3.jpg',
-    size: 'portrait',
-    caption: 'Jeremy Strong'
+    caption: 'Jeremy Strong',
+    size: 'portrait'
   },
   {
     filename: 'conan.jpg',
-    size: 'portrait',
-    caption: "Conan O'Brien"
+    caption: "Conan O'Brien",
+    size: 'portrait'
   },
   {
     filename: 'jeremy-6.jpg',
-    size: 'portrait',
-    caption: 'Jeremy'
+    caption: 'Jeremy',
+    size: 'portrait' // Fill the gap before the wide_tall
   },
   {
     filename: 'jay-dixit_red-carpet_01130.jpg',
-    size: 'xlportrait', // FEATURE IMAGE
-    caption: 'Jay Dixit on the Red Carpet'
+    caption: 'Jay Dixit on the Red Carpet',
+    size: 'xlportrait' // FEATURE IMAGE - now no gap to its left
   },
   {
     filename: 'jeremy-11.jpg',
-    size: 'landscape',
-    caption: 'Jeremy'
+    caption: 'Jeremy',
+    size: 'landscape' // LANDSCAPE
   },
   {
     filename: 'vinod.jpg',
-    size: 'landscape',
-    caption: 'Vinod'
+    caption: 'Vinod',
+    size: 'landscape' // LANDSCAPE
   },
   {
     filename: 'jay-dixit_red-carpet_05923-1.jpg',
-    size: 'portrait',
-    caption: 'Jay Dixit Red Carpet'
+    caption: 'Jay Dixit Red Carpet',
+    size: 'portrait'
   },
   {
     filename: 'jeremy-4.jpg',
-    size: 'portrait',
-    caption: 'Jeremy'
+    caption: 'Jeremy',
+    size: 'portrait'
   },
   {
     filename: 'vinod-4.jpg',
-    size: 'portrait',
-    caption: 'Vinod'
+    caption: 'Vinod',
+    size: 'portrait'
   },
   {
     filename: 'jeremy-9.jpg',
-    size: 'portrait',
-    caption: 'Jeremy Strong'
+    caption: 'Jeremy Strong',
+    size: 'portrait'
   },
   {
     filename: 'vinod-3.jpg',
-    size: 'portrait',
-    caption: 'Vinod'
+    caption: 'Vinod',
+    size: 'portrait'
   },
   {
     filename: 'jay-dixit_red-carpet_05456.jpg',
-    size: 'portrait',
-    caption: 'Jay Dixit Red Carpet'
+    caption: 'Jay Dixit Red Carpet',
+    size: 'portrait'
   },
   {
     filename: 'Gabriel_LaBelle_at_the_2024_Toronto_International_Film_Festival_03_cropped.jpg',
-    size: 'portrait',
-    caption: 'Gabriel LaBelle at the 2024 Toronto International Film Festival'
+    caption: 'Gabriel LaBelle at the 2024 Toronto International Film Festival',
+    size: 'portrait'
   },
   {
     filename: 'Jason_Collett_at_Ottawa_Jazz_Festival_in_2025_-_3.jpg',
-    size: 'landscape',
-    caption: 'Jason Collett at Ottawa Jazz Festival in 2025'
+    caption: 'Jason Collett at Ottawa Jazz Festival in 2025',
+    size: 'landscape'
   },
   {
     filename: 'jeremy-7.jpg',
-    size: 'xlportrait',
-    caption: 'Jeremy Strong'
+    caption: 'Jeremy Strong',
+    size: 'xlportrait'
   },
   {
     filename: 'jay-dixit_red-carpet_08042.jpg',
-    size: 'portrait',
-    caption: 'Jay Dixit Red Carpet'
+    caption: 'Jay Dixit Red Carpet',
+    size: 'portrait'
   },
   {
     filename: 'jeremy-2.jpg',
-    size: 'portrait',
-    caption: 'Jeremy Strong'
+    caption: 'Jeremy Strong',
+    size: 'portrait'
   }
 ];

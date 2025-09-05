@@ -143,19 +143,27 @@ const highlightPhotos = processedImages.map(img => ({
 </MainLayout>
 
 <style>
+/* Reset body margins */
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
 /* Portfolio container - full width with top spacing for navbar */
 .portfolio-wrap {
   position: relative;
   margin: 0;
   padding: 80px 0 0 0; /* Top padding to account for fixed navbar */
   width: 100%;
+  overflow-x: hidden; /* Prevent horizontal scroll */
 }
 
 /* Masonry Container */
 .portfolio-items {
   position: relative;
   width: 100%;
-  margin: 0 auto;
+  margin: 0;
   padding: 0;
   opacity: 0;
   transition: opacity 0.3s ease;
