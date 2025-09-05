@@ -110,7 +110,7 @@ export const images = [
   },
   {
     filename: 'Jason_Collett_at_Ottawa_Jazz_Festival_in_2025_-_3.jpg',
-    size: 'portrait', // 1706x2560 (0.67 ratio - portrait, NOT landscape)
+    size: 'xlportrait', // 1706x2560 (0.67 ratio - portrait, NOT landscape)
     caption: 'Jason Collett at Ottawa Jazz Festival in 2025'
   },
   {
@@ -132,5 +132,50 @@ export const images = [
     filename: 'Sydney_Sweeney_at_the_2024_Toronto_International_Film_Festival_(cropped_2).jpg',
     size: 'xlportrait', // Featured double-size image
     caption: 'Sydney Sweeney at the 2024 Toronto International Film Festival'
+  },
+  {
+    filename: 'Ana_de_Armas_at_the_2024_Toronto_International_Film_Festival_02_(cropped2).jpg',
+    size: 'portrait',
+    caption: 'Ana de Armas at the 2024 Toronto International Film Festival'
+  },
+  {
+    filename: 'Ana_de_Armas_and_Sydney_Sweeney_at_the_2024_Toronto_International_Film_Festival_04.jpg',
+    size: 'xlportrait',
+    caption: 'Ana de Armas and Sydney Sweeney at the 2024 Toronto International Film Festival'
+  },
+  {
+    filename: 'Kaia_Gerber_at_the_2024_Toronto_International_Film_Festival_03_(cropped).jpg',
+    size: 'portrait',
+    caption: 'Kaia Gerber at the 2024 Toronto International Film Festival'
+  },
+  {
+    filename: 'Willem_Dafoe_at_the_2024_Toronto_International_Film_Festival_02.jpg',
+    size: 'portrait',
+    caption: 'Willem Dafoe at the 2024 Toronto International Film Festival'
+  },
+  {
+    filename: 'Frank_Oz_2024_Cropped.jpg',
+    size: 'portrait',
+    caption: 'Frank Oz 2024'
+  },
+  {
+    filename: '2024-03-09_SXSW_Conan_Nick-Kroll_Office-Space_events_07141.jpg',
+    size: 'portrait',
+    caption: 'Conan and Nick Kroll at SXSW Office Space Event'
+  },
+  {
+    filename: '2024-03-09_SXSW_Conan_Nick-Kroll_Office-Space_events_07162.jpg',
+    size: 'portrait',
+    caption: 'Conan and Nick Kroll at SXSW Office Space Event'
+  },
+  {
+    filename: '2024-03-09_SXSW_Conan_Nick-Kroll_Office-Space_events_07310.jpg',
+    size: 'portrait',
+    caption: 'Conan and Nick Kroll at SXSW Office Space Event'
+  },
+  {
+    filename: '2024-03-09_SXSW_UCB_ASSSSCAT_10.jpg',
+    size: 'portrait',
+    caption: 'UCB ASSSSCAT at SXSW'
   }
 ];
