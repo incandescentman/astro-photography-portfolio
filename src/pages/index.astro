@@ -251,15 +251,15 @@ const highlightPhotos = processedImages.map(img => ({
 
 /* Set fixed aspect ratios for each size */
 .portfolio-items .col.portrait .work-item {
-  aspect-ratio: 2 / 3; /* Unified aspect ratio */
+  aspect-ratio: 2 / 3; /* Vertical orientation */
 }
 
 .portfolio-items .col.landscape .work-item {
-  aspect-ratio: 2 / 3; /* Unified aspect ratio */
+  aspect-ratio: 3 / 2; /* Horizontal orientation - landscape */
 }
 
 .portfolio-items .col.xlportrait .work-item {
-  aspect-ratio: 2 / 3; /* Unified aspect ratio */
+  aspect-ratio: 2 / 3; /* Vertical orientation, 2x size */
 }
 
 /* Hover effects */
@@ -388,7 +388,7 @@ const highlightPhotos = processedImages.map(img => ({
           columnWidth: '.col.portrait', // Use portrait as base unit
           gutter: 0,
           fitWidth: false,
-          horizontalOrder: false // Vertical order fills columns top to bottom
+          horizontalOrder: false // Vertical order fills columns top to bottom for tighter packing
         },
         percentPosition: false,
         transitionDuration: '0.3s',

@@ -115,7 +115,7 @@ export const images = [
   },
   {
     filename: 'jeremy-7.jpg',
-    size: 'xlportrait', // 1707x2560 (0.67 ratio - portrait, featured)
+    size: 'portrait', // 1707x2560 (0.67 ratio - portrait, featured)
     caption: 'Jeremy Strong'
   },
   {
