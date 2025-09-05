@@ -176,7 +176,7 @@ body {
 
 /* Base column width - Responsive percentage based */
 .portfolio-items .col {
-  width: 312px; /* ~10% larger than 283px for 2:3 ratio */
+  width: 283px; /* Fixed width for exact 424px height at 2:3 ratio */
   padding: 5px; /* 5px on each side -> 10px between items */
   box-sizing: border-box;
   float: left;
@@ -184,41 +184,31 @@ body {
 
 /* Size variations - User-friendly names */
 .portfolio-items .col.portrait {
-  width: 312px; /* ~10% larger */
+  width: 283px; /* Fixed width for 424px height */
 }
 
 .portfolio-items .col.landscape {
-  width: 624px; /* 2 units wide, ~10% larger */
+  width: 566px; /* 2 units wide */
 }
 
 .portfolio-items .col.xlportrait {
-  width: 624px; /* 2 units wide, ~10% larger */
+  width: 566px; /* 2 units wide */
 }
 
 /* Responsive breakpoints */
 @media only screen and (max-width: 1700px) {
   .portfolio-items .col.portrait {
-    width: 275px; /* ~10% larger than 250px */
+    width: 250px; /* Slightly smaller */
   }
   .portfolio-items .col.landscape,
   .portfolio-items .col.xlportrait {
-    width: 550px; /* 2x width */
+    width: 500px; /* 2x width */
   }
 }
 
 @media only screen and (max-width: 1400px) {
   .portfolio-items .col.portrait {
-    width: 242px; /* ~10% larger */
-  }
-  .portfolio-items .col.landscape,
-  .portfolio-items .col.xlportrait {
-    width: 484px; /* 2x width */
-  }
-}
-
-@media only screen and (max-width: 1200px) {
-  .portfolio-items .col.portrait {
-    width: 220px; /* ~10% larger */
+    width: 220px; /* Smaller for medium screens */
   }
   .portfolio-items .col.landscape,
   .portfolio-items .col.xlportrait {
@@ -226,13 +216,23 @@ body {
   }
 }
 
-@media only screen and (max-width: 768px) {
+@media only screen and (max-width: 1200px) {
   .portfolio-items .col.portrait {
-    width: 50%; /* ~10% larger -> 2 columns */
+    width: 200px; /* Smaller */
   }
   .portfolio-items .col.landscape,
   .portfolio-items .col.xlportrait {
-    width: 100%; /* ~10% larger than 90% */
+    width: 400px; /* 2x width */
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .portfolio-items .col.portrait {
+    width: 45%; /* 2 columns */
+  }
+  .portfolio-items .col.landscape,
+  .portfolio-items .col.xlportrait {
+    width: 90%; /* Almost full width */
   }
 }
 
