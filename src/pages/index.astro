@@ -165,25 +165,26 @@ const highlightPhotos = processedImages.map(img => ({
   opacity: 1;
 }
 
-/* Base column width - Responsive percentage based */
+/* Base column width - Fixed pixel based */
 .portfolio-items .col {
-  width: 20%; /* 5 columns to fill width */
-  padding: 2px;
+  width: 320px; /* Fixed base width */
+  padding: 0;
+  margin: 0 0 10px 0; /* Bottom margin for vertical spacing */
   box-sizing: border-box;
   float: left;
 }
 
 /* Size variations - User-friendly names */
 .portfolio-items .col.portrait {
-  width: 20%; /* 1 unit - 5 columns */
+  width: 320px; /* 1 column width */
 }
 
 .portfolio-items .col.landscape {
-  width: 40%; /* 2 units wide */
+  width: 650px; /* 2 columns + gap (320*2 + 10) */
 }
 
 .portfolio-items .col.xlportrait {
-  width: 40%; /* 2 units wide */
+  width: 650px; /* 2 columns + gap */
 }
 
 /* Responsive breakpoints */
@@ -255,7 +256,7 @@ const highlightPhotos = processedImages.map(img => ({
 }
 
 .portfolio-items .col.landscape .work-item {
-  aspect-ratio: 3 / 2; /* Horizontal orientation - landscape */
+  aspect-ratio: 4 / 3; /* 4:3 ratio gives same height as portrait when landscape is 2x wide */
 }
 
 .portfolio-items .col.xlportrait .work-item {
@@ -385,9 +386,9 @@ const highlightPhotos = processedImages.map(img => ({
         itemSelector: '.col',
         layoutMode: 'masonry',
         masonry: {
-          columnWidth: '.col.portrait', // Use portrait as base unit
-          gutter: 0,
-          fitWidth: false,
+          columnWidth: 320, // Fixed column width
+          gutter: 10, // 10px gap between columns
+          fitWidth: true, // Center the grid
           horizontalOrder: false // Vertical order fills columns top to bottom for tighter packing
         },
         percentPosition: false,
