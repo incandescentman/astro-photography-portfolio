@@ -840,25 +840,29 @@ body:has(.admin-toolbar) .portfolio-wrap {
       try {
         const orderArray = JSON.parse(savedOrder);
         const items = Array.from(container.querySelectorAll('.masonry-item'));
-        
-        // Create a map of caption to element
-        const itemMap = new Map();
+
+        // Build lookup maps using the FIRST <img> in each masonry item
+        const filenameMap = new Map(); // filename -> element
+        const captionMap = new Map();  // caption  -> element (legacy fallback)
         items.forEach(item => {
           const img = item.querySelector('img');
-          if (img) {
-            const caption = img.getAttribute('alt') || '';
-            itemMap.set(caption, item);
-          }
+          if (!img) return;
+          const src = img.getAttribute('src') || '';
+          const filename = src.split('/').pop() || '';
+          const caption = img.getAttribute('alt') || '';
+          if (filename) filenameMap.set(filename, item);
+          if (caption) captionMap.set(caption, item);
         });
-        
-        // Reorder DOM based on saved order
-        orderArray.forEach(caption => {
-          const item = itemMap.get(caption);
-          if (item) {
-            container.appendChild(item);
-          }
+
+        // Determine if saved order looks like filenames or captions
+        const looksLikeFilenames = orderArray.every(v => typeof v === 'string' && /\.[a-zA-Z0-9]+$/.test(v));
+
+        // Reorder DOM based on saved order (prefer filenames, fallback to captions)
+        orderArray.forEach(key => {
+          const item = (looksLikeFilenames ? filenameMap.get(key) : (filenameMap.get(key) || captionMap.get(key)));
+          if (item) container.appendChild(item);
         });
-        
+
         console.log('Restored saved order');
       } catch (e) {
         console.error('Failed to restore order:', e);
@@ -883,13 +887,13 @@ body:has(.admin-toolbar) .portfolio-wrap {
           };
         });
         
-        // Save to localStorage for immediate use
-        const orderCaptions = order.map(o => o.caption);
-        localStorage.setItem('photoOrder', JSON.stringify(orderCaptions));
+        // Save to localStorage for immediate use (use filenames to avoid caption collisions)
+        const orderFilenames = order.map(o => o.filename).filter(Boolean);
+        localStorage.setItem('photoOrder', JSON.stringify(orderFilenames));
         
         // Also save to server for permanent storage
         try {
-          const response = await fetch('/api/save-order.json', {
+          const response = await fetch('/api/save-order', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -1040,30 +1044,21 @@ body:has(.admin-toolbar) .portfolio-wrap {
         }
       });
       
-      // Auto-save order when drag ends (only in admin mode)
+      // Auto-save to localStorage only when drag ends (only in admin mode)
       if (isAdminMode) {
         pckry.on('dragItemPositioned', function() {
           // Get current order
           const items = pckry.getItemElements();
-          const order = items.map(item => {
+          const orderFilenames = items.map(item => {
             const img = item.querySelector('img');
-            return img ? img.getAttribute('alt') : '';
-          });
-          
-          // Auto-save to localStorage
-          localStorage.setItem('photoOrder', JSON.stringify(order));
-          console.log('Order auto-saved');
-          
-          // Visual feedback
-          const saveBtn = document.getElementById('save-order');
-          if (saveBtn) {
-            saveBtn.textContent = 'Auto-saved';
-            saveBtn.classList.add('success');
-            setTimeout(() => {
-              saveBtn.textContent = 'Save Order';
-              saveBtn.classList.remove('success');
-            }, 1500);
-          }
+            if (!img) return '';
+            const src = img.getAttribute('src') || '';
+            return src.split('/').pop() || '';
+          }).filter(Boolean);
+
+          // Auto-save to localStorage only (not server)
+          localStorage.setItem('photoOrder', JSON.stringify(orderFilenames));
+          console.log('Sequence auto-saved locally');
         });
       }
     });
