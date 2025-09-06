@@ -503,31 +503,54 @@ function mapSingle(img) {
 /* Caption overlay */
 .masonry-item a {
   position: relative;
+  overflow: hidden;
+}
+
+/* Dark overlay on hover */
+.masonry-item a::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 1;
+  pointer-events: none;
 }
 
 .caption-overlay {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   color: white;
-  padding: 20px;
+  text-align: center;
+  width: 90%;
   opacity: 0;
   transition: opacity 0.3s ease;
   pointer-events: none;
+  z-index: 2;
 }
 
 .caption-overlay h3 {
   margin: 0;
-  font-size: 16px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 18px;
   font-weight: 500;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+  letter-spacing: 0.5px;
 }
 
 /* Hover effects */
 .masonry-item:hover img {
   transform: scale(1.07);
+}
+
+.masonry-item:hover a::before {
+  opacity: 1;
 }
 
 .masonry-item:hover .caption-overlay {
