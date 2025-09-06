@@ -1,0 +1,102 @@
+* Photo Resequencing Guide
+
+** Overview
+This site includes an admin mode that allows you to drag and drop photos to reorder them. The new sequence is saved permanently and will persist across page refreshes.
+
+** Important Limitations
+- *This only works in local development mode* (npm run dev)
+- *Does NOT work on the deployed website* (Vercel/production)
+- Only you as the developer can resequence photos
+- Website visitors cannot change the order
+
+** How to Use Admin Mode
+
+*** 1. Start Development Server
+#+begin_src bash
+npm run dev
+#+end_src
+
+*** 2. Access Admin Mode
+Navigate to your homepage with the admin parameter:
+#+begin_example
+http://localhost:4323/?admin=true
+#+end_example
+
+*** 3. Admin Toolbar
+You'll see a navy blue toolbar at the top with:
+- *Admin Mode* badge with instructions
+- *Save Sequence* button - saves your changes permanently
+- *Reset* button - reverts to default order
+- *Export* button - downloads current order as JSON
+
+*** 4. Drag and Drop
+- Click and hold any photo to drag it
+- Drop it in the desired position
+- Photos automatically rearrange to fill gaps
+- Changes auto-save to browser (localStorage)
+
+*** 5. Save Your Changes
+- Click "Save Sequence" to permanently save
+- This writes to `src/data/saved-order.json`
+- The saved order will persist across:
+  - Page refreshes
+  - Server restarts
+  - Git commits (the JSON file is tracked)
+
+** Technical Details
+
+*** How It Works
+1. *Client-side*: Draggabilly enables drag and drop
+2. *Local storage*: Immediate persistence in browser
+3. *Server API*: POST to `/api/save-order` endpoint
+4. *File storage*: Saves to `src/data/saved-order.json`
+5. *Server-side rendering*: Loads saved order on page build
+
+*** File Structure
+- `src/pages/index.astro` - Main page with drag/drop logic
+- `src/data/homepage-images.js` - Original image configuration
+- `src/data/saved-order.json` - Saved custom sequence
+- `src/pages/api/save-order.ts` - API endpoint for saving
+
+*** Why It Only Works Locally
+- The save endpoint requires writing to the filesystem
+- Vercel and other static hosts don't allow file writes
+- The API needs `output: 'server'` mode which isn't available in production
+- This is intentional - only you should control the photo order
+
+** Deploying Changes
+
+After resequencing photos locally:
+
+1. Save your sequence (click "Save Sequence")
+2. Commit the updated `saved-order.json`:
+   #+begin_src bash
+   git add src/data/saved-order.json
+   git commit -m "Update photo sequence"
+   git push
+   #+end_src
+3. Vercel will automatically deploy with your new order
+
+** Troubleshooting
+
+*** Photos revert to old order
+- Make sure you clicked "Save Sequence" (not just dragged)
+- Check that `src/data/saved-order.json` was created/updated
+- Verify the file is committed to git
+
+*** Admin toolbar not appearing
+- Ensure URL includes `?admin=true`
+- Check you're on localhost (not production site)
+- Try hard refresh (Cmd+Shift+R)
+
+*** Save button shows error
+- Make sure dev server is running with `npm run dev`
+- Check console for specific error messages
+- Verify `astro.config.mts` has `output: 'server'`
+
+** Alternative for Production
+If you need user-driven reordering on the live site, you would need:
+- External database (Supabase, Firebase, etc.)
+- User authentication system
+- Different storage approach (not filesystem)
+- This would be a significant architectural change
