@@ -5,7 +5,7 @@ import { images } from '../data/homepage-images.js';
 
 // Set this to false to use your manual image order from homepage-images.js
 // Set to true to automatically optimize order to minimize gaps
-const AUTO_OPTIMIZE_ORDER = false;
+const AUTO_OPTIMIZE_ORDER = true;
 
 // Algorithm to optimize image order for minimal gaps
 function optimizeImageOrder(images) {
@@ -296,9 +296,15 @@ function mapSingle(img) {
               <div class="stacked-pair">
                 <a class="masonry-link portfolio-lightbox" href={a.src}>
                   <img src={a.src} alt={a.caption} loading="lazy" data-caption={a.caption} />
+                  <div class="caption-overlay">
+                    <h3>{a.caption}</h3>
+                  </div>
                 </a>
                 <a class="masonry-link portfolio-lightbox" href={b.src}>
                   <img src={b.src} alt={b.caption} loading="lazy" data-caption={b.caption} />
+                  <div class="caption-overlay">
+                    <h3>{b.caption}</h3>
+                  </div>
                 </a>
               </div>
             </article>
@@ -321,6 +327,9 @@ function mapSingle(img) {
                 data-caption={photo.caption}
                 data-variant={variant}
               />
+              <div class="caption-overlay">
+                <h3>{photo.caption}</h3>
+              </div>
             </a>
           </article>
         );
@@ -491,9 +500,38 @@ function mapSingle(img) {
   display: block;
 }
 
+/* Caption overlay */
+.masonry-item a {
+  position: relative;
+}
+
+.caption-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+  color: white;
+  padding: 20px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.caption-overlay h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
 /* Hover effects */
 .masonry-item:hover img {
   transform: scale(1.07);
+}
+
+.masonry-item:hover .caption-overlay {
+  opacity: 1;
 }
 </style>
 
