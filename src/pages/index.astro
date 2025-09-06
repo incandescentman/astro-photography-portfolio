@@ -466,16 +466,33 @@ function mapSingle(img) {
       transitionDuration: '0.35s',
       stagger: 30,
       resize: true,
-      initLayout: false // Don't layout immediately
+      initLayout: false, // Don't layout immediately
+      horizontal: false, // Vertical layout for better gap filling
+      originLeft: true,
+      originTop: true
     });
     
     // Layout after images load
     imagesLoaded(container, function() {
       pckry.layout();
       
+      // Packery's shiftLayout method fills gaps better
+      pckry.shiftLayout();
+      
+      // Sort items to fill gaps - move smaller items to fill holes
+      const items = pckry.getItemElements();
+      
+      // Fit each item to fill available gaps
+      items.forEach(item => {
+        pckry.fit(item);
+      });
+      
+      // Final layout pass
+      pckry.layout();
+      
       // Add animation classes
-      const items = container.querySelectorAll('.masonry-item');
-      items.forEach((item, i) => {
+      const allItems = container.querySelectorAll('.masonry-item');
+      allItems.forEach((item, i) => {
         setTimeout(() => {
           item.classList.add('animated-in');
         }, i * 60);
@@ -484,14 +501,17 @@ function mapSingle(img) {
     
     // Also layout as each image loads for progressive rendering
     imagesLoaded(container).on('progress', function() {
-      pckry.layout();
+      pckry.shiftLayout();
     });
     
     // Relayout on resize
     let resizeTO;
     window.addEventListener('resize', () => {
       clearTimeout(resizeTO);
-      resizeTO = setTimeout(() => pckry.layout(), 100);
+      resizeTO = setTimeout(() => {
+        pckry.layout();
+        pckry.shiftLayout();
+      }, 100);
     });
     
     // Initialize PhotoSwipe Lightbox
