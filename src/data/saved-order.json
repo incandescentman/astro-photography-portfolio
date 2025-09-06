@@ -20,29 +20,9 @@
     "size": "xlportrait"
   },
   {
-    "filename": "vinod-4.jpg",
-    "caption": "Vinod",
-    "size": "portrait"
-  },
-  {
-    "filename": "judd-apatow.jpg",
-    "caption": "Judd Apatow",
-    "size": "portrait"
-  },
-  {
     "filename": "Gabriel_LaBelle_at_the_2024_Toronto_International_Film_Festival_03_cropped.jpg",
     "caption": "Gabriel LaBelle at the 2024 Toronto International Film Festival",
     "size": "portrait"
-  },
-  {
-    "filename": "jeremy-3.jpg",
-    "caption": "Dave Franco at Sundance 2025",
-    "size": "portrait"
-  },
-  {
-    "filename": "Sydney_Sweeney_at_the_2024_Toronto_International_Film_Festival_(cropped_2).jpg",
-    "caption": "Sydney Sweeney at the 2024 Toronto International Film Festival",
-    "size": "xlportrait"
   },
   {
     "filename": "jeremy.jpg",
@@ -60,9 +40,9 @@
     "size": "portrait"
   },
   {
-    "filename": "jeremy-7.jpg",
-    "caption": "Steven Yeun",
-    "size": "portrait"
+    "filename": "Sydney_Sweeney_at_the_2024_Toronto_International_Film_Festival_(cropped_2).jpg",
+    "caption": "Sydney Sweeney at the 2024 Toronto International Film Festival",
+    "size": "xlportrait"
   },
   {
     "filename": "conan.jpg",
@@ -75,28 +55,8 @@
     "size": "portrait"
   },
   {
-    "filename": "jeremy-11.jpg",
-    "caption": "Jeremy",
-    "size": "landscape"
-  },
-  {
-    "filename": "vinod-3.jpg",
+    "filename": "vinod.jpg",
     "caption": "Vinod",
-    "size": "portrait"
-  },
-  {
-    "filename": "jeremy-6.jpg",
-    "caption": "Jeremy",
-    "size": "portrait"
-  },
-  {
-    "filename": "Lisa_Gilroy_at_SXSW_in_2025-1.jpg",
-    "caption": "Lisa Gilroy at SXSW in 2025",
-    "size": "xlportrait"
-  },
-  {
-    "filename": "jay-dixit_red-carpet_08042.jpg",
-    "caption": "Jay Dixit Red Carpet",
     "size": "landscape"
   },
   {
@@ -105,24 +65,24 @@
     "size": "portrait"
   },
   {
-    "filename": "jeremy-9.jpg",
-    "caption": "Jeremy Strong",
-    "size": "portrait"
-  },
-  {
-    "filename": "2024-03-09_SXSW_Conan_Nick-Kroll_Office-Space_events_07310.jpg",
-    "caption": "Conan and Nick Kroll at SXSW Office Space Event",
-    "size": "portrait"
-  },
-  {
     "filename": "Kaia_Gerber_at_the_2024_Toronto_International_Film_Festival_03_(cropped).jpg",
     "caption": "Kaia Gerber at the 2024 Toronto International Film Festival",
     "size": "portrait"
   },
   {
-    "filename": "Jason_Collett_at_Ottawa_Jazz_Festival_in_2025_-_3.jpg",
-    "caption": "Jason Collett at Ottawa Jazz Festival in 2025",
+    "filename": "Lisa_Gilroy_at_SXSW_in_2025-1.jpg",
+    "caption": "Lisa Gilroy at SXSW in 2025",
     "size": "xlportrait"
+  },
+  {
+    "filename": "jeremy-11.jpg",
+    "caption": "Jeremy",
+    "size": "landscape"
+  },
+  {
+    "filename": "2024-03-09_SXSW_UCB_ASSSSCAT_10.jpg",
+    "caption": "UCB ASSSSCAT at SXSW",
+    "size": "portrait"
   },
   {
     "filename": "Frank_Oz_2024_Cropped.jpg",
@@ -130,8 +90,13 @@
     "size": "portrait"
   },
   {
-    "filename": "2024-03-09_SXSW_UCB_ASSSSCAT_10.jpg",
-    "caption": "UCB ASSSSCAT at SXSW",
+    "filename": "jay-dixit_red-carpet_08042.jpg",
+    "caption": "Jay Dixit Red Carpet",
+    "size": "landscape"
+  },
+  {
+    "filename": "2024-03-09_SXSW_Conan_Nick-Kroll_Office-Space_events_07162.jpg",
+    "caption": "Conan and Nick Kroll at SXSW Office Space Event",
     "size": "portrait"
   },
   {
@@ -140,13 +105,48 @@
     "size": "portrait"
   },
   {
-    "filename": "vinod.jpg",
+    "filename": "vinod-4.jpg",
     "caption": "Vinod",
-    "size": "landscape"
+    "size": "portrait"
+  },
+  {
+    "filename": "judd-apatow.jpg",
+    "caption": "Judd Apatow",
+    "size": "portrait"
   },
   {
     "filename": "Willem_Dafoe_at_the_2024_Toronto_International_Film_Festival_02.jpg",
     "caption": "Willem Dafoe at the 2024 Toronto International Film Festival",
+    "size": "portrait"
+  },
+  {
+    "filename": "jeremy-9.jpg",
+    "caption": "Jeremy Strong",
+    "size": "portrait"
+  },
+  {
+    "filename": "vinod-3.jpg",
+    "caption": "Vinod",
+    "size": "portrait"
+  },
+  {
+    "filename": "jeremy-3.jpg",
+    "caption": "Dave Franco at Sundance 2025",
+    "size": "portrait"
+  },
+  {
+    "filename": "jeremy-7.jpg",
+    "caption": "Steven Yeun",
+    "size": "portrait"
+  },
+  {
+    "filename": "2024-03-09_SXSW_Conan_Nick-Kroll_Office-Space_events_07310.jpg",
+    "caption": "Conan and Nick Kroll at SXSW Office Space Event",
+    "size": "portrait"
+  },
+  {
+    "filename": "jeremy-6.jpg",
+    "caption": "Jeremy",
     "size": "portrait"
   },
   {
@@ -155,8 +155,8 @@
     "size": "xlportrait"
   },
   {
-    "filename": "2024-03-09_SXSW_Conan_Nick-Kroll_Office-Space_events_07162.jpg",
-    "caption": "Conan and Nick Kroll at SXSW Office Space Event",
-    "size": "portrait"
+    "filename": "Jason_Collett_at_Ottawa_Jazz_Festival_in_2025_-_3.jpg",
+    "caption": "Jason Collett at Ottawa Jazz Festival in 2025",
+    "size": "xlportrait"
   }
 ]

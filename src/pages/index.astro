@@ -345,6 +345,7 @@ function mapSingle(img) {
           const b = mapSingle(item.items[1] || item.items[0]);
           return (
             <article class="masonry-item wide_tall" data-idx={index} data-filename={a.filename} data-size="xlportrait">
+              <button type="button" class="edit-btn" title="Edit">✎</button>
               <div class="stacked-pair">
                 <a class="masonry-link portfolio-lightbox" href={a.src}>
                   <img src={a.src} alt={a.caption} loading="lazy" data-caption={a.caption} />
@@ -371,6 +372,7 @@ function mapSingle(img) {
         
         return (
           <article class={`masonry-item ${variant}`} data-idx={index} data-filename={photo.filename} data-size={photo.size}>
+            <button type="button" class="edit-btn" title="Edit">✎</button>
             <a class="masonry-link portfolio-lightbox" href={photo.src}>
               <img 
                 src={photo.src} 
@@ -848,6 +850,28 @@ body:has(.admin-toolbar) .portfolio-wrap {
   background: rgba(0, 0, 0, 0.5);
   z-index: 99999;
 }
+
+/* Edit button overlay */
+.edit-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 6;
+  background: rgba(17,24,39,0.75);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.admin-mode .masonry-item:hover .edit-btn,
+body.edit-key-active .masonry-item .edit-btn {
+  opacity: 1;
+}
 </style>
 
 <script>
@@ -1049,11 +1073,33 @@ body:has(.admin-toolbar) .portfolio-wrap {
       // Add admin mode class to container
       container.classList.add('admin-mode');
       
-      // Add Shift+Click handler for editing
-      // Use capture phase to intercept before lightbox
+      // Edit key hint: hold 'e' to reveal edit buttons
+      const setEditKey = (on) => {
+        document.body.classList.toggle('edit-key-active', !!on);
+      };
+      document.addEventListener('keydown', (ev) => {
+        if (ev.key.toLowerCase() === 'e') setEditKey(true);
+      });
+      document.addEventListener('keyup', (ev) => {
+        if (ev.key.toLowerCase() === 'e') setEditKey(false);
+      });
+
+      // Prevent navigation early on mousedown (capture) when editing
+      container.addEventListener('mousedown', (e) => {
+        const wantEdit = e.shiftKey || document.body.classList.contains('edit-key-active') || !!e.target.closest('.edit-btn');
+        if (!wantEdit) return;
+        const anchor = e.target.closest('a');
+        if (anchor) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }, true);
+
+      // Open editor on click (capture)
       container.addEventListener('click', (e) => {
-        // Check if Shift key is pressed
-        if (!e.shiftKey) return;
+        const triggeredByBtn = !!e.target.closest('.edit-btn');
+        const wantEdit = triggeredByBtn || e.shiftKey || document.body.classList.contains('edit-key-active');
+        if (!wantEdit) return;
         
         const item = e.target.closest('.masonry-item');
         if (!item) return;
@@ -1064,12 +1110,14 @@ body:has(.admin-toolbar) .portfolio-wrap {
         // Prevent default link behavior
         e.preventDefault();
         e.stopPropagation();
+        if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+        if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
           
-          // Get image metadata
-          const img = item.querySelector('img');
-          const filename = item.getAttribute('data-filename') || img?.src?.split('/').pop() || '';
-          const currentSize = item.getAttribute('data-size') || 'portrait';
-          const currentCaption = img?.getAttribute('alt')?.replace('Jay Dixit photo: ', '') || '';
+          // Get image metadata from the clicked img (or first)
+          const targetImg = e.target.closest('img') || item.querySelector('img');
+          const filename = item.getAttribute('data-filename') || targetImg?.src?.split('/').pop() || '';
+          const currentSize = item.getAttribute('data-size') || (item.classList.contains('wide_tall') ? 'xlportrait' : item.classList.contains('wide') ? 'landscape' : 'portrait');
+          const currentCaption = (targetImg?.getAttribute('data-caption') || targetImg?.getAttribute('alt') || '').replace('Jay Dixit photo: ', '');
           
           // Create combined edit modal
           const overlay = document.createElement('div');
@@ -1136,9 +1184,9 @@ body:has(.admin-toolbar) .portfolio-wrap {
             item.className = 'masonry-item ' + (newSize === 'landscape' ? 'wide' : newSize === 'xlportrait' ? 'wide_tall' : 'regular');
             
             // Update the caption
-            if (img) {
-              img.setAttribute('alt', 'Jay Dixit photo: ' + newCaption);
-              img.setAttribute('data-caption', newCaption);
+            if (targetImg) {
+              targetImg.setAttribute('alt', 'Jay Dixit photo: ' + newCaption);
+              targetImg.setAttribute('data-caption', newCaption);
             }
             const captionOverlay = item.querySelector('.caption-overlay h3');
             if (captionOverlay) {
