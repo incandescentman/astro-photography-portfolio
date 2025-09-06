@@ -59,11 +59,39 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // Save the order to a JSON file
+    // Save the order to a JSON file (includes size and caption)
     const orderFilePath = path.join(process.cwd(), 'src/data/saved-order.json');
     await fs.writeFile(orderFilePath, JSON.stringify(order, null, 2), 'utf-8');
 
     console.log('Saved photo sequence:', order.length, 'items');
+    
+    // Also update the homepage-images.js file if sizes have changed
+    if (order.some(item => item.size)) {
+      try {
+        const imagesPath = path.join(process.cwd(), 'src/data/homepage-images.js');
+        const imagesContent = await fs.readFile(imagesPath, 'utf-8');
+        
+        // Create a map of filename to size
+        const sizeMap = new Map();
+        order.forEach(item => {
+          if (item.size) {
+            sizeMap.set(item.filename, item.size);
+          }
+        });
+        
+        // Update sizes in the file
+        let updatedContent = imagesContent;
+        sizeMap.forEach((size, filename) => {
+          const regex = new RegExp(`(filename: '${filename}'[^}]*?size: )'[^']*'`, 'g');
+          updatedContent = updatedContent.replace(regex, `$1'${size}'`);
+        });
+        
+        await fs.writeFile(imagesPath, updatedContent, 'utf-8');
+        console.log('Updated homepage-images.js with new sizes');
+      } catch (err) {
+        console.error('Failed to update homepage-images.js:', err);
+      }
+    }
 
     return new Response(
       JSON.stringify({ success: true, message: 'Sequence saved successfully', count: order.length, note: 'Saved to src/data/saved-order.json' }),

@@ -370,7 +370,7 @@ function mapSingle(img) {
         else if (photo.size === 'portrait') variant = 'regular';
         
         return (
-          <article class={`masonry-item ${variant}`} data-idx={index}>
+          <article class={`masonry-item ${variant}`} data-idx={index} data-filename={item.filename} data-size={photo.size}>
             <a class="masonry-link portfolio-lightbox" href={photo.src}>
               <img 
                 src={photo.src} 
@@ -383,6 +383,7 @@ function mapSingle(img) {
                 <h3>{photo.caption}</h3>
               </div>
             </a>
+            <!-- Admin controls removed - using double-click instead -->
           </article>
         );
       })}
@@ -719,6 +720,111 @@ function mapSingle(img) {
 body:has(.admin-toolbar) .portfolio-wrap {
   padding-top: 170px; /* Extra space for admin toolbar */
 }
+
+/* Admin mode visual feedback */
+.admin-mode .masonry-item {
+  position: relative;
+}
+
+.admin-mode .masonry-item::before {
+  content: "Double-click to edit";
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  background: rgba(30, 58, 138, 0.9);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.admin-mode .masonry-item:hover::before {
+  opacity: 1;
+}
+
+/* Modal for editing */
+.edit-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  z-index: 100000;
+  min-width: 400px;
+}
+
+.edit-modal h3 {
+  margin: 0 0 16px 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.edit-modal label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.edit-modal .edit-section {
+  margin-bottom: 16px;
+}
+
+.edit-modal input,
+.edit-modal select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.edit-modal .button-group {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.edit-modal button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.edit-modal .save-btn {
+  background: #1e3a8a;
+  color: white;
+  border: none;
+}
+
+.edit-modal .cancel-btn {
+  background: #f3f4f6;
+  color: #374151;
+  border: none;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 99999;
+}
 </style>
 
 <script>
@@ -917,8 +1023,178 @@ body:has(.admin-toolbar) .portfolio-wrap {
     
     // Set up admin mode features
     if (isAdminMode) {
-      // Add drag cursor to images in admin mode
+      // Add admin mode class to container
       container.classList.add('admin-mode');
+      
+      // Add double-click handler for editing
+      let lastClickTime = 0;
+      let lastClickedItem = null;
+      
+      container.addEventListener('click', (e) => {
+        const item = e.target.closest('.masonry-item');
+        if (!item) return;
+        
+        // Don't interfere with dragging
+        if (item.classList.contains('is-dragging')) return;
+        
+        const currentTime = Date.now();
+        
+        // Check for double-click (same item clicked within 500ms)
+        if (lastClickedItem === item && currentTime - lastClickTime < 500) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          // Get image metadata
+          const img = item.querySelector('img');
+          const filename = item.getAttribute('data-filename') || img?.src?.split('/').pop() || '';
+          const currentSize = item.getAttribute('data-size') || 'portrait';
+          const currentCaption = img?.getAttribute('alt')?.replace('Jay Dixit photo: ', '') || '';
+          
+          // Create combined edit modal
+          const overlay = document.createElement('div');
+          overlay.className = 'modal-overlay';
+          
+          const modal = document.createElement('div');
+          modal.className = 'edit-modal';
+          modal.innerHTML = `
+            <h3>Edit Image</h3>
+            <label style="color: #666; font-size: 12px; margin-bottom: 16px; display: block;">File: ${filename}</label>
+            
+            <div class="edit-section">
+              <label>Size:</label>
+              <select id="size-select">
+                <option value="portrait" ${currentSize === 'portrait' ? 'selected' : ''}>Portrait (1 column)</option>
+                <option value="landscape" ${currentSize === 'landscape' ? 'selected' : ''}>Landscape (2 columns × 1 row)</option>
+                <option value="xlportrait" ${currentSize === 'xlportrait' ? 'selected' : ''}>XL Portrait (2 columns × 2 rows)</option>
+              </select>
+            </div>
+            
+            <div class="edit-section">
+              <label>Caption:</label>
+              <input type="text" id="caption-input" value="${currentCaption.replace(/"/g, '&quot;')}" />
+            </div>
+            
+            <div class="button-group">
+              <button class="cancel-btn">Cancel</button>
+              <button class="save-btn">Save Changes</button>
+            </div>
+          `;
+          
+          document.body.appendChild(overlay);
+          document.body.appendChild(modal);
+          
+          // Focus caption input
+          setTimeout(() => {
+            const input = modal.querySelector('#caption-input');
+            if (input) {
+              input.focus();
+              input.select();
+            }
+          }, 100);
+          
+          // Handle cancel
+          modal.querySelector('.cancel-btn').addEventListener('click', () => {
+            overlay.remove();
+            modal.remove();
+          });
+          
+          // Handle save
+          modal.querySelector('.save-btn').addEventListener('click', async () => {
+            const newSize = modal.querySelector('#size-select').value;
+            const newCaption = modal.querySelector('#caption-input').value;
+            
+            // Update the item's size
+            item.setAttribute('data-size', newSize);
+            item.className = 'masonry-item ' + (newSize === 'landscape' ? 'wide' : newSize === 'xlportrait' ? 'wide_tall' : 'regular');
+            
+            // Update the caption
+            if (img) {
+              img.setAttribute('alt', 'Jay Dixit photo: ' + newCaption);
+              img.setAttribute('data-caption', newCaption);
+            }
+            const captionOverlay = item.querySelector('.caption-overlay h3');
+            if (captionOverlay) {
+              captionOverlay.textContent = newCaption;
+            }
+            
+            // Save to server
+            await saveImageMetadata(filename, { size: newSize, caption: newCaption });
+            
+            // Relayout masonry
+            if (window.pckry) {
+              window.pckry.layout();
+            }
+            
+            overlay.remove();
+            modal.remove();
+          });
+          
+          // Handle ESC key
+          const handleEsc = (e) => {
+            if (e.key === 'Escape') {
+              overlay.remove();
+              modal.remove();
+              document.removeEventListener('keydown', handleEsc);
+            }
+          };
+          document.addEventListener('keydown', handleEsc);
+          
+          // Reset for next double-click
+          lastClickedItem = null;
+          lastClickTime = 0;
+        } else {
+          // First click - record it
+          lastClickedItem = item;
+          lastClickTime = currentTime;
+        }
+      });
+      
+      // Function to save metadata changes
+      async function saveImageMetadata(filename, updates) {
+        try {
+          // Get current saved order
+          const savedOrder = JSON.parse(localStorage.getItem('photoOrder') || '[]');
+          
+          // Get all current items with their metadata
+          const items = Array.from(container.querySelectorAll('.masonry-item'));
+          const metadata = items.map(item => {
+            const img = item.querySelector('img');
+            const itemFilename = item.getAttribute('data-filename');
+            const size = item.getAttribute('data-size');
+            const caption = img?.getAttribute('alt') || '';
+            
+            // Apply updates if this is the edited item
+            if (itemFilename === filename) {
+              return {
+                filename: itemFilename,
+                caption: updates.caption !== undefined ? updates.caption : caption,
+                size: updates.size !== undefined ? updates.size : size
+              };
+            }
+            
+            return {
+              filename: itemFilename,
+              caption: caption,
+              size: size
+            };
+          });
+          
+          // Save to server
+          const response = await fetch('/api/save-order', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(metadata)
+          });
+          
+          if (response.ok) {
+            console.log('Metadata saved successfully');
+          }
+        } catch (error) {
+          console.error('Error saving metadata:', error);
+        }
+      }
       
       // Save order button - saves to both localStorage and server
       document.getElementById('save-order')?.addEventListener('click', async () => {
@@ -926,10 +1202,12 @@ body:has(.admin-toolbar) .portfolio-wrap {
         const order = items.map(item => {
           const img = item.querySelector('img');
           const src = img?.getAttribute('src') || '';
-          const filename = src.split('/').pop();
+          const filename = item.getAttribute('data-filename') || src.split('/').pop();
+          const size = item.getAttribute('data-size') || 'portrait';
           return {
             filename: filename,
-            caption: img?.getAttribute('alt') || ''
+            caption: img?.getAttribute('alt') || '',
+            size: size
           };
         });
         
