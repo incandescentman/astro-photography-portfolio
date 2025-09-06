@@ -3,6 +3,12 @@ import MainLayout from '../layouts/MainLayout.astro';
 // Import image configuration
 import { images } from '../data/homepage-images.js';
 
+// Helper to restore saved order from localStorage
+function applySavedOrder(images) {
+  // This will be done client-side to preserve SSG
+  return images;
+}
+
 // Set this to false to use your manual image order from homepage-images.js
 // Set to true to automatically optimize order to minimize gaps
 const AUTO_OPTIMIZE_ORDER = false;
@@ -580,6 +586,90 @@ function mapSingle(img) {
 .pswp--ui-visible .pswp__caption {
   opacity: 1;
 }
+
+/* Admin mode styles */
+.admin-toolbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 12px 20px;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.admin-badge {
+  background: rgba(255,255,255,0.2);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 14px;
+  margin-right: auto;
+}
+
+.admin-btn {
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.admin-btn:hover {
+  background: rgba(255,255,255,0.3);
+  transform: translateY(-1px);
+}
+
+.admin-btn.success {
+  background: #10b981;
+  border-color: #10b981;
+}
+
+.admin-btn.error {
+  background: #ef4444;
+  border-color: #ef4444;
+}
+
+.admin-btn.warning {
+  background: #f59e0b;
+  border-color: #f59e0b;
+}
+
+/* Admin mode - show drag cursor */
+.admin-mode .masonry-item {
+  cursor: move;
+}
+
+.admin-mode .masonry-item.is-dragging {
+  z-index: 100;
+  opacity: 0.8;
+  transform: scale(1.05);
+  transition: none;
+}
+
+.admin-mode.is-sorting .masonry-item:not(.is-dragging) {
+  opacity: 0.6;
+}
+
+/* Visual feedback for draggable items in admin mode */
+.admin-mode .masonry-item:hover {
+  outline: 2px dashed #667eea;
+  outline-offset: 4px;
+}
+
+/* Adjust portfolio wrap when admin toolbar is present */
+body:has(.admin-toolbar) .portfolio-wrap {
+  padding-top: 170px; /* Extra space for admin toolbar */
+}
 </style>
 
 <script>
@@ -587,6 +677,11 @@ function mapSingle(img) {
   import 'photoswipe/style.css';
   import Packery from 'packery';
   import imagesLoaded from 'imagesloaded';
+  import Draggabilly from 'draggabilly';
+  
+  // Check for admin mode (add ?admin=true to URL)
+  const urlParams = new URLSearchParams(window.location.search);
+  const isAdminMode = urlParams.get('admin') === 'true';
   
   document.addEventListener('DOMContentLoaded', function() {
     const container = document.querySelector('#masonry');
@@ -607,6 +702,148 @@ function mapSingle(img) {
       originTop: true
     });
     
+    // Restore saved order on load
+    const savedOrder = localStorage.getItem('photoOrder');
+    if (savedOrder) {
+      try {
+        const orderArray = JSON.parse(savedOrder);
+        const items = Array.from(container.querySelectorAll('.masonry-item'));
+        
+        // Create a map of caption to element
+        const itemMap = new Map();
+        items.forEach(item => {
+          const img = item.querySelector('img');
+          if (img) {
+            const caption = img.getAttribute('alt') || '';
+            itemMap.set(caption, item);
+          }
+        });
+        
+        // Reorder DOM based on saved order
+        orderArray.forEach(caption => {
+          const item = itemMap.get(caption);
+          if (item) {
+            container.appendChild(item);
+          }
+        });
+        
+        console.log('Restored saved order');
+      } catch (e) {
+        console.error('Failed to restore order:', e);
+      }
+    }
+    
+    // Add admin mode indicator
+    if (isAdminMode) {
+      // Add admin toolbar
+      const toolbar = document.createElement('div');
+      toolbar.className = 'admin-toolbar';
+      toolbar.innerHTML = `
+        <div class="admin-badge">Admin Mode</div>
+        <button id="save-order" class="admin-btn">Save Order</button>
+        <button id="reset-order" class="admin-btn">Reset to Default</button>
+        <button id="export-order" class="admin-btn">Export Order</button>
+      `;
+      document.body.insertBefore(toolbar, document.body.firstChild);
+      
+      // Add drag cursor to images in admin mode
+      container.classList.add('admin-mode');
+      
+      // Save order button - saves to both localStorage and server
+      document.getElementById('save-order')?.addEventListener('click', async () => {
+        const items = pckry.getItemElements();
+        const order = items.map(item => {
+          const img = item.querySelector('img');
+          const src = img?.getAttribute('src') || '';
+          const filename = src.split('/').pop();
+          return {
+            filename: filename,
+            caption: img?.getAttribute('alt') || ''
+          };
+        });
+        
+        // Save to localStorage for immediate use
+        const orderCaptions = order.map(o => o.caption);
+        localStorage.setItem('photoOrder', JSON.stringify(orderCaptions));
+        
+        // Also save to server for permanent storage
+        try {
+          const response = await fetch('/api/save-order.json', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ order })
+          });
+          
+          const result = await response.json();
+          
+          // Show confirmation
+          const btn = document.getElementById('save-order');
+          if (btn) {
+            if (response.ok) {
+              btn.textContent = 'Saved to Server!';
+              btn.classList.add('success');
+              console.log('Order saved to server:', result);
+            } else {
+              btn.textContent = 'Error Saving';
+              btn.classList.add('error');
+              console.error('Failed to save to server:', result);
+            }
+            setTimeout(() => {
+              btn.textContent = 'Save Order';
+              btn.classList.remove('success', 'error');
+            }, 3000);
+          }
+        } catch (error) {
+          console.error('Error saving to server:', error);
+          // Still saved to localStorage at least
+          const btn = document.getElementById('save-order');
+          if (btn) {
+            btn.textContent = 'Saved Locally';
+            btn.classList.add('warning');
+            setTimeout(() => {
+              btn.textContent = 'Save Order';
+              btn.classList.remove('warning');
+            }, 2000);
+          }
+        }
+      });
+      
+      // Reset order button
+      document.getElementById('reset-order')?.addEventListener('click', () => {
+        if (confirm('Reset to default order?')) {
+          localStorage.removeItem('photoOrder');
+          window.location.reload();
+        }
+      });
+      
+      // Export order button
+      document.getElementById('export-order')?.addEventListener('click', () => {
+        const items = pckry.getItemElements();
+        const order = items.map(item => {
+          const img = item.querySelector('img');
+          const src = img?.getAttribute('src') || '';
+          const filename = src.split('/').pop();
+          return {
+            filename: filename,
+            caption: img?.getAttribute('alt') || ''
+          };
+        });
+        
+        // Create downloadable JSON
+        const dataStr = JSON.stringify(order, null, 2);
+        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+        
+        const exportLink = document.createElement('a');
+        exportLink.setAttribute('href', dataUri);
+        exportLink.setAttribute('download', 'photo-order.json');
+        document.body.appendChild(exportLink);
+        exportLink.click();
+        document.body.removeChild(exportLink);
+      });
+    }
+    
     // Layout after images load
     imagesLoaded(container, function() {
       pckry.layout();
@@ -625,13 +862,63 @@ function mapSingle(img) {
       // Final layout pass
       pckry.layout();
       
-      // Add animation classes
+      // Make items draggable
       const allItems = container.querySelectorAll('.masonry-item');
       allItems.forEach((item, i) => {
+        // Add animation classes
         setTimeout(() => {
           item.classList.add('animated-in');
         }, i * 60);
+        
+        // Only make draggable in admin mode
+        if (isAdminMode) {
+          const draggie = new Draggabilly(item, {
+            handle: '.masonry-link', // Drag by clicking the image
+            containment: container
+          });
+          
+          // Add visual feedback during drag
+          draggie.on('dragStart', function() {
+            item.classList.add('is-dragging');
+            container.classList.add('is-sorting');
+          });
+          
+          draggie.on('dragEnd', function() {
+            item.classList.remove('is-dragging');
+            container.classList.remove('is-sorting');
+          });
+          
+          // Bind Draggabilly events to Packery
+          pckry.bindDraggabillyEvents(draggie);
+        }
       });
+      
+      // Auto-save order when drag ends (only in admin mode)
+      if (isAdminMode) {
+        pckry.on('dragItemPositioned', function() {
+          // Get current order
+          const items = pckry.getItemElements();
+          const order = items.map(item => {
+            const img = item.querySelector('img');
+            return img ? img.getAttribute('alt') : '';
+          });
+          
+          // Auto-save to localStorage
+          localStorage.setItem('photoOrder', JSON.stringify(order));
+          console.log('Order auto-saved');
+          
+          // Visual feedback
+          const saveBtn = document.getElementById('save-order');
+          if (saveBtn) {
+            saveBtn.textContent = 'Auto-saved';
+            saveBtn.classList.add('success');
+            setTimeout(() => {
+              saveBtn.textContent = 'Save Order';
+              saveBtn.classList.remove('success');
+            }, 1500);
+          }
+        });
+      }
     });
     
     // Also layout as each image loads for progressive rendering
