@@ -538,10 +538,11 @@ function mapSingle(img) {
 .caption-overlay h3 {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  font-size: 18px;
-  font-weight: 500;
+  font-size: 24px;
+  font-weight: 600;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
   letter-spacing: 0.5px;
+  line-height: 1.3;
 }
 
 /* Hover effects */
@@ -554,6 +555,27 @@ function mapSingle(img) {
 }
 
 .masonry-item:hover .caption-overlay {
+  opacity: 1;
+}
+
+/* PhotoSwipe caption styling */
+.pswp__caption {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  min-height: 44px;
+  padding: 15px 20px;
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 16px;
+  text-align: center;
+  line-height: 1.4;
+  z-index: 10;
+}
+
+.pswp--ui-visible .pswp__caption {
   opacity: 1;
 }
 </style>
@@ -630,12 +652,13 @@ function mapSingle(img) {
       gallery: '.masonry-items',
       children: '.portfolio-lightbox',
       pswpModule: () => import('/node_modules/photoswipe/dist/photoswipe.esm.js'),
-      padding: { top: 20, bottom: 20, left: 20, right: 20 },
+      padding: { top: 20, bottom: 80, left: 20, right: 20 }, // Extra bottom padding for caption
       wheelToZoom: true,
       imageClickAction: 'close',
       tapAction: 'toggle-controls',
       doubleTapAction: 'zoom',
-      preloaderDelay: 0
+      preloaderDelay: 0,
+      showHideAnimationType: 'fade'
     });
     
     // Dynamically set image dimensions
@@ -652,6 +675,23 @@ function mapSingle(img) {
       }
       
       return itemData;
+    });
+    
+    // Add caption support
+    lightbox.on('uiRegister', function() {
+      lightbox.pswp.ui.registerElement({
+        name: 'caption',
+        order: 9,
+        isButton: false,
+        appendTo: 'root',
+        html: 'Caption text',
+        onInit: (el, pswp) => {
+          lightbox.pswp.on('change', () => {
+            const currSlideData = lightbox.pswp.currSlide.data;
+            el.innerHTML = currSlideData.title || '';
+          });
+        }
+      });
     });
     
     lightbox.init();
