@@ -399,33 +399,30 @@ function mapSingle(img) {
 }
 </style>
 
-<!-- Load Isotope, Packery, and imagesLoaded -->
-<script src="https://unpkg.com/isotope-layout@3/dist/isotope.pkgd.min.js"></script>
-<script src="https://unpkg.com/isotope-packery@2/packery-mode.pkgd.min.js"></script>
-<script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
-
 <script type="module">
-  import PhotoSwipeLightbox from '/node_modules/photoswipe/dist/photoswipe-lightbox.esm.js';
-  import '/node_modules/photoswipe/dist/photoswipe.css';
+  import PhotoSwipeLightbox from 'photoswipe/lightbox';
+  import 'photoswipe/style.css';
+  import Packery from 'packery';
+  import imagesLoaded from 'imagesloaded';
   
   document.addEventListener('DOMContentLoaded', function() {
     const container = document.querySelector('#masonry');
     if (!container) return;
     
-    // Initialize Isotope with Packery layout
-    const iso = new Isotope(container, {
+    // Initialize Packery directly (not as Isotope plugin)
+    const pckry = new Packery(container, {
       itemSelector: '.masonry-item',
-      layoutMode: 'packery',
-      packery: {
-        gutter: 10
-      },
+      gutter: 10,
       percentPosition: false,
-      transitionDuration: '0.35s'
+      transitionDuration: '0.35s',
+      stagger: 30,
+      resize: true,
+      initLayout: false // Don't layout immediately
     });
     
     // Layout after images load
     imagesLoaded(container, function() {
-      iso.layout();
+      pckry.layout();
       
       // Add animation classes
       const items = container.querySelectorAll('.masonry-item');
@@ -436,11 +433,16 @@ function mapSingle(img) {
       });
     });
     
+    // Also layout as each image loads for progressive rendering
+    imagesLoaded(container).on('progress', function() {
+      pckry.layout();
+    });
+    
     // Relayout on resize
     let resizeTO;
     window.addEventListener('resize', () => {
       clearTimeout(resizeTO);
-      resizeTO = setTimeout(() => iso.layout(), 100);
+      resizeTO = setTimeout(() => pckry.layout(), 100);
     });
     
     // Initialize PhotoSwipe Lightbox
