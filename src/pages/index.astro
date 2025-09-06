@@ -725,7 +725,7 @@ body:has(.admin-toolbar) .portfolio-wrap {
 .admin-mode .masonry-item { position: relative; }
 
 .admin-mode .masonry-item::before {
-  content: "Right-click to edit";
+  content: "Shift+Click to edit";
   position: absolute;
   top: 10px;
   left: 10px;
@@ -1049,15 +1049,19 @@ body:has(.admin-toolbar) .portfolio-wrap {
       // Add admin mode class to container
       container.classList.add('admin-mode');
       
-      // Add right-click handler for editing
-      container.addEventListener('contextmenu', (e) => {
+      // Add Shift+Click handler for editing
+      // Use capture phase to intercept before lightbox
+      container.addEventListener('click', (e) => {
+        // Check if Shift key is pressed
+        if (!e.shiftKey) return;
+        
         const item = e.target.closest('.masonry-item');
         if (!item) return;
         
         // Don't interfere with dragging
         if (item.classList.contains('is-dragging')) return;
         
-        // Prevent context menu from appearing
+        // Prevent default link behavior
         e.preventDefault();
         e.stopPropagation();
           
@@ -1075,7 +1079,7 @@ body:has(.admin-toolbar) .portfolio-wrap {
           modal.className = 'edit-modal';
           modal.innerHTML = `
             <h3>Edit Image</h3>
-            <p style="font-size: 11px; color: #999; margin: -8px 0 12px 0;">Tip: Right-click any image to edit</p>
+            <p style="font-size: 11px; color: #999; margin: -8px 0 12px 0;">Tip: Shift+Click any image to edit</p>
             <label style="color: #666; font-size: 12px; margin-bottom: 16px; display: block;">File: ${filename}</label>
             
             <div class="edit-section">
@@ -1169,7 +1173,7 @@ body:has(.admin-toolbar) .portfolio-wrap {
             }
           };
           document.addEventListener('keydown', handleEsc);
-      });
+      }, true); // Use capture phase
       
       // Function to save metadata changes
       async function saveImageMetadata(filename, updates) {
