@@ -1,4 +1,9 @@
+Here is how they do it on the original wordpress page.
 
+I want to replicate the original wordpress behavior exactly.
+
+
+Analysis:
 There is no custom "sorting" algorithm in that file. Item order follows the DOM order from PHP; the JS initializes Isotope/Packery to lay items out and handles filtering, breakpoints,
   widths, and animation timing.
 

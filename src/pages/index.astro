@@ -571,13 +571,13 @@ function mapSingle(img) {
 .portfolio-items .col:nth-child(8) .inner-wrap { animation-delay: 595ms; }
 </style>
 
-<!-- Load Isotope and required libraries -->
+<!-- Load required libraries -->
 <script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
-<script src="https://unpkg.com/isotope-layout@3/dist/isotope.pkgd.min.js"></script>
 
 <script>
   import PhotoSwipeLightbox from 'photoswipe/lightbox';
   import 'photoswipe/style.css';
+  import Packery from 'packery';
   
   document.addEventListener('DOMContentLoaded', function() {
     const container = document.querySelector('.portfolio-items');
@@ -613,35 +613,23 @@ function mapSingle(img) {
     
     lightbox.init();
     
-    // Wait for images to load, then initialize Isotope
+    // Wait for images to load, then initialize Packery
     imagesLoaded(container, function() {
-      // Initialize Isotope with optimized masonry layout
-      const iso = new Isotope(container, {
+      // Initialize Packery for better gap filling
+      const pckry = new Packery(container, {
         itemSelector: '.col',
-        layoutMode: 'masonry',
-        masonry: {
-          columnWidth: 320, // Fixed column width
-          gutter: 10, // 10px gap between columns
-          fitWidth: true, // Center the grid
-          horizontalOrder: false // Allow vertical optimization for better gap filling
-        },
-        percentPosition: false,
+        columnWidth: 320, // Fixed column width
+        gutter: 10, // 10px gap between columns
+        fitWidth: true, // Center the grid
         transitionDuration: '0.3s',
-        isOriginLeft: true,
-        sortBy: 'original-order',
-        hiddenStyle: {
-          opacity: 0,
-          transform: 'translateY(30px)'
-        },
-        visibleStyle: {
-          opacity: 1,
-          transform: 'translateY(0)'
-        }
+        stagger: 30, // Stagger animation
+        resize: true, // Auto-resize on window resize
+        initLayout: true // Initialize layout immediately
       });
       
       // Optional: Force relayout after a delay to ensure proper positioning
       setTimeout(() => {
-        iso.layout();
+        pckry.layout();
       }, 100);
       
       // Add initialized class
@@ -652,12 +640,13 @@ function mapSingle(img) {
         container.classList.add('animated-in');
       }, 100);
       
-      // Handle window resize
+      // Handle window resize (Packery handles this automatically with resize: true)
+      // But we can add manual handling if needed
       let resizeTimer;
       window.addEventListener('resize', function() {
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(function() {
-          iso.layout();
+          pckry.layout();
         }, 250);
       });
     });

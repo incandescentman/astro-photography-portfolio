@@ -48,6 +48,8 @@
 		"@astrojs/mdx": "^4.3.4",
 		"@jaydixit/astro-utils": "^1.0.2",
 		"fslightbox": "^3.7.4",
+		"imagesloaded": "^5.0.0",
+		"packery": "^3.0.0",
 		"photoswipe": "^5.4.4"
 	}
 }
