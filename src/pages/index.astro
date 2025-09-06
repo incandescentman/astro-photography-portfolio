@@ -1118,7 +1118,86 @@ body.edit-key-active .masonry-item .edit-btn {
           const filename = item.getAttribute('data-filename') || targetImg?.src?.split('/').pop() || '';
           const currentSize = item.getAttribute('data-size') || (item.classList.contains('wide_tall') ? 'xlportrait' : item.classList.contains('wide') ? 'landscape' : 'portrait');
           const currentCaption = (targetImg?.getAttribute('data-caption') || targetImg?.getAttribute('alt') || '').replace('Jay Dixit photo: ', '');
-          
+
+          // Inline edit popover (no modal)
+          document.querySelectorAll('.edit-popover').forEach(el => el.remove());
+          const pop = document.createElement('div');
+          pop.className = 'edit-popover';
+          pop.innerHTML = `
+            <h4>Edit Image</h4>
+            <div class="hint">${filename}</div>
+            <label>Caption</label>
+            <input id="ep-caption" type="text" value="${currentCaption.replace(/\"/g, '&quot;')}" />
+            ${item.querySelector('.stacked-pair') ? '' : `
+            <div class="row">
+              <div style="flex:1">
+                <label>Size</label>
+                <input id="ep-size" type="text" value="${currentSize}" placeholder="portrait | landscape | xlportrait" />
+              </div>
+            </div>
+            <div class="hint">portrait = 1x1 • landscape = 2x1 • xlportrait = 2x2</div>`}
+            <div class="actions">
+              <button class="cancel">Cancel</button>
+              <button class="save">Save</button>
+            </div>
+          `;
+          item.appendChild(pop);
+
+          const capInput = pop.querySelector('#ep-caption');
+          const sizeInput = pop.querySelector('#ep-size');
+          setTimeout(() => { capInput?.focus(); capInput?.select(); }, 0);
+
+          const validSizes = new Set(['portrait', 'landscape', 'xlportrait']);
+          const applySize = (val) => {
+            item.setAttribute('data-size', val);
+            item.classList.remove('regular', 'wide', 'wide_tall');
+            item.classList.add(val === 'landscape' ? 'wide' : val === 'xlportrait' ? 'wide_tall' : 'regular');
+            if (window.pckry) window.pckry.layout();
+          };
+          if (sizeInput) {
+            const validate = () => {
+              const v = sizeInput.value.trim();
+              const ok = validSizes.has(v);
+              sizeInput.classList.toggle('invalid', !ok);
+              if (ok) applySize(v);
+              return ok;
+            };
+            sizeInput.addEventListener('input', validate);
+            validate();
+          }
+
+          const close = () => { document.removeEventListener('keydown', onKey); document.removeEventListener('mousedown', onAway, true); pop.remove(); };
+          const onKey = (evt) => {
+            if (evt.key === 'Escape') close();
+            if (evt.key === 'Enter') doSave();
+          };
+          const onAway = (evt) => { if (!pop.contains(evt.target)) close(); };
+          document.addEventListener('keydown', onKey);
+          setTimeout(() => document.addEventListener('mousedown', onAway, true), 0);
+
+          const doSave = async () => {
+            const newCaption = (capInput?.value || '').trim();
+            const newSize = (sizeInput?.value || currentSize).trim();
+            if (sizeInput && !validSizes.has(newSize)) return;
+
+            if (targetImg) {
+              targetImg.setAttribute('alt', 'Jay Dixit photo: ' + newCaption);
+              targetImg.setAttribute('data-caption', newCaption);
+            }
+            const captionOverlay = item.querySelector('.caption-overlay h3');
+            if (captionOverlay) captionOverlay.textContent = newCaption;
+
+            if (sizeInput) applySize(newSize);
+
+            await saveImageMetadata(filename, { size: newSize, caption: newCaption });
+            close();
+          };
+          pop.querySelector('.save')?.addEventListener('click', doSave);
+          pop.querySelector('.cancel')?.addEventListener('click', close);
+
+          return; // Inline popover active; skip legacy modal below
+
+          /*
           // Create combined edit modal
           const overlay = document.createElement('div');
           overlay.className = 'modal-overlay';
@@ -1221,6 +1300,7 @@ body.edit-key-active .masonry-item .edit-btn {
             }
           };
           document.addEventListener('keydown', handleEsc);
+          */
       }, true); // Use capture phase
       
       // Function to save metadata changes
