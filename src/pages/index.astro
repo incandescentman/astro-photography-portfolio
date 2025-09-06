@@ -684,12 +684,26 @@ function mapSingle(img) {
         order: 9,
         isButton: false,
         appendTo: 'root',
-        html: 'Caption text',
+        html: '',
         onInit: (el, pswp) => {
-          lightbox.pswp.on('change', () => {
-            const currSlideData = lightbox.pswp.currSlide.data;
-            el.innerHTML = currSlideData.title || '';
-          });
+          el.classList.add('pswp__caption');
+          
+          const updateCaption = () => {
+            const currSlide = pswp.currSlide;
+            if (currSlide && currSlide.data && currSlide.data.title) {
+              el.innerHTML = currSlide.data.title;
+              el.style.display = 'block';
+            } else {
+              el.innerHTML = '';
+              el.style.display = 'none';
+            }
+          };
+          
+          // Update caption on slide change
+          pswp.on('change', updateCaption);
+          
+          // Set initial caption
+          updateCaption();
         }
       });
     });
