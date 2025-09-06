@@ -97,8 +97,11 @@ function optimizeImageOrder(images) {
   // Place remaining items with xlportraits distributed
   while (sizeGroups.portrait.length > 0 || sizeGroups.landscape.length > 0 || sizeGroups.xlportrait.length > 0) {
     
-    // Check if we should place an xlportrait (with proper spacing)
-    if (sizeGroups.xlportrait.length > 0 && itemsSinceLastXl >= minSpacing) {
+    // Check if we should place an xlportrait (with proper spacing and not too close to end)
+    const remainingItems = sizeGroups.portrait.length + sizeGroups.landscape.length + sizeGroups.xlportrait.length;
+    const tooCloseToEnd = remainingItems < 8; // Don't place xlportrait if less than 8 items remain
+    
+    if (sizeGroups.xlportrait.length > 0 && itemsSinceLastXl >= minSpacing && !tooCloseToEnd) {
       // Place some portraits before xlportrait
       for (let i = 0; i < 2 && sizeGroups.portrait.length > 0; i++) {
         optimizedUnordered.push(sizeGroups.portrait.shift());
@@ -164,7 +167,38 @@ function optimizeImageOrder(images) {
     }
   }
   
-  // Post-pass: break up long runs of portrait-width columns
+  // Post-pass 1: Move xlportraits away from the bottom
+  // xlportraits are 970px tall (2x portrait height), so they stick out if placed near the end
+  const safeZoneFromEnd = 8; // Don't place xlportraits in the last 8 positions
+  const xlportraitsNearEnd = [];
+  const resultWithoutEndXl = [];
+  
+  result.forEach((item, index) => {
+    if (item && !item.type && item.size === 'xlportrait' && index >= result.length - safeZoneFromEnd) {
+      xlportraitsNearEnd.push(item);
+    } else {
+      resultWithoutEndXl.push(item);
+    }
+  });
+  
+  // If we found xlportraits near the end, move them earlier and swap with smaller items
+  if (xlportraitsNearEnd.length > 0) {
+    // Find good positions for the xlportraits (in the middle third of the layout)
+    const middleStart = Math.floor(resultWithoutEndXl.length * 0.3);
+    const middleEnd = Math.floor(resultWithoutEndXl.length * 0.7);
+    
+    // Insert xlportraits at intervals in the middle section
+    xlportraitsNearEnd.forEach((xlp, idx) => {
+      const insertPos = middleStart + Math.floor((middleEnd - middleStart) / (xlportraitsNearEnd.length + 1)) * (idx + 1);
+      resultWithoutEndXl.splice(insertPos, 0, xlp);
+    });
+    
+    // Update result
+    result.length = 0;
+    resultWithoutEndXl.forEach(item => result.push(item));
+  }
+  
+  // Post-pass 2: break up long runs of portrait-width columns
   // Treat both single portraits and stacked pairs as portrait-width columns
   function isPortraitColumn(item) {
     if (!item) return false;
