@@ -671,39 +671,57 @@ function mapSingle(img) {
         itemData.w = imgEl.naturalWidth || 1600;
         itemData.h = imgEl.naturalHeight || 1200;
         itemData.alt = imgEl.alt;
-        itemData.title = imgEl.dataset.caption || imgEl.alt;
+        // Set caption from data-caption attribute
+        const caption = imgEl.getAttribute('data-caption') || imgEl.alt || '';
+        if (caption) {
+          itemData.title = caption;
+        }
       }
       
       return itemData;
     });
     
-    // Add caption support
+    // Add caption support with simpler approach
     lightbox.on('uiRegister', function() {
       lightbox.pswp.ui.registerElement({
-        name: 'caption',
+        name: 'custom-caption',
         order: 9,
         isButton: false,
         appendTo: 'root',
-        html: '',
         onInit: (el, pswp) => {
-          el.classList.add('pswp__caption');
+          // Create caption element
+          el.style.position = 'absolute';
+          el.style.left = '0';
+          el.style.bottom = '0';
+          el.style.width = '100%';
+          el.style.maxWidth = '100%';
+          el.style.padding = '15px 20px';
+          el.style.background = 'rgba(0, 0, 0, 0.75)';
+          el.style.color = '#fff';
+          el.style.fontSize = '16px';
+          el.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+          el.style.textAlign = 'center';
+          el.style.lineHeight = '1.4';
+          el.style.zIndex = '10';
           
-          const updateCaption = () => {
-            const currSlide = pswp.currSlide;
-            if (currSlide && currSlide.data && currSlide.data.title) {
-              el.innerHTML = currSlide.data.title;
+          pswp.on('change', () => {
+            const currSlideData = pswp.currSlide?.data;
+            if (currSlideData?.title) {
+              el.innerHTML = currSlideData.title;
               el.style.display = 'block';
             } else {
-              el.innerHTML = '';
               el.style.display = 'none';
             }
-          };
-          
-          // Update caption on slide change
-          pswp.on('change', updateCaption);
+          });
           
           // Set initial caption
-          updateCaption();
+          setTimeout(() => {
+            const currSlideData = pswp.currSlide?.data;
+            if (currSlideData?.title) {
+              el.innerHTML = currSlideData.title;
+              el.style.display = 'block';
+            }
+          }, 0);
         }
       });
     });
