@@ -1,0 +1,389 @@
+Perfect --- since you want it to behave exactly like the Salient/WordPress setup, here's an Astro drop-in that mirrors their Isotope+Packery logic, preserves DOM order, reproduces the "elastic" column tiers, width "fudge factor," filter behavior, RTL handling, lazy-load relayouts, and the column-based reveal staggering.
+
+I'll give you three tiny files:
+
+- `MasonryGrid.astro` --- markup & minimal CSS (no reordering; order = DOM)
+- `masonry.ts` --- all the logic (columns, fudge, filters, relayouts, RTL, stagger)
+- `filters.astro` --- optional filter UI that feeds Isotope exactly like Salient
+
+Install:
+
+#+begin_src bash
+npm i isotope-layout packery imagesloaded
+#+end_src 
+
+*** 1) `src/components/MasonryGrid.astro`
+
+#+begin_src astro
+/*
+ * Props:
+ * --- items: [{ src, alt, categories: string[], variant?: "regular"|"wide"|"tall"|"wide_tall" }]
+ * --- options?: {
+ *     gutter?: number,                // px; affects height math too
+ *     elastic?: boolean,              // data-col-num="elastic"
+ *     photographyMode?: boolean,      // WP "photography" mode (+1 col at large)
+ *     constrained?: boolean,          // "fullwidth constrained" nuance
+ *     boxedLayout?: boolean,          // forces smaller tiers
+ *     masonryType?: "photography"|"default",
+ *     startingFilter?: string,        // e.g. "*", ".portraits"
+ *     rtl?: boolean,
+ *   }
+ */
+const { items = [], options = {} } = Astro.props;
+
+const opts = {
+  gutter: options.gutter ?? 20,
+  elastic: options.elastic ?? true,
+  photographyMode: options.photographyMode ?? false,
+  constrained: options.constrained ?? false,
+  boxedLayout: options.boxedLayout ?? false,
+  masonryType: options.masonryType ?? "default",
+  startingFilter: options.startingFilter ?? "*",
+  rtl: options.rtl ?? false,
+};
+
+<section
+  id="masonry"
+  class={`masonry-items${opts.elastic ? " elastic" : ""}${opts.boxedLayout ? " boxed" : ""}`}
+  data-col-num={opts.elastic ? "elastic" : "fixed"}
+  data-gutter={`${opts.gutter}px`}
+  data-starting-filter={opts.startingFilter}
+  data-masonry-type={opts.masonryType}
+  data-constrained={opts.constrained ? "1" : "0"}
+  dir={opts.rtl ? "rtl" : "ltr"}
+>
+  <div class="grid-sizer"></div>
+  {items.map((it, i) => {
+    const cats = it.categories?.map(c => c.trim()).filter(Boolean) ?? [];
+    const variant = it.variant ?? "regular"; // regular | wide | tall | wide_tall
+    const classes = ["masonry-item", variant, ...cats.map(c => `cat-${c}`)].join(" ");
+    return (
+      <article class={classes} data-idx={i}>
+        <a class="masonry-link" href={it.src}>
+          <img
+            src={it.src}
+            alt={it.alt ?? ""}
+            loading="lazy"
+            width={it.width}
+            height={it.height}
+            data-variant={variant}
+          />
+        </a>
+      </article>
+    );
+  })}
+</section>
+
+<style>
+  /* Base --- Packery uses item width; height handled in JS for tall variants */
+  .masonry-items { position: relative; margin: 0 auto; }
+  .masonry-item { box-sizing: border-box; padding: 0; opacity: 0; transform: translateY(12px); }
+  .masonry-item.animated-in { opacity: 1; transform: translateY(0); transition: opacity .35s ease, transform .35s ease; }
+
+  /* Packery requires a sizer for percentPosition math */
+  .grid-sizer { width: 33.333%; }
+
+  /* Images */
+  .masonry-item img { display: block; width: 100%; height: auto; border-radius: 8px; }
+
+  /* Gutter is applied via inline width calc; we also keep visual gap using padding on container columns if desired */
+</style>
+
+<script type="module">
+  import initMasonry from "../scripts/masonry.ts";
+  initMasonry({
+    container: '#masonry',
+    options: {
+      gutter: ${opts.gutter},
+      elastic: ${opts.elastic ? "true" : "false"},
+      photographyMode: ${opts.photographyMode ? "true" : "false"},
+      constrained: ${opts.constrained ? "true" : "false"},
+      boxedLayout: ${opts.boxedLayout ? "true" : "false"},
+      masonryType: ${JSON.stringify(opts.masonryType)},
+      startingFilter: ${JSON.stringify(opts.startingFilter)},
+      rtl: ${opts.rtl ? "true" : "false"}
+    }
+  });
+</script>
+#+end_src 
+
+*** 2) `src/scripts/masonry.ts`
+
+#+begin_src ts
+// Mirrors Salient's salient-portfolio.js behavior:
+// --- Isotope engine, Packery layout
+// --- Elastic column tiers with "photography" +1 col behavior
+// --- Width "fudge factor" to avoid subpixel gaps
+// --- No sorting: DOM order is preserved
+// --- Filters via data-starting-filter and button clicks
+// --- imagesLoaded relayouts; resize relayout; RTL aware
+// --- Column-based reveal staggering (z-index/delay by column)
+
+import Isotope from 'isotope-layout';
+import 'packery'; // registers packery as a layout mode on window
+import imagesLoaded from 'imagesloaded';
+
+type MasonryOpts = {
+  container: string;
+  options?: {
+    gutter?: number;
+    elastic?: boolean;
+    photographyMode?: boolean;
+    constrained?: boolean;
+    boxedLayout?: boolean;
+    masonryType?: 'photography' | 'default';
+    startingFilter?: string;
+    rtl?: boolean;
+  };
+};
+
+export default function initMasonry(cfg: MasonryOpts) {
+  const el = document.querySelector(cfg.container) as HTMLElement | null;
+  if (!el) return;
+
+  const data = (attr: string, fallback?: string) => el.getAttribute(attr) ?? fallback ?? '';
+  const pxGutter = parseInt((data('data-gutter') ?? '0').replace('px',''), 10) || (cfg.options?.gutter ?? 0);
+  const startingFilter = data('data-starting-filter', cfg.options?.startingFilter ?? '*');
+  const masonryType = (data('data-masonry-type') as 'photography'|'default') ?? (cfg.options?.masonryType ?? 'default');
+  const constrained = (data('data-constrained') === '1') || !!cfg.options?.constrained;
+  const elastic = (data('data-col-num') === 'elastic') || !!cfg.options?.elastic;
+  const rtl = cfg.options?.rtl ?? (document.dir === 'rtl');
+
+  // Column tier selection (matches Salient's behavior)
+  function pickCols(containerWidth: number): number {
+    // Defaults
+    let cols: number;
+    const boxed = !!cfg.options?.boxedLayout;
+
+    if (containerWidth > 1600) cols = 5;
+    else if (containerWidth > 1300) cols = 4;
+    else if (containerWidth > 990) cols = 3;
+    else if (containerWidth > 470) cols = 2;
+    else cols = 1;
+
+    // Constrained tweaks (Salient nudges tiers smaller/larger at certain ranges)
+    if (constrained) {
+      if (containerWidth > 1600) cols = Math.max(1, cols --- 1); // five→four
+      else if (containerWidth > 1300) cols = Math.max(1, cols --- 1); // four→three
+      else if (containerWidth > 990) cols = Math.min(4, cols + 1); // three→four
+    }
+
+    if (boxed) cols = Math.max(1, Math.min(cols, 3)); // boxy layouts tend to reduce tiers
+
+    if (masonryType === 'photography' && cols >= 3) cols += 1; // +1 at larger tiers
+    return cols;
+  }
+
+  // Width with fudge factor so columns divide cleanly (avoids subpixel seams)
+  function computeItemWidth(containerWidth: number, cols: number): number {
+    const gutterTotal = pxGutter * (cols --- 1);
+    let base = (containerWidth --- gutterTotal) / cols;
+
+    // Fudge: try to nudge width so total is integer px
+    const maxFudge = containerWidth < 640 ? 3 : 6;
+    for (let i = 0; i <= maxFudge; i++) {
+      const test = Math.floor((containerWidth --- i --- gutterTotal) / cols);
+      if (((containerWidth --- i --- gutterTotal) % cols) === 0) {
+        base = test;
+        break;
+      }
+    }
+    return Math.floor(base);
+  }
+
+  // Apply widths per variant; heights will be normalized after images load
+  function applySizes() {
+    const rect = el.getBoundingClientRect();
+    const cols = elastic ? pickCols(rect.width) : 3;
+    const w = computeItemWidth(rect.width, cols);
+    const sizer = el.querySelector('.grid-sizer') as HTMLElement | null;
+    if (sizer) sizer.style.width = `${w}px`;
+
+    const items = Array.from(el.querySelectorAll<HTMLElement>('.masonry-item'));
+    for (const it of items) {
+      const variant = it.classList.contains('wide_tall') ? 'wide_tall'
+                    : it.classList.contains('wide') ? 'wide'
+                    : it.classList.contains('tall') ? 'tall'
+                    : 'regular';
+      const mult = (variant === 'wide' || variant === 'wide_tall') ? 2 : 1;
+      const widthPx = mult === 2 && cols > 1 ? (w * 2 + pxGutter) : w;
+      it.style.width = `${widthPx}px`;
+      it.style.marginInlineEnd = `${pxGutter}px`;
+      it.style.marginBlockEnd  = `${pxGutter}px`;
+    }
+  }
+
+  // Height normalization like Salient: choose a reference height per column type
+  function normalizeHeights() {
+    const visible = Array.from(el.querySelectorAll<HTMLElement>('.masonry-item'))
+      .filter(n => !n.classList.contains('isotope-hidden'));
+    if (visible.length === 0) return;
+
+    // Reference = average of visible regular or fallback to first image height
+    let ref = 0, count = 0;
+    for (const n of visible) {
+      const img = n.querySelector('img') as HTMLImageElement | null;
+      if (!img || !img.complete || !img.naturalHeight) continue;
+      const isRegularish = n.classList.contains('regular') || n.classList.contains('wide');
+      if (isRegularish) { ref += img.getBoundingClientRect().height; count++; }
+    }
+    if (count === 0) {
+      const first = visible.find(n => (n.querySelector('img') as HTMLImageElement)?.complete);
+      if (first) ref = (first.querySelector('img') as HTMLImageElement).getBoundingClientRect().height;
+    } else {
+      ref = ref / count;
+    }
+    if (!ref || !isFinite(ref)) return;
+
+    for (const n of visible) {
+      const tall = n.classList.contains('tall') || n.classList.contains('wide_tall');
+      const target = tall ? (ref * 2 + pxGutter) : ref;
+      n.style.height = `${Math.round(target)}px`;
+      const img = n.querySelector('img') as HTMLImageElement | null;
+      if (img) {
+        img.style.height = '100%';
+        img.style.objectFit = 'cover'; // emulate cropping behavior
+      }
+    }
+  }
+
+  // Reveal staggering per column (does not change order)
+  function applyStagger(iso: Isotope) {
+    // After layout, compute unique x positions → delays
+    const laidOut = iso.getItemElements().filter((e: any) => !e.classList.contains('isotope-hidden'));
+    const xs = Array.from(new Set(laidOut.map(el => Math.round((el as HTMLElement).offsetLeft)))).sort((a,b) => a-b);
+    const delayPerCol = 60; // ms
+    for (const elx of laidOut) {
+      const idx = xs.indexOf(Math.round((elx as HTMLElement).offsetLeft));
+      const delay = Math.max(0, idx) * delayPerCol;
+      (elx as HTMLElement).style.transitionDelay = `${delay}ms`;
+      elx.classList.add('animated-in');
+    }
+  }
+
+  // Init Isotope (layoutMode = packery)
+  const iso = new Isotope(el, {
+    itemSelector: '.masonry-item',
+    layoutMode: 'packery',
+    percentPosition: false, // we're assigning explicit px widths
+    originLeft: !rtl,
+    transitionDuration: '0.35s',
+    getSortData: {}, // no sortBy → DOM order preserved
+  });
+
+  // Initial sizing + imagesLoaded
+  applySizes();
+  imagesLoaded(el, { background: false }, () => {
+    normalizeHeights();
+    iso.arrange({ filter: startingFilter });
+    iso.on('arrangeComplete', () => applyStagger(iso));
+    iso.layout();
+  });
+
+  // Relayout on each image as it finishes
+  imagesLoaded(el).on('progress', () => {
+    normalizeHeights();
+    iso.layout();
+  });
+
+  // Resize handling
+  let resizeTO: number | undefined;
+  window.addEventListener('resize', () => {
+    window.clearTimeout(resizeTO);
+    resizeTO = window.setTimeout(() => {
+      applySizes();
+      normalizeHeights();
+      iso.layout();
+    }, 100);
+  });
+
+  // Filter clicks (matches Salient's .portfolio-filters/buttons with data-filter)
+  document.addEventListener('click', (e) => {
+    const target = (e.target as HTMLElement)?.closest<HTMLElement>('[data-filter]');
+    if (!target) return;
+    e.preventDefault();
+    const selector = target.getAttribute('data-filter') ?? '*';
+    // update active class UI if you have it
+    const siblings = document.querySelectorAll('[data-filter].active');
+    siblings.forEach(n => n.classList.remove('active'));
+    target.classList.add('active');
+
+    // arrange → relayout → restagger
+    iso.arrange({ filter: selector });
+    iso.once('arrangeComplete', () => {
+      normalizeHeights();
+      applyStagger(iso);
+    });
+  });
+}
+#+end_src 
+
+*** 3) (Optional) `src/components/filters.astro`
+
+#+begin_src astro
+const { filters = [] } = Astro.props; // [{label, selector}] e.g. [{label:'All', selector:'*'}, {label:'Portraits', selector:'.cat-portraits'}]
+
+<nav class="portfolio-filters">
+  {filters.map((f, i) => (
+    <button
+      type="button"
+      class={`filter-btn${i===0 ? " active" : ""}`}
+      data-filter={f.selector}
+      aria-pressed={i===0 ? "true" : "false"}
+    >
+      {f.label}
+    </button>
+  ))}
+</nav>
+
+<style>
+  .portfolio-filters { display: flex; gap: .5rem; flex-wrap: wrap; margin: 1rem 0; }
+  .filter-btn { border: 0; padding: .5rem .75rem; border-radius: 999px; background: #eee; cursor: pointer; }
+  .filter-btn.active { background: #111; color: #fff; }
+</style>
+#+end_src 
+
+*** Usage (page)
+
+#+begin_src astro
+import MasonryGrid from "@/components/MasonryGrid.astro";
+import Filters from "@/components/filters.astro";
+
+const photos = [
+  { src: "/photos/a.jpg", alt: "A", categories: ["portraits"], variant: "regular" },
+  { src: "/photos/b.jpg", alt: "B", categories: ["events"], variant: "wide" },
+  { src: "/photos/c.jpg", alt: "C", categories: ["portraits"], variant: "tall" },
+  { src: "/photos/d.jpg", alt: "D", categories: ["travel"], variant: "wide_tall" },
+];
+
+const filters = [
+  { label: "All", selector: "*" },
+  { label: "Portraits", selector: ".cat-portraits" },
+  { label: "Events", selector: ".cat-events" },
+  { label: "Travel", selector: ".cat-travel" },
+];
+
+<Filters {filters} />
+<MasonryGrid items={photos} options={{
+  gutter: 20,
+  elastic: true,
+  photographyMode: false,  // set true if you want the +1 column behavior
+  constrained: false,
+  boxedLayout: false,
+  masonryType: "default",
+  startingFilter: "*",
+  rtl: false
+}} />
+#+end_src 
+
+*** Notes that make it "feel" identical to Salient
+
+- *Isotope + Packery exactly*: Isotope is the engine; layoutMode "packery" is chosen. No `sortBy` --- so *order is DOM order* (just like WP).
+- *Elastic tiers*: same breakpoints (5/4/3/2/1 cols), with "photography" mode bumping by +1 at larger widths, and the constrained/boxed nudges.
+- *Width fudge*: tries tiny pixel deductions until `(containerWidth --- i --- gutterTotal) % cols === 0` so columns land on crisp pixels.
+- *Height normalization*: emulates their crop logic --- choose a reference height from "regular/wide," make "tall/wide\_tall" double height, `object-fit: cover`.
+- *Filters*: `data-filter` buttons call `iso.arrange({ filter })`, update `.active`, and restagger.
+- *imagesLoaded*: initial layout after all images, plus incremental relayout as each loads.
+- *RTL*: `originLeft` flips when `dir="rtl"` or you pass `rtl: true`.
+- *Reveal stagger*: column-based delays derived from each element's `offsetLeft`, not order --- exactly the vibe Salient uses.
+

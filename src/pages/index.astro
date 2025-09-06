@@ -618,13 +618,21 @@ function mapSingle(img) {
       // Initialize Packery for better gap filling
       const pckry = new Packery(container, {
         itemSelector: '.col',
-        columnWidth: 320, // Fixed column width
+        columnWidth: '.col.portrait', // Use portrait as column width reference
         gutter: 10, // 10px gap between columns
         fitWidth: true, // Center the grid
+        percentPosition: false, // Use pixel positioning
         transitionDuration: '0.3s',
         stagger: 30, // Stagger animation
         resize: true, // Auto-resize on window resize
         initLayout: true // Initialize layout immediately
+      });
+      
+      // Packery shiftLayout for better gap filling
+      // This method will shift items to fill gaps
+      pckry.on('layoutComplete', function() {
+        // After layout, try to fill any remaining gaps
+        pckry.shiftLayout();
       });
       
       // Optional: Force relayout after a delay to ensure proper positioning
