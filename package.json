@@ -47,6 +47,7 @@
 	"dependencies": {
 		"@astrojs/mdx": "^4.3.4",
 		"@jaydixit/astro-utils": "^1.0.2",
+		"draggabilly": "^3.0.0",
 		"fslightbox": "^3.7.4",
 		"imagesloaded": "^5.0.0",
 		"isotope-layout": "^3.0.6",
