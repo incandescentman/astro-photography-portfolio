@@ -391,6 +391,15 @@ function mapSingle(img) {
   .masonry-item.wide_tall {
     width: 50%;
   }
+  
+  /* Scale heights proportionally */
+  .masonry-item.regular,
+  .masonry-item.wide {
+    height: 350px;
+  }
+  .masonry-item.wide_tall {
+    height: 705px; /* Double height + 5px gap */
+  }
 }
 
 @media only screen and (max-width: 768px) {
@@ -402,6 +411,15 @@ function mapSingle(img) {
   .masonry-item.wide_tall {
     width: 100%;
   }
+  
+  /* Further scale heights */
+  .masonry-item.regular,
+  .masonry-item.wide {
+    height: 300px;
+  }
+  .masonry-item.wide_tall {
+    height: 605px; /* Double height + 5px gap */
+  }
 }
 
 @media only screen and (max-width: 480px) {
@@ -411,15 +429,44 @@ function mapSingle(img) {
   .masonry-item.wide_tall {
     width: 100%;
   }
+  
+  /* Mobile heights */
+  .masonry-item.regular,
+  .masonry-item.wide {
+    height: 400px;
+  }
+  .masonry-item.wide_tall {
+    height: 805px; /* Double height + 5px gap */
+  }
 }
 
 /* Images */
 .masonry-item img {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
   border-radius: 0;
   transition: transform 0.45s cubic-bezier(0.3, 0.1, 0.3, 1);
+}
+
+/* Set fixed heights for consistent display */
+.masonry-item.regular {
+  height: 480px; /* Standard height */
+}
+
+.masonry-item.wide {
+  height: 480px; /* Same height as regular */
+}
+
+.masonry-item.wide_tall {
+  height: 965px; /* Double height (480*2 + 5px gap) */
+}
+
+.masonry-item a {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 /* Stacked pair special handling */
@@ -427,16 +474,19 @@ function mapSingle(img) {
   display: flex;
   flex-direction: column;
   gap: 5px;
+  height: 100%;
 }
 
 .masonry-item .stacked-pair a {
   display: block;
   overflow: hidden;
+  flex: 1;
+  height: calc(50% - 2.5px); /* Each image gets half height minus half gap */
 }
 
 .masonry-item .stacked-pair img {
   width: 100%;
-  height: auto;
+  height: 100%;
   object-fit: cover;
   display: block;
 }
