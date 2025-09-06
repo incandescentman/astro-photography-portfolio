@@ -898,7 +898,8 @@ body:has(.admin-toolbar) .portfolio-wrap {
             headers: {
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ order })
+            // Send the array directly for maximum compatibility
+            body: JSON.stringify(order)
           });
           
           const result = await response.json();
