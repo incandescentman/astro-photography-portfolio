@@ -877,16 +877,42 @@ body:has(.admin-toolbar) .portfolio-wrap {
             containment: container
           });
           
+          let isDragging = false;
+          
           // Add visual feedback during drag
-          draggie.on('dragStart', function() {
+          draggie.on('dragStart', function(event, pointer) {
+            isDragging = true;
             item.classList.add('is-dragging');
             container.classList.add('is-sorting');
+            
+            // Prevent lightbox from opening when dragging
+            const links = item.querySelectorAll('.masonry-link');
+            links.forEach(link => {
+              link.style.pointerEvents = 'none';
+            });
           });
           
           draggie.on('dragEnd', function() {
+            // Re-enable links after a short delay to prevent accidental clicks
+            setTimeout(() => {
+              isDragging = false;
+              const links = item.querySelectorAll('.masonry-link');
+              links.forEach(link => {
+                link.style.pointerEvents = '';
+              });
+            }, 100);
+            
             item.classList.remove('is-dragging');
             container.classList.remove('is-sorting');
           });
+          
+          // Prevent click events during drag
+          item.addEventListener('click', function(e) {
+            if (isDragging) {
+              e.preventDefault();
+              e.stopPropagation();
+            }
+          }, true);
           
           // Bind Draggabilly events to Packery
           pckry.bindDraggabillyEvents(draggie);
@@ -949,6 +975,16 @@ body:has(.admin-toolbar) .portfolio-wrap {
       preloaderDelay: 0,
       showHideAnimationType: 'fade'
     });
+    
+    // Prevent lightbox from opening if dragging
+    if (isAdminMode) {
+      lightbox.on('clickEvent', (e) => {
+        const item = e.originalEvent.target.closest('.masonry-item');
+        if (item && item.classList.contains('is-dragging')) {
+          e.preventDefault();
+        }
+      });
+    }
     
     // Dynamically set image dimensions
     lightbox.addFilter('itemData', (itemData, index) => {
