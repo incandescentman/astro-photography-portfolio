@@ -3,6 +3,33 @@ layout: ../layouts/MainLayout.astro
 title: The Story of WikiPortraits
 ---
 
+import { Image } from 'astro:assets';
+import ImageGallery from '@jaydixit/astro-utils/components/ImageGallery.astro';
+
+// Import images for Problem section gallery
+import jeremyImg from '/public/highlights/jeremy-3.jpg';
+import frankOzImg from '/public/highlights/Frank_Oz_2024_Cropped.jpg';
+import conanImg from '/public/highlights/conan.jpg';
+import vanessaKirbyImg from '/public/highlights/vanessa-kirby.jpg';
+
+// Import images for Events gallery
+import conanSundanceImg from '/public/photos/red-carpet/sundance/conan-obrien_sundance_2024.jpg';
+import vanessaTiffImg from '/public/photos/red-carpet/tiff/vanessa-kirby_tiff_2024.jpg';
+import nobelImg from '/public/photos/events/nobel/john-hopfield_nobel-physics_2024.jpg';
+import lisaSxswImg from '/public/highlights/Lisa_Gilroy_at_SXSW_in_2025-1.jpg';
+import anaAndSydneyImg from '/public/highlights/Ana_de_Armas_and_Sydney_Sweeney_at_the_2024_Toronto_International_Film_Festival_04.jpg';
+import juddImg from '/public/highlights/judd-apatow.jpg';
+
+// Import Jeremy Strong before/after images
+import jeremyBeforeImg from '/public/highlights/jeremy-strong-before.jpg';
+import jeremyAfterImg from '/public/photos/portraits/studio/jeremy-strong_studio-session_2024.jpg';
+
+<style>{`
+  .pswp__img {
+    object-fit: contain !important;
+  }
+`}</style>
+
 <div class="min-h-screen bg-gradient-to-b from-white to-gray-50">
   {/* Hero Section */}
   <section class="relative min-h-screen flex items-center justify-center overflow-hidden">
@@ -63,32 +90,16 @@ title: The Story of WikiPortraits
             <p class="text-blue-700 mt-2 text-sm font-sans">— Jay Dixit, WikiPortraits Photographer</p>
           </div>
         </div>
-        <div class="grid grid-cols-2 gap-4">
-          <img 
-            src="/highlights/jeremy-3.jpg" 
-            alt="Jeremy Strong portrait" 
-            class="rounded-2xl shadow-md ring-1 ring-gray-200 object-cover"
-            loading="lazy" decoding="async"
-          />
-          <img 
-            src="/highlights/Frank_Oz_2024_Cropped.jpg" 
-            alt="Frank Oz at TIFF" 
-            class="rounded-2xl shadow-md ring-1 ring-gray-200 object-cover"
-            loading="lazy" decoding="async"
-          />
-          <img 
-            src="/highlights/conan.jpg" 
-            alt="Conan O’Brien at Sundance" 
-            class="rounded-2xl shadow-md ring-1 ring-gray-200 object-cover"
-            loading="lazy" decoding="async"
-          />
-          <img 
-            src="/highlights/vanessa-kirby.jpg" 
-            alt="Vanessa Kirby at TIFF" 
-            class="rounded-2xl shadow-md ring-1 ring-gray-200 object-cover"
-            loading="lazy" decoding="async"
-          />
-        </div>
+        <ImageGallery
+          images={[
+            { src: jeremyImg, alt: "Jeremy Strong portrait" },
+            { src: frankOzImg, alt: "Frank Oz at TIFF" },
+            { src: conanImg, alt: "Conan O'Brien at Sundance" },
+            { src: vanessaKirbyImg, alt: "Vanessa Kirby at TIFF" }
+          ]}
+          galleryId="problem-gallery"
+          columns={2}
+        />
       </div>
     </div>
   </section>
@@ -149,33 +160,50 @@ title: The Story of WikiPortraits
   <section class="py-24 px-6">
     <div class="max-w-6xl mx-auto">
       <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl p-8 md:p-12 ring-1 ring-gray-200 shadow-sm">
-        <div class="grid lg:grid-cols-2 gap-12 items-center">
-          <div>
-            <span class="inline-block px-4 py-2 bg-green-100 text-green-700 rounded-full text-sm font-semibold mb-4">
-              Success Story
-            </span>
-            <h3 class="text-3xl font-bold mb-4 text-gray-900 font-sans tracking-tight">Jeremy Strong's Wikipedia Transformation</h3>
-            <p class="text-lg text-gray-600 mb-6 font-sans leading-relaxed">
-              When we found Jeremy Strong of Succession at a New York screening, his Wikipedia photo was from 2014. 
-              His publicist said no to a new photo, but Jeremy overruled:
+        <div class="text-center mb-8">
+          <span class="inline-block px-4 py-2 bg-green-100 text-green-700 rounded-full text-sm font-semibold mb-4">
+            Success Story
+          </span>
+          <h3 class="text-3xl font-bold mb-4 text-gray-900 font-sans tracking-tight">Jeremy Strong's Wikipedia Transformation</h3>
+          <p class="text-lg text-gray-600 mb-6 font-sans leading-relaxed max-w-3xl mx-auto">
+            When we found Jeremy Strong of Succession at a New York screening, his Wikipedia photo was from 2014. 
+            His publicist said no to a new photo, but Jeremy overruled:
+          </p>
+          <blockquote class="border-l-4 border-green-500 pl-6 py-4 bg-white rounded-r-xl ring-1 ring-gray-100 max-w-2xl mx-auto mb-12">
+            <p class="text-gray-800 text-lg italic mb-2 font-sans leading-relaxed">
+              "Wait, you're from Wikipedia? For the love of God, please take down that photo. 
+              You'd be doing me a service."
             </p>
-            <blockquote class="border-l-4 border-green-500 pl-6 py-4 bg-white rounded-r-xl ring-1 ring-gray-100">
-              <p class="text-gray-800 text-lg italic mb-2 font-sans leading-relaxed">
-                "Wait, you're from Wikipedia? For the love of God, please take down that photo. 
-                You'd be doing me a service."
-              </p>
-              <p class="text-gray-600 text-sm font-sans">— Jeremy Strong</p>
-            </blockquote>
-          </div>
-          <div class="relative">
-            <img 
-              src="/photos/portraits/studio/jeremy-strong_studio-session_2024.jpg" 
-              alt="Jeremy Strong studio portrait, 2024" 
-              class="rounded-2xl shadow-2xl ring-1 ring-gray-200 object-cover"
-              loading="lazy" decoding="async"
+            <p class="text-gray-600 text-sm font-sans">— Jeremy Strong</p>
+          </blockquote>
+        </div>
+        
+        <div class="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12">
+          <div class="text-center relative">
+            <ImageGallery
+              images={[{ src: jeremyBeforeImg, alt: "Jeremy Strong Wikipedia photo from 2014" }]}
+              galleryId="jeremy-before"
+              columns={1}
             />
-            <div class="absolute -bottom-4 -right-4 bg-green-500 text-white px-6 py-3 rounded-full font-semibold shadow-lg">
-              Updated 2024
+            <div class="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-full font-semibold text-sm shadow-lg z-10">
+              Before (2014)
+            </div>
+          </div>
+          
+          <div class="flex items-center justify-center">
+            <svg class="w-12 h-12 md:w-16 md:h-16 text-green-500 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </div>
+          
+          <div class="text-center relative">
+            <ImageGallery
+              images={[{ src: jeremyAfterImg, alt: "Jeremy Strong studio portrait, 2024" }]}
+              galleryId="jeremy-after"
+              columns={1}
+            />
+            <div class="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-full font-semibold text-sm shadow-lg z-10">
+              After (2024)
             </div>
           </div>
         </div>
@@ -194,97 +222,18 @@ title: The Story of WikiPortraits
         From Sundance to the Jaipur Literature Festival, our photographers capture celebrities and thought leaders at the world's most prestigious events.
       </p>
       
-      <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <div class="relative group overflow-hidden aspect-[3/4]">
-          <img 
-            src="/photos/red-carpet/sundance/conan-obrien_sundance_2024.jpg" 
-            alt="Sundance Film Festival — Conan O'Brien" 
-            class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
-            loading="lazy" decoding="async"
-          />
-          <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-            <div class="absolute bottom-4 left-4 text-white">
-              <h3 class="font-bold text-lg">Sundance Film Festival</h3>
-              <p class="text-sm">2024</p>
-            </div>
-          </div>
-        </div>
-        
-        <div class="relative group overflow-hidden aspect-[3/4]">
-          <img 
-            src="/photos/red-carpet/tiff/vanessa-kirby_tiff_2024.jpg" 
-            alt="Toronto International Film Festival — Vanessa Kirby" 
-            class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
-            loading="lazy" decoding="async"
-          />
-          <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-            <div class="absolute bottom-4 left-4 text-white">
-              <h3 class="font-bold text-lg">TIFF</h3>
-              <p class="text-sm">Toronto</p>
-            </div>
-          </div>
-        </div>
-        
-        <div class="relative group overflow-hidden aspect-[3/4]">
-          <img 
-            src="/photos/events/nobel/john-hopfield_nobel-physics_2024.jpg" 
-            alt="Nobel Prize — John Hopfield" 
-            class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
-            loading="lazy" decoding="async"
-          />
-          <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-            <div class="absolute bottom-4 left-4 text-white">
-              <h3 class="font-bold text-lg">Nobel Prize</h3>
-              <p class="text-sm">Stockholm</p>
-            </div>
-          </div>
-        </div>
-        
-        <div class="relative group overflow-hidden aspect-[3/4]">
-          <img 
-            src="/highlights/Lisa_Gilroy_at_SXSW_in_2025-1.jpg" 
-            alt="SXSW Austin — Lisa Gilroy" 
-            class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
-            loading="lazy" decoding="async"
-          />
-          <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-            <div class="absolute bottom-4 left-4 text-white">
-              <h3 class="font-bold text-lg">SXSW</h3>
-              <p class="text-sm">Austin · 2025</p>
-            </div>
-          </div>
-        </div>
-        
-        <div class="relative group overflow-hidden aspect-[3/4]">
-          <img 
-            src="/highlights/Ana_de_Armas_and_Sydney_Sweeney_at_the_2024_Toronto_International_Film_Festival_04.jpg" 
-            alt="TIFF — Ana de Armas & Sydney Sweeney" 
-            class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
-            loading="lazy" decoding="async"
-          />
-          <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-            <div class="absolute bottom-4 left-4 text-white">
-              <h3 class="font-bold text-lg">TIFF</h3>
-              <p class="text-sm">Toronto · 2024</p>
-            </div>
-          </div>
-        </div>
-        
-        <div class="relative group overflow-hidden aspect-[3/4]">
-          <img 
-            src="/highlights/judd-apatow.jpg" 
-            alt="Fashion Portraits — Judd Apatow" 
-            class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
-            loading="lazy" decoding="async"
-          />
-          <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-            <div class="absolute bottom-4 left-4 text-white">
-              <h3 class="font-bold text-lg">Fashion Portraits</h3>
-              <p class="text-sm">Studio</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <ImageGallery
+        images={[
+          { src: conanSundanceImg, alt: "Sundance Film Festival — Conan O'Brien" },
+          { src: vanessaTiffImg, alt: "Toronto International Film Festival — Vanessa Kirby" },
+          { src: nobelImg, alt: "Nobel Prize — John Hopfield" },
+          { src: lisaSxswImg, alt: "SXSW Austin — Lisa Gilroy" },
+          { src: anaAndSydneyImg, alt: "TIFF — Ana de Armas & Sydney Sweeney" },
+          { src: juddImg, alt: "Fashion Portraits — Judd Apatow" }
+        ]}
+        galleryId="events-gallery"
+        columns={3}
+      />
     </div>
   </section>
 

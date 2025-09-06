@@ -46,6 +46,7 @@
 	},
 	"dependencies": {
 		"@astrojs/mdx": "^4.3.4",
+		"@jaydixit/astro-utils": "^1.0.2",
 		"fslightbox": "^3.7.4",
 		"photoswipe": "^5.4.4"
 	}

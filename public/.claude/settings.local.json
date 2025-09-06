@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/jay/Library/CloudStorage/Dropbox/github/photos-jaydixit/src/pages/**)",
+      "Read(//Users/jay/Library/CloudStorage/Dropbox/github/photos-jaydixit/**)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(curl:*)",
+      "Read(//Users/jay/Library/CloudStorage/Dropbox/github/astro-monorepo/apps/jaydocs/src/content/blog/**)",
+      "Read(//Users/jay/Library/CloudStorage/Dropbox/github/astro-monorepo/packages/astro-utils/**)",
+      "Bash(npm install:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm install:*)",
+      "Read(//Users/jay/Library/CloudStorage/Dropbox/github/astro-monorepo/**)",
+      "Bash(npm run build:*)",
+      "Bash(npm publish:*)",
+      "Bash(npm view:*)",
+      "Bash(npm:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
