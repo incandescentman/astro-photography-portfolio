@@ -285,48 +285,44 @@ function mapSingle(img) {
 
 <MainLayout>
   <div class="portfolio-wrap">
-    <div class="portfolio-items masonry-items" data-masonry-type="photography">
+    <div id="masonry" class="masonry-items elastic" data-col-num="elastic" data-gutter="10px" data-starting-filter="*" data-masonry-type="photography">
+      <div class="grid-sizer"></div>
       {processedImages.map((item, index) => {
         if (item && item.type === 'stacked' && Array.isArray(item.items)) {
           const a = mapSingle(item.items[0]);
           const b = mapSingle(item.items[1] || item.items[0]);
           return (
-            <div class={`col elastic-portfolio-item stacked`} data-delay-amount={index}>
-              <div class="inner-wrap">
-                <div class="work-item">
-                  <div class="stacked-pair">
-                    <a href={a.src} class="portfolio-lightbox">
-                      <img src={a.src} alt={a.caption} loading="lazy" data-caption={a.caption} />
-                    </a>
-                    <a href={b.src} class="portfolio-lightbox">
-                      <img src={b.src} alt={b.caption} loading="lazy" data-caption={b.caption} />
-                    </a>
-                  </div>
-                </div>
+            <article class="masonry-item wide_tall" data-idx={index}>
+              <div class="stacked-pair">
+                <a class="masonry-link portfolio-lightbox" href={a.src}>
+                  <img src={a.src} alt={a.caption} loading="lazy" data-caption={a.caption} />
+                </a>
+                <a class="masonry-link portfolio-lightbox" href={b.src}>
+                  <img src={b.src} alt={b.caption} loading="lazy" data-caption={b.caption} />
+                </a>
               </div>
-            </div>
+            </article>
           );
         }
         const photo = mapSingle(item);
+        // Map size to variant names
+        let variant = 'regular';
+        if (photo.size === 'landscape') variant = 'wide';
+        else if (photo.size === 'xlportrait') variant = 'wide_tall';
+        else if (photo.size === 'portrait') variant = 'regular';
+        
         return (
-          <div class={`col elastic-portfolio-item ${photo.size}`} data-delay-amount={index}>
-            <div class="inner-wrap">
-              <div class="work-item">
-                <a href={photo.src} class="portfolio-lightbox">
-                  <img 
-                    src={photo.src} 
-                    alt={photo.caption}
-                    loading="lazy"
-                    data-caption={photo.caption}
-                  />
-                </a>
-                <div class="work-info-bg"></div>
-                <div class="work-info">
-                  <h3>{photo.caption}</h3>
-                </div>
-              </div>
-            </div>
-          </div>
+          <article class={`masonry-item ${variant}`} data-idx={index}>
+            <a class="masonry-link portfolio-lightbox" href={photo.src}>
+              <img 
+                src={photo.src} 
+                alt={photo.caption}
+                loading="lazy"
+                data-caption={photo.caption}
+                data-variant={variant}
+              />
+            </a>
+          </article>
         );
       })}
     </div>
@@ -343,248 +339,90 @@ function mapSingle(img) {
 }
 
 /* Masonry Container */
-.portfolio-items {
+.masonry-items {
   position: relative;
   width: 100%;
   margin: 0 auto;
   padding: 0;
-  opacity: 0;
-  transition: opacity 0.3s ease;
 }
 
-.portfolio-items.isotope-initialized {
-  opacity: 1;
-}
-
-/* Base column width - Fixed pixel based */
-.portfolio-items .col {
-  width: 320px; /* Fixed base width */
-  padding: 0;
-  margin: 0 0 10px 0; /* Bottom margin for vertical spacing */
+/* Base masonry item */
+.masonry-item {
   box-sizing: border-box;
-  float: left;
+  padding: 0;
+  opacity: 0;
+  transform: translateY(12px);
 }
 
-/* Size variations - User-friendly names */
-.portfolio-items .col.portrait {
-  width: 320px; /* 1 column width */
+.masonry-item.animated-in {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity .35s ease, transform .35s ease;
 }
 
-.portfolio-items .col.stacked {
-  width: 320px; /* 1 column width (two portraits stacked) */
+/* Packery requires a sizer for percentPosition math */
+.grid-sizer {
+  width: 33.333%;
 }
 
-.portfolio-items .col.landscape {
-  width: 650px; /* 2 columns + gap (320*2 + 10) */
-}
-
-.portfolio-items .col.xlportrait {
-  width: 650px; /* 2 columns + gap */
-}
-
-/* Responsive breakpoints */
-@media only screen and (max-width: 1600px) {
-  .portfolio-items .col.portrait {
-    width: 25%; /* 4 columns */
-  }
-  .portfolio-items .col.stacked {
-    width: 25%;
-  }
-  .portfolio-items .col.landscape,
-  .portfolio-items .col.xlportrait {
-    width: 50%; /* 2x width */
-  }
-}
-
-@media only screen and (max-width: 1200px) {
-  .portfolio-items .col.portrait {
-    width: 33.333%; /* 3 columns */
-  }
-  .portfolio-items .col.stacked {
-    width: 33.333%;
-  }
-  .portfolio-items .col.landscape,
-  .portfolio-items .col.xlportrait {
-    width: 66.666%; /* 2x width */
-  }
-}
-
-@media only screen and (max-width: 768px) {
-  .portfolio-items .col.portrait {
-    width: 50%; /* 2 columns */
-  }
-  .portfolio-items .col.stacked {
-    width: 50%;
-  }
-  .portfolio-items .col.landscape,
-  .portfolio-items .col.xlportrait {
-    width: 100%; /* Full width */
-  }
-}
-
-@media only screen and (max-width: 480px) {
-  .portfolio-items .col,
-  .portfolio-items .col.portrait,
-  .portfolio-items .col.stacked,
-  .portfolio-items .col.landscape,
-  .portfolio-items .col.xlportrait {
-    width: 100%; /* 1 column on mobile */
-  }
-}
-
-/* Inner wrapper */
-.portfolio-items .col .inner-wrap {
-  position: relative;
-  overflow: hidden;
-  background: #f5f5f5;
-}
-
-/* Work item container */
-.portfolio-items .col .work-item {
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-}
-
-/* Images - fixed aspect ratio with cropping */
-.portfolio-items .col img {
-  width: 100%;
-  height: 100%;
+/* Images */
+.masonry-item img {
   display: block;
-  object-fit: cover;
+  width: 100%;
+  height: auto;
+  border-radius: 0;
   transition: transform 0.45s cubic-bezier(0.3, 0.1, 0.3, 1);
 }
 
-/* Set fixed aspect ratios for each size */
-.portfolio-items .col.portrait .work-item {
-  aspect-ratio: 2 / 3; /* Vertical orientation */
-}
-
-.portfolio-items .col.stacked .work-item {
-  height: 970px; /* two portraits + 10px gap */
-}
-
-.portfolio-items .col.stacked .stacked-pair {
+/* Stacked pair special handling */
+.masonry-item .stacked-pair {
   display: flex;
   flex-direction: column;
-  gap: 10px; /* must match masonry gutter */
-  height: 970px;
+  gap: 10px;
 }
 
-.portfolio-items .col.stacked .stacked-pair a {
+.masonry-item .stacked-pair a {
   display: block;
-  width: 100%;
-  height: 480px; /* each portrait height */
   overflow: hidden;
 }
 
-.portfolio-items .col.stacked .stacked-pair img {
+.masonry-item .stacked-pair img {
   width: 100%;
-  height: 100%;
+  height: auto;
   object-fit: cover;
   display: block;
 }
 
-.portfolio-items .col.landscape .work-item {
-  aspect-ratio: 650 / 480; /* Exact ratio for same height as portrait (650px wide, 480px tall) */
-}
-
-.portfolio-items .col.xlportrait .work-item {
-  /* Height = (2 portraits + gap between)
-     For 320px width at 2:3 ratio = 480px per portrait
-     480px + 480px + 10px gap = 970px height */
-  height: 970px; /* Exactly 2 portrait heights + gap */
-  width: 100%;
-}
-
 /* Hover effects */
-.portfolio-items .col:hover img {
+.masonry-item:hover img {
   transform: scale(1.07);
 }
-
-/* Work info overlay */
-.portfolio-items .work-info-bg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0);
-  transition: background 0.45s ease;
-  pointer-events: none;
-}
-
-.portfolio-items .col:hover .work-info-bg {
-  background: rgba(0, 0, 0, 0.4);
-}
-
-.portfolio-items .work-info {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 20px;
-  color: #fff;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.portfolio-items .col:hover .work-info {
-  opacity: 1;
-}
-
-.portfolio-items .work-info h3 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 400;
-}
-
-/* Animation */
-@keyframes portfolioFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.portfolio-items .col .inner-wrap {
-  animation: portfolioFadeIn 0.6s ease forwards;
-  opacity: 0;
-}
-
-.portfolio-items.animated-in .col .inner-wrap {
-  opacity: 1;
-}
-
-/* Staggered animation */
-.portfolio-items .col:nth-child(1) .inner-wrap { animation-delay: 0ms; }
-.portfolio-items .col:nth-child(2) .inner-wrap { animation-delay: 85ms; }
-.portfolio-items .col:nth-child(3) .inner-wrap { animation-delay: 170ms; }
-.portfolio-items .col:nth-child(4) .inner-wrap { animation-delay: 255ms; }
-.portfolio-items .col:nth-child(5) .inner-wrap { animation-delay: 340ms; }
-.portfolio-items .col:nth-child(6) .inner-wrap { animation-delay: 425ms; }
-.portfolio-items .col:nth-child(7) .inner-wrap { animation-delay: 510ms; }
-.portfolio-items .col:nth-child(8) .inner-wrap { animation-delay: 595ms; }
 </style>
 
-<!-- Load required libraries -->
-<script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
-
-<script>
+<script type="module">
   import PhotoSwipeLightbox from 'photoswipe/lightbox';
   import 'photoswipe/style.css';
-  import Packery from 'packery';
+  import initMasonry from '../scripts/masonry.ts';
   
   document.addEventListener('DOMContentLoaded', function() {
-    const container = document.querySelector('.portfolio-items');
+    // Initialize the masonry with Isotope + Packery
+    initMasonry({
+      container: '#masonry',
+      options: {
+        gutter: 10,
+        elastic: true,
+        photographyMode: true, // Enable +1 column at larger tiers
+        constrained: false,
+        boxedLayout: false,
+        masonryType: 'photography',
+        startingFilter: '*',
+        rtl: false
+      }
+    });
     
     // Initialize PhotoSwipe Lightbox
     const lightbox = new PhotoSwipeLightbox({
-      gallery: '.portfolio-items',
+      gallery: '.masonry-items',
       children: '.portfolio-lightbox',
       pswpModule: () => import('photoswipe'),
       padding: { top: 20, bottom: 20, left: 20, right: 20 },
@@ -612,51 +450,5 @@ function mapSingle(img) {
     });
     
     lightbox.init();
-    
-    // Wait for images to load, then initialize Packery
-    imagesLoaded(container, function() {
-      // Initialize Packery for better gap filling
-      const pckry = new Packery(container, {
-        itemSelector: '.col',
-        columnWidth: '.col.portrait', // Use portrait as column width reference
-        gutter: 10, // 10px gap between columns
-        fitWidth: true, // Center the grid
-        percentPosition: false, // Use pixel positioning
-        transitionDuration: '0.3s',
-        stagger: 30, // Stagger animation
-        resize: true, // Auto-resize on window resize
-        initLayout: true // Initialize layout immediately
-      });
-      
-      // Packery shiftLayout for better gap filling
-      // This method will shift items to fill gaps
-      pckry.on('layoutComplete', function() {
-        // After layout, try to fill any remaining gaps
-        pckry.shiftLayout();
-      });
-      
-      // Optional: Force relayout after a delay to ensure proper positioning
-      setTimeout(() => {
-        pckry.layout();
-      }, 100);
-      
-      // Add initialized class
-      container.classList.add('isotope-initialized');
-      
-      // Trigger animation
-      setTimeout(() => {
-        container.classList.add('animated-in');
-      }, 100);
-      
-      // Handle window resize (Packery handles this automatically with resize: true)
-      // But we can add manual handling if needed
-      let resizeTimer;
-      window.addEventListener('resize', function() {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(function() {
-          pckry.layout();
-        }, 250);
-      });
-    });
   });
 </script>
