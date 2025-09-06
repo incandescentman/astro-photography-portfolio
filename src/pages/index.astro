@@ -1267,30 +1267,58 @@ body.edit-key-active .masonry-item .edit-btn {
           const pop = document.createElement('div');
           pop.className = 'edit-popover';
           pop.innerHTML = `
-            <h4>Edit Image</h4>
-            <div class="hint">${filename}</div>
+            <h4 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 600; color: #111827;">Edit Image</h4>
+            <div style="font-size: 11px; color: #9ca3af; margin-bottom: 16px; font-family: monospace;">${filename}</div>
             
-            <label>Caption</label>
-            <textarea id="ep-caption" placeholder="Enter image caption...">${currentCaption.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+            <label style="display: block; font-size: 13px; font-weight: 500; color: #374151; margin: 12px 0 6px;">Caption</label>
+            <textarea id="ep-caption" style="width: 100%; padding: 10px 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; background: #f9fafb; resize: vertical; min-height: 60px; font-family: inherit; line-height: 1.4;" placeholder="Enter image caption...">${currentCaption.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
             
             ${item.querySelector('.stacked-pair') ? '' : `
-            <label>Size</label>
-            <select id="ep-size">
+            <label style="display: block; font-size: 13px; font-weight: 500; color: #374151; margin: 12px 0 6px;">Size</label>
+            <select id="ep-size" style="width: 100%; padding: 10px 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; background: #f9fafb; cursor: pointer;">
               <option value="portrait" ${currentSize === 'portrait' ? 'selected' : ''}>Portrait (1 column)</option>
               <option value="landscape" ${currentSize === 'landscape' ? 'selected' : ''}>Landscape (2 columns)</option>
               <option value="xlportrait" ${currentSize === 'xlportrait' ? 'selected' : ''}>XL Portrait (2×2 grid)</option>
             </select>
-            <div class="size-hint">Choose how the image displays in the masonry grid</div>`}
+            <div style="font-size: 11px; color: #9ca3af; margin-top: 4px;">Choose how the image displays in the masonry grid</div>`}
             
-            <div class="actions">
-              <button class="cancel">Cancel</button>
-              <button class="save">Save Changes</button>
+            <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
+              <button class="cancel" style="padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; background: #f3f4f6; color: #374151; border: none;">Cancel</button>
+              <button class="save" style="padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; background: #1e3a8a; color: white; border: none;">Save Changes</button>
             </div>
           `;
           item.appendChild(pop);
 
           const capInput = pop.querySelector('#ep-caption');
           const sizeInput = pop.querySelector('#ep-size');
+          
+          // Add focus styles to inputs
+          if (capInput) {
+            capInput.addEventListener('focus', () => {
+              capInput.style.borderColor = '#3b82f6';
+              capInput.style.background = '#ffffff';
+              capInput.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+            });
+            capInput.addEventListener('blur', () => {
+              capInput.style.borderColor = '#e5e7eb';
+              capInput.style.background = '#f9fafb';
+              capInput.style.boxShadow = 'none';
+            });
+          }
+          
+          if (sizeInput) {
+            sizeInput.addEventListener('focus', () => {
+              sizeInput.style.borderColor = '#3b82f6';
+              sizeInput.style.background = '#ffffff';
+              sizeInput.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+            });
+            sizeInput.addEventListener('blur', () => {
+              sizeInput.style.borderColor = '#e5e7eb';
+              sizeInput.style.background = '#f9fafb';
+              sizeInput.style.boxShadow = 'none';
+            });
+          }
+          
           setTimeout(() => { capInput?.focus(); capInput?.select(); }, 0);
 
           const applySize = (val) => {
@@ -1332,8 +1360,31 @@ body.edit-key-active .masonry-item .edit-btn {
             await saveImageMetadata(filename, { size: newSize, caption: newCaption });
             close();
           };
-          pop.querySelector('.save')?.addEventListener('click', doSave);
-          pop.querySelector('.cancel')?.addEventListener('click', close);
+          // Add button hover effects
+          const saveBtn = pop.querySelector('.save');
+          const cancelBtn = pop.querySelector('.cancel');
+          
+          if (saveBtn) {
+            saveBtn.addEventListener('mouseenter', () => {
+              saveBtn.style.background = '#1e40af';
+              saveBtn.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+            });
+            saveBtn.addEventListener('mouseleave', () => {
+              saveBtn.style.background = '#1e3a8a';
+              saveBtn.style.boxShadow = 'none';
+            });
+            saveBtn.addEventListener('click', doSave);
+          }
+          
+          if (cancelBtn) {
+            cancelBtn.addEventListener('mouseenter', () => {
+              cancelBtn.style.background = '#e5e7eb';
+            });
+            cancelBtn.addEventListener('mouseleave', () => {
+              cancelBtn.style.background = '#f3f4f6';
+            });
+            cancelBtn.addEventListener('click', close);
+          }
 
           return; // Inline popover active; skip legacy modal below
 
