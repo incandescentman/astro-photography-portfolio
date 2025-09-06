@@ -76,4 +76,92 @@ Both. It uses Isotope as the engine, with Packery as the layout mode for masonry
 
 - Engine: Isotope (salient/js/build/third-party/isotope.min.js).
 - Layout mode: packery when the container has .masonry-items; fitRows otherwise.
-- Where set: salient/plugins/salient-portfolio/js/salient-portfolio.js → masonryInit() sets layoutMode: 'packery' for masonry. 
+- Where set: salient/plugins/salient-portfolio/js/salient-portfolio.js → masonryInit() sets layoutMode: 'packery' for masonry.
+
+* Key Implementation Details for Gap-Free Masonry
+
+** Why Packery vs Standard Masonry
+- Packery uses a bin-packing algorithm that actively searches for the best position for each item
+- Standard masonry just places items top-to-bottom in columns, leaving gaps
+- Packery can place items in any available space, filling gaps more efficiently
+
+** Salient's Exact Implementation
+From salient-portfolio.js analysis:
+
+1. Layout initialization:
+   #+begin_src javascript
+   var $layoutMode = (instance.$el.hasClass('masonry-items')) ? 'packery' : 'fitRows';
+   
+   instance.$el.isotope({
+     itemSelector: '.element',
+     filter: $startingFilter,
+     layoutMode: $layoutMode,
+     transitionDuration: transitionDur,
+     isOriginLeft: $rtlLayout,
+     packery: {
+       gutter: 0
+     }
+   });
+   #+end_src
+
+2. Key configuration differences:
+   - Uses Packery layout mode (not masonry)
+   - Sets gutter to 0 in Packery config (handles gaps differently)
+   - No horizontalOrder setting (Packery handles placement differently)
+   - Uses isOriginLeft for RTL support
+
+3. Column width handling:
+   - Fixed pixel widths (320px base)
+   - Photography mode increases columns by 1 at larger tiers
+   - Responsive breakpoints handled separately from layout algorithm
+
+** Migration Strategy for Astro Site
+
+1. Required changes:
+   - Load isotope-packery plugin in addition to isotope
+   - Change layoutMode from 'masonry' to 'packery'
+   - Adjust gutter settings in packery config
+   - Remove horizontalOrder (not applicable to packery)
+
+2. Implementation:
+   #+begin_src javascript
+   // Add to HTML
+   <script src="https://unpkg.com/isotope-packery@2/packery-mode.pkgd.min.js"></script>
+   
+   // Update Isotope config
+   const iso = new Isotope(container, {
+     itemSelector: '.col',
+     layoutMode: 'packery',
+     packery: {
+       columnWidth: 320,
+       gutter: 10,
+       horizontal: false
+     },
+     transitionDuration: '0.3s',
+     isOriginLeft: true
+   });
+   #+end_src
+
+3. Benefits of Packery:
+   - Automatically fills gaps left by different-sized items
+   - Better handling of mixed portrait/landscape/xlportrait layouts
+   - No need for complex reordering algorithms in JavaScript
+   - Matches the exact behavior of the WordPress/Salient version
+
+** Update: Packery Integration Issues
+
+When attempting to integrate Packery with the Astro site, encountered loading errors:
+- packery-mode.pkgd.min.js requires Outlayer dependency
+- Version compatibility issues between Isotope v3 and Packery mode v2
+- Error: "Cannot read properties of undefined (reading 'Item')"
+
+Alternative approaches for gap reduction:
+1. Use masonry with horizontalOrder: false for vertical optimization
+2. Implement custom reordering algorithm to place shorter items at end
+3. Consider using CSS Grid with masonry support (experimental)
+4. Use Masonry standalone library instead of Isotope
+
+Current solution: Optimized masonry mode with:
+- horizontalOrder: false for better vertical packing
+- Custom image ordering algorithm in JavaScript
+- Strategic placement of different sized items 
