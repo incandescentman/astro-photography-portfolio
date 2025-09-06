@@ -724,6 +724,28 @@ body:has(.admin-toolbar) .portfolio-wrap {
 /* Admin mode helpers */
 .admin-mode .masonry-item { position: relative; }
 
+.admin-mode .masonry-item::before {
+  content: "Right-click to edit";
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  background: rgba(30, 58, 138, 0.9);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.admin-mode .masonry-item:hover::before {
+  opacity: 1;
+}
+
 /* Minimal edit popover */
 .edit-popover {
   position: absolute;
@@ -1027,33 +1049,17 @@ body:has(.admin-toolbar) .portfolio-wrap {
       // Add admin mode class to container
       container.classList.add('admin-mode');
       
-      // Add Option+Click (Alt+Click) handler for editing
-      container.addEventListener('click', (e) => {
-        // Check if Option/Alt key is pressed
-        if (!e.altKey) return;
-        
+      // Add right-click handler for editing
+      container.addEventListener('contextmenu', (e) => {
         const item = e.target.closest('.masonry-item');
         if (!item) return;
         
         // Don't interfere with dragging
         if (item.classList.contains('is-dragging')) return;
         
-        // Prevent lightbox from opening
+        // Prevent context menu from appearing
         e.preventDefault();
         e.stopPropagation();
-        
-        // Also prevent the anchor link
-        const link = item.querySelector('a');
-        if (link) {
-          link.onclick = (evt) => {
-            evt.preventDefault();
-            return false;
-          };
-          // Reset after a moment
-          setTimeout(() => {
-            link.onclick = null;
-          }, 100);
-        }
           
           // Get image metadata
           const img = item.querySelector('img');
@@ -1069,7 +1075,7 @@ body:has(.admin-toolbar) .portfolio-wrap {
           modal.className = 'edit-modal';
           modal.innerHTML = `
             <h3>Edit Image</h3>
-            <p style="font-size: 11px; color: #999; margin: -8px 0 12px 0;">Tip: Use ⌥ Option+Click to edit any image</p>
+            <p style="font-size: 11px; color: #999; margin: -8px 0 12px 0;">Tip: Right-click any image to edit</p>
             <label style="color: #666; font-size: 12px; margin-bottom: 16px; display: block;">File: ${filename}</label>
             
             <div class="edit-section">
