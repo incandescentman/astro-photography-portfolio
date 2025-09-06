@@ -748,30 +748,161 @@ body:has(.admin-toolbar) .portfolio-wrap {
   opacity: 1;
 }
 
-/* Minimal edit popover */
+/* Enhanced edit popover */
 .edit-popover {
   position: absolute;
   top: 0;
   left: 0;
-  transform: translate(-8px, -8px);
+  transform: translate(-12px, -12px);
   background: #ffffff;
   border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.08);
-  padding: 12px;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  padding: 20px;
   z-index: 100000;
-  width: 320px;
+  width: 380px;
+  max-width: calc(100vw - 40px);
+  animation: popoverFadeIn 0.2s ease;
 }
-.edit-popover h4 { margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #111827; }
-.edit-popover label { display: block; font-size: 12px; color: #6b7280; margin: 8px 0 4px; }
-.edit-popover input { width: 100%; padding: 8px 10px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 14px; }
-.edit-popover .row { display: flex; gap: 8px; align-items: center; }
-.edit-popover .hint { font-size: 11px; color: #9ca3af; }
-.edit-popover .actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; }
-.edit-popover button { padding: 6px 12px; border-radius: 6px; font-size: 13px; cursor: pointer; border: 1px solid #e5e7eb; }
-.edit-popover .save { background: #1e3a8a; color: white; border-color: #1e3a8a; }
-.edit-popover .cancel { background: #f9fafb; color: #374151; }
-.edit-popover .invalid { border-color: #ef4444; }
+
+@keyframes popoverFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-12px, -12px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-12px, -12px) scale(1);
+  }
+}
+
+.edit-popover h4 { 
+  margin: 0 0 4px 0; 
+  font-size: 16px; 
+  font-weight: 600; 
+  color: #111827; 
+}
+
+.edit-popover .hint { 
+  font-size: 11px; 
+  color: #9ca3af; 
+  margin-bottom: 16px;
+  font-family: monospace;
+}
+
+.edit-popover label { 
+  display: block; 
+  font-size: 13px; 
+  font-weight: 500;
+  color: #374151; 
+  margin: 12px 0 6px; 
+}
+
+.edit-popover input[type="text"],
+.edit-popover textarea { 
+  width: 100%; 
+  padding: 10px 12px; 
+  border: 2px solid #e5e7eb; 
+  border-radius: 8px; 
+  font-size: 14px; 
+  transition: all 0.15s ease;
+  background: #f9fafb;
+}
+
+.edit-popover textarea {
+  resize: vertical;
+  min-height: 60px;
+  font-family: inherit;
+  line-height: 1.4;
+}
+
+.edit-popover input:focus,
+.edit-popover textarea:focus { 
+  outline: none;
+  border-color: #3b82f6; 
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.edit-popover select {
+  width: 100%;
+  padding: 10px 12px;
+  padding-right: 32px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #f9fafb;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+  background-position: right 8px center;
+  background-repeat: no-repeat;
+  background-size: 20px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.edit-popover select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.edit-popover .row { 
+  display: flex; 
+  gap: 12px; 
+  align-items: flex-start; 
+}
+
+.edit-popover .size-hint { 
+  font-size: 11px; 
+  color: #9ca3af; 
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+.edit-popover .actions { 
+  display: flex; 
+  gap: 8px; 
+  justify-content: flex-end; 
+  margin-top: 20px; 
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.edit-popover button { 
+  padding: 8px 16px; 
+  border-radius: 8px; 
+  font-size: 14px; 
+  font-weight: 500;
+  cursor: pointer; 
+  transition: all 0.15s ease;
+  border: none;
+}
+
+.edit-popover .save { 
+  background: #1e3a8a; 
+  color: white; 
+}
+
+.edit-popover .save:hover {
+  background: #1e40af;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.edit-popover .cancel { 
+  background: #f3f4f6; 
+  color: #374151; 
+}
+
+.edit-popover .cancel:hover {
+  background: #e5e7eb;
+}
+
+.edit-popover .invalid { 
+  border-color: #ef4444 !important; 
+  background: #fef2f2 !important;
+}
 
 /* Modal for editing */
 .edit-modal {
@@ -854,20 +985,32 @@ body:has(.admin-toolbar) .portfolio-wrap {
 /* Edit button overlay */
 .edit-btn {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 12px;
+  right: 12px;
   z-index: 6;
-  background: rgba(17,24,39,0.75);
-  color: white;
-  border: 1px solid rgba(255,255,255,0.3);
-  border-radius: 8px;
-  padding: 4px 8px;
-  font-size: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  color: #1e3a8a;
+  border: 2px solid rgba(30, 58, 138, 0.2);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
   line-height: 1;
   cursor: pointer;
   opacity: 0;
-  transition: opacity 0.15s ease;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
+
+.edit-btn:hover {
+  background: #1e3a8a;
+  color: white;
+  border-color: #1e3a8a;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
 .admin-mode .masonry-item:hover .edit-btn,
 body.edit-key-active .masonry-item .edit-btn {
   opacity: 1;
@@ -1126,19 +1269,22 @@ body.edit-key-active .masonry-item .edit-btn {
           pop.innerHTML = `
             <h4>Edit Image</h4>
             <div class="hint">${filename}</div>
+            
             <label>Caption</label>
-            <input id="ep-caption" type="text" value="${currentCaption.replace(/\"/g, '&quot;')}" />
+            <textarea id="ep-caption" placeholder="Enter image caption...">${currentCaption.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+            
             ${item.querySelector('.stacked-pair') ? '' : `
-            <div class="row">
-              <div style="flex:1">
-                <label>Size</label>
-                <input id="ep-size" type="text" value="${currentSize}" placeholder="portrait | landscape | xlportrait" />
-              </div>
-            </div>
-            <div class="hint">portrait = 1x1 • landscape = 2x1 • xlportrait = 2x2</div>`}
+            <label>Size</label>
+            <select id="ep-size">
+              <option value="portrait" ${currentSize === 'portrait' ? 'selected' : ''}>Portrait (1 column)</option>
+              <option value="landscape" ${currentSize === 'landscape' ? 'selected' : ''}>Landscape (2 columns)</option>
+              <option value="xlportrait" ${currentSize === 'xlportrait' ? 'selected' : ''}>XL Portrait (2×2 grid)</option>
+            </select>
+            <div class="size-hint">Choose how the image displays in the masonry grid</div>`}
+            
             <div class="actions">
               <button class="cancel">Cancel</button>
-              <button class="save">Save</button>
+              <button class="save">Save Changes</button>
             </div>
           `;
           item.appendChild(pop);
@@ -1147,23 +1293,18 @@ body.edit-key-active .masonry-item .edit-btn {
           const sizeInput = pop.querySelector('#ep-size');
           setTimeout(() => { capInput?.focus(); capInput?.select(); }, 0);
 
-          const validSizes = new Set(['portrait', 'landscape', 'xlportrait']);
           const applySize = (val) => {
             item.setAttribute('data-size', val);
             item.classList.remove('regular', 'wide', 'wide_tall');
             item.classList.add(val === 'landscape' ? 'wide' : val === 'xlportrait' ? 'wide_tall' : 'regular');
             if (window.pckry) window.pckry.layout();
           };
+          
+          // Handle size select change for live preview
           if (sizeInput) {
-            const validate = () => {
-              const v = sizeInput.value.trim();
-              const ok = validSizes.has(v);
-              sizeInput.classList.toggle('invalid', !ok);
-              if (ok) applySize(v);
-              return ok;
-            };
-            sizeInput.addEventListener('input', validate);
-            validate();
+            sizeInput.addEventListener('change', () => {
+              applySize(sizeInput.value);
+            });
           }
 
           const close = () => { document.removeEventListener('keydown', onKey); document.removeEventListener('mousedown', onAway, true); pop.remove(); };
@@ -1177,8 +1318,7 @@ body.edit-key-active .masonry-item .edit-btn {
 
           const doSave = async () => {
             const newCaption = (capInput?.value || '').trim();
-            const newSize = (sizeInput?.value || currentSize).trim();
-            if (sizeInput && !validSizes.has(newSize)) return;
+            const newSize = sizeInput ? sizeInput.value : currentSize;
 
             if (targetImg) {
               targetImg.setAttribute('alt', 'Jay Dixit photo: ' + newCaption);
