@@ -344,7 +344,7 @@ function mapSingle(img) {
           const a = mapSingle(item.items[0]);
           const b = mapSingle(item.items[1] || item.items[0]);
           return (
-            <article class="masonry-item wide_tall" data-idx={index}>
+            <article class="masonry-item wide_tall" data-idx={index} data-filename={a.filename} data-size="xlportrait">
               <div class="stacked-pair">
                 <a class="masonry-link portfolio-lightbox" href={a.src}>
                   <img src={a.src} alt={a.caption} loading="lazy" data-caption={a.caption} />
@@ -370,7 +370,7 @@ function mapSingle(img) {
         else if (photo.size === 'portrait') variant = 'regular';
         
         return (
-          <article class={`masonry-item ${variant}`} data-idx={index} data-filename={item.filename} data-size={photo.size}>
+          <article class={`masonry-item ${variant}`} data-idx={index} data-filename={photo.filename} data-size={photo.size}>
             <a class="masonry-link portfolio-lightbox" href={photo.src}>
               <img 
                 src={photo.src} 
@@ -721,32 +721,33 @@ body:has(.admin-toolbar) .portfolio-wrap {
   padding-top: 170px; /* Extra space for admin toolbar */
 }
 
-/* Admin mode visual feedback */
-.admin-mode .masonry-item {
-  position: relative;
-}
+/* Admin mode helpers */
+.admin-mode .masonry-item { position: relative; }
 
-.admin-mode .masonry-item::before {
-  content: "⌥ Option+Click to edit";
+/* Minimal edit popover */
+.edit-popover {
   position: absolute;
-  top: 10px;
-  left: 10px;
-  right: 10px;
-  background: rgba(30, 58, 138, 0.9);
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  text-align: center;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  z-index: 10;
-  pointer-events: none;
+  top: 0;
+  left: 0;
+  transform: translate(-8px, -8px);
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+  padding: 12px;
+  z-index: 100000;
+  width: 320px;
 }
-
-.admin-mode .masonry-item:hover::before {
-  opacity: 1;
-}
+.edit-popover h4 { margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #111827; }
+.edit-popover label { display: block; font-size: 12px; color: #6b7280; margin: 8px 0 4px; }
+.edit-popover input { width: 100%; padding: 8px 10px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 14px; }
+.edit-popover .row { display: flex; gap: 8px; align-items: center; }
+.edit-popover .hint { font-size: 11px; color: #9ca3af; }
+.edit-popover .actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; }
+.edit-popover button { padding: 6px 12px; border-radius: 6px; font-size: 13px; cursor: pointer; border: 1px solid #e5e7eb; }
+.edit-popover .save { background: #1e3a8a; color: white; border-color: #1e3a8a; }
+.edit-popover .cancel { background: #f9fafb; color: #374151; }
+.edit-popover .invalid { border-color: #ef4444; }
 
 /* Modal for editing */
 .edit-modal {
@@ -1072,12 +1073,8 @@ body:has(.admin-toolbar) .portfolio-wrap {
             <label style="color: #666; font-size: 12px; margin-bottom: 16px; display: block;">File: ${filename}</label>
             
             <div class="edit-section">
-              <label>Size:</label>
-              <select id="size-select">
-                <option value="portrait" ${currentSize === 'portrait' ? 'selected' : ''}>Portrait (1 column)</option>
-                <option value="landscape" ${currentSize === 'landscape' ? 'selected' : ''}>Landscape (2 columns × 1 row)</option>
-                <option value="xlportrait" ${currentSize === 'xlportrait' ? 'selected' : ''}>XL Portrait (2 columns × 2 rows)</option>
-              </select>
+              <label>Size (portrait | landscape | xlportrait):</label>
+              <input type="text" id="size-input" value="${currentSize}" />
             </div>
             
             <div class="edit-section">
@@ -1094,6 +1091,16 @@ body:has(.admin-toolbar) .portfolio-wrap {
           document.body.appendChild(overlay);
           document.body.appendChild(modal);
           
+          // Hide size input for stacked pair items (only caption is editable)
+          try {
+            if (item.querySelector('.stacked-pair')) {
+              const sizeEl = modal.querySelector('#size-input');
+              if (sizeEl && sizeEl.parentElement && sizeEl.parentElement.closest('.edit-section')) {
+                sizeEl.parentElement.closest('.edit-section').style.display = 'none';
+              }
+            }
+          } catch {}
+
           // Focus caption input
           setTimeout(() => {
             const input = modal.querySelector('#caption-input');
@@ -1110,8 +1117,8 @@ body:has(.admin-toolbar) .portfolio-wrap {
           });
           
           // Handle save
-          modal.querySelector('.save-btn').addEventListener('click', async () => {
-            const newSize = modal.querySelector('#size-select').value;
+          const doSave = async () => {
+            const newSize = (modal.querySelector('#size-input')?.value || '').trim() || 'portrait';
             const newCaption = modal.querySelector('#caption-input').value;
             
             // Update the item's size
@@ -1138,6 +1145,13 @@ body:has(.admin-toolbar) .portfolio-wrap {
             
             overlay.remove();
             modal.remove();
+          };
+          modal.querySelector('.save-btn').addEventListener('click', doSave);
+          modal.addEventListener('keydown', (evt) => {
+            if (evt.key === 'Enter') {
+              evt.preventDefault();
+              doSave();
+            }
           });
           
           // Handle ESC key
@@ -1205,7 +1219,7 @@ body:has(.admin-toolbar) .portfolio-wrap {
           const img = item.querySelector('img');
           const src = img?.getAttribute('src') || '';
           const filename = item.getAttribute('data-filename') || src.split('/').pop();
-          const size = item.getAttribute('data-size') || 'portrait';
+          const size = item.getAttribute('data-size') || (item.classList.contains('wide_tall') ? 'xlportrait' : item.classList.contains('wide') ? 'landscape' : 'portrait');
           return {
             filename: filename,
             caption: img?.getAttribute('alt') || '',
@@ -1276,10 +1290,12 @@ body:has(.admin-toolbar) .portfolio-wrap {
         const order = items.map(item => {
           const img = item.querySelector('img');
           const src = img?.getAttribute('src') || '';
-          const filename = src.split('/').pop();
+          const filename = item.getAttribute('data-filename') || src.split('/').pop();
+          const size = item.getAttribute('data-size') || (item.classList.contains('wide_tall') ? 'xlportrait' : item.classList.contains('wide') ? 'landscape' : 'portrait');
           return {
             filename: filename,
-            caption: img?.getAttribute('alt') || ''
+            caption: img?.getAttribute('alt') || '',
+            size: size
           };
         });
         
