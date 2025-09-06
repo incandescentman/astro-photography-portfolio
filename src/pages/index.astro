@@ -903,17 +903,17 @@ body:has(.admin-toolbar) .portfolio-wrap {
           const btn = document.getElementById('save-order');
           if (btn) {
             if (response.ok) {
-              btn.textContent = 'Saved to Server!';
-              btn.classList.add('success');
-              console.log('Order saved to server:', result);
+              btn.textContent = 'Sequence Saved!';
+              btn.style.background = '#10b981';
+              console.log('Sequence saved to server:', result);
             } else {
               btn.textContent = 'Error Saving';
-              btn.classList.add('error');
+              btn.style.background = '#ef4444';
               console.error('Failed to save to server:', result);
             }
             setTimeout(() => {
-              btn.textContent = 'Save Order';
-              btn.classList.remove('success', 'error');
+              btn.textContent = 'Save Sequence';
+              btn.style.background = '';
             }, 3000);
           }
         } catch (error) {
