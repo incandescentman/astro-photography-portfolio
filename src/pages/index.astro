@@ -1,12 +1,57 @@
 ---
+// Mark this page as prerendered (static)
+export const prerender = true;
+
 import MainLayout from '../layouts/MainLayout.astro';
 // Import image configuration
 import { images } from '../data/homepage-images.js';
+import fs from 'fs';
+import path from 'path';
 
-// Helper to restore saved order from localStorage
+// Load saved order from JSON file if it exists
+function loadSavedOrder() {
+  try {
+    const orderPath = path.join(process.cwd(), 'src/data/saved-order.json');
+    if (fs.existsSync(orderPath)) {
+      const savedOrder = JSON.parse(fs.readFileSync(orderPath, 'utf-8'));
+      return savedOrder;
+    }
+  } catch (e) {
+    console.error('Failed to load saved order:', e);
+  }
+  return null;
+}
+
+// Apply saved order to images array
 function applySavedOrder(images) {
-  // This will be done client-side to preserve SSG
-  return images;
+  const savedOrder = loadSavedOrder();
+  if (!savedOrder || !Array.isArray(savedOrder)) {
+    return images;
+  }
+  
+  // Create a map of filename to image data
+  const imageMap = new Map();
+  images.forEach(img => {
+    imageMap.set(img.filename, img);
+  });
+  
+  // Build new array in saved order
+  const orderedImages = [];
+  savedOrder.forEach(item => {
+    const filename = typeof item === 'string' ? item : item.filename;
+    const imageData = imageMap.get(filename);
+    if (imageData) {
+      orderedImages.push(imageData);
+      imageMap.delete(filename); // Remove from map so we don't duplicate
+    }
+  });
+  
+  // Add any remaining images not in saved order
+  imageMap.forEach(img => {
+    orderedImages.push(img);
+  });
+  
+  return orderedImages;
 }
 
 // Set this to false to use your manual image order from homepage-images.js
@@ -275,8 +320,9 @@ function optimizeImageOrder(images) {
   return result;
 }
 
-// Decide whether to optimize or use manual order
-const processedImages = AUTO_OPTIMIZE_ORDER ? optimizeImageOrder(images) : images;
+// Decide whether to optimize or use manual order, then apply saved order
+const baseImages = AUTO_OPTIMIZE_ORDER ? optimizeImageOrder(images) : images;
+const processedImages = applySavedOrder(baseImages);
 
 // Helper to map a single image to render data
 function mapSingle(img) {

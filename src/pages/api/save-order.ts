@@ -2,6 +2,9 @@ import type { APIRoute } from 'astro';
 import fs from 'fs/promises';
 import path from 'path';
 
+// Mark this endpoint as server-rendered (not pre-rendered)
+export const prerender = false;
+
 export const POST: APIRoute = async ({ request }) => {
   try {
     // Robust body parsing: accept application/json or raw text JSON

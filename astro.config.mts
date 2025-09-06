@@ -10,6 +10,7 @@ const __dirname = path.dirname(__filename);
 // https://astro.build/config
 export default defineConfig({
 	site: 'https://photos.jaydixit.com',
+	output: 'server', // Allow server-side rendering for API routes
 	integrations: [mdx()],
 	vite: {
 		plugins: [tailwindcss()],
