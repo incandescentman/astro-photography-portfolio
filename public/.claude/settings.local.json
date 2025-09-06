@@ -17,7 +17,8 @@
       "Bash(npm view:*)",
       "Bash(npm:*)",
       "Bash(git revert:*)",
-      "Read(//Users/jay/Downloads/salient/salient/plugins/salient-portfolio/js/**)"
+      "Read(//Users/jay/Downloads/salient/salient/plugins/salient-portfolio/js/**)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
