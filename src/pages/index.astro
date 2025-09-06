@@ -589,18 +589,21 @@ function mapSingle(img) {
 
 /* Admin mode styles */
 .admin-toolbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 12px 20px;
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  padding: 12px 20px !important;
+  z-index: 99999 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 15px !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2) !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .admin-badge {
@@ -682,6 +685,135 @@ body:has(.admin-toolbar) .portfolio-wrap {
   // Check for admin mode (add ?admin=true to URL)
   const urlParams = new URLSearchParams(window.location.search);
   const isAdminMode = urlParams.get('admin') === 'true';
+  console.log('Admin mode:', isAdminMode, 'URL params:', window.location.search);
+  
+  // Create admin toolbar immediately if in admin mode
+  if (isAdminMode) {
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('Creating admin toolbar on DOMContentLoaded...');
+      const toolbar = document.createElement('div');
+      toolbar.className = 'admin-toolbar';
+      // Apply beautiful Tailwind-inspired inline styles
+      toolbar.style.cssText = `
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        height: 72px !important;
+        background: #1e3a8a !important;
+        color: white !important;
+        padding: 16px 24px !important;
+        z-index: 999999 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 16px !important;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        box-sizing: border-box !important;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+        backdrop-filter: blur(10px) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+      `;
+      toolbar.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 12px; margin-right: auto;">
+          <div style="
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+          ">✨</div>
+          <div>
+            <div style="
+              font-weight: 700;
+              font-size: 16px;
+              letter-spacing: -0.025em;
+              text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            ">Admin Mode</div>
+            <div style="
+              font-size: 12px;
+              opacity: 0.9;
+              margin-top: 2px;
+            ">Drag to resequence • Changes auto-save</div>
+          </div>
+        </div>
+        
+        <button id="save-order" style="
+          background: rgba(255, 255, 255, 0.2);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          color: white;
+          padding: 10px 20px;
+          border-radius: 12px;
+          cursor: pointer;
+          font-size: 14px;
+          font-weight: 600;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+          letter-spacing: -0.025em;
+        " onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 10px 15px -3px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)';">
+          <span>💾</span> Save Sequence
+        </button>
+        
+        <button id="reset-order" style="
+          background: rgba(255, 255, 255, 0.1);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          color: white;
+          padding: 10px 20px;
+          border-radius: 12px;
+          cursor: pointer;
+          font-size: 14px;
+          font-weight: 600;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+          letter-spacing: -0.025em;
+        " onmouseover="this.style.background='rgba(255, 255, 255, 0.2)'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 10px 15px -3px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)';">
+          <span>↺</span> Reset
+        </button>
+        
+        <button id="export-order" style="
+          background: rgba(255, 255, 255, 0.1);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          color: white;
+          padding: 10px 20px;
+          border-radius: 12px;
+          cursor: pointer;
+          font-size: 14px;
+          font-weight: 600;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+          letter-spacing: -0.025em;
+        " onmouseover="this.style.background='rgba(255, 255, 255, 0.2)'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 10px 15px -3px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)';">
+          <span>📥</span> Export
+        </button>
+      `;
+      document.body.insertBefore(toolbar, document.body.firstChild);
+      
+      // Also ensure body has padding to show content below toolbar
+      document.body.style.paddingTop = '72px';
+      
+      console.log('Admin toolbar should now be visible');
+    });
+  }
   
   document.addEventListener('DOMContentLoaded', function() {
     const container = document.querySelector('#masonry');
@@ -733,19 +865,8 @@ body:has(.admin-toolbar) .portfolio-wrap {
       }
     }
     
-    // Add admin mode indicator
+    // Set up admin mode features
     if (isAdminMode) {
-      // Add admin toolbar
-      const toolbar = document.createElement('div');
-      toolbar.className = 'admin-toolbar';
-      toolbar.innerHTML = `
-        <div class="admin-badge">Admin Mode</div>
-        <button id="save-order" class="admin-btn">Save Order</button>
-        <button id="reset-order" class="admin-btn">Reset to Default</button>
-        <button id="export-order" class="admin-btn">Export Order</button>
-      `;
-      document.body.insertBefore(toolbar, document.body.firstChild);
-      
       // Add drag cursor to images in admin mode
       container.classList.add('admin-mode');
       
