@@ -571,9 +571,10 @@ function mapSingle(img) {
 .portfolio-items .col:nth-child(8) .inner-wrap { animation-delay: 595ms; }
 </style>
 
-<!-- Load Isotope and required libraries -->
+<!-- Load Isotope with Packery and required libraries -->
 <script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
 <script src="https://unpkg.com/isotope-layout@3/dist/isotope.pkgd.min.js"></script>
+<script src="https://unpkg.com/isotope-packery@2/packery-mode.pkgd.min.js"></script>
 
 <script>
   import PhotoSwipeLightbox from 'photoswipe/lightbox';
@@ -615,18 +616,18 @@ function mapSingle(img) {
     
     // Wait for images to load, then initialize Isotope
     imagesLoaded(container, function() {
-      // Initialize Isotope with optimized masonry layout
+      // Initialize Isotope with Packery layout for better gap filling
       const iso = new Isotope(container, {
         itemSelector: '.col',
-        layoutMode: 'masonry',
-        masonry: {
+        layoutMode: 'packery',
+        packery: {
           columnWidth: 320, // Fixed column width
           gutter: 10, // 10px gap between columns
-          fitWidth: true, // Center the grid
-          horizontalOrder: true // Use horizontal order to ensure bottom alignment
+          horizontal: false // Vertical packing for better gap filling
         },
         percentPosition: false,
         transitionDuration: '0.3s',
+        isOriginLeft: true,
         sortBy: 'original-order',
         hiddenStyle: {
           opacity: 0,
