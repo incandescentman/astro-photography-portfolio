@@ -399,32 +399,55 @@ function mapSingle(img) {
 }
 </style>
 
+<!-- Load Isotope, Packery, and imagesLoaded -->
+<script src="https://unpkg.com/isotope-layout@3/dist/isotope.pkgd.min.js"></script>
+<script src="https://unpkg.com/isotope-packery@2/packery-mode.pkgd.min.js"></script>
+<script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
+
 <script type="module">
-  import PhotoSwipeLightbox from 'photoswipe/lightbox';
-  import 'photoswipe/style.css';
-  import initMasonry from '../scripts/masonry.ts';
+  import PhotoSwipeLightbox from '/node_modules/photoswipe/dist/photoswipe-lightbox.esm.js';
+  import '/node_modules/photoswipe/dist/photoswipe.css';
   
   document.addEventListener('DOMContentLoaded', function() {
-    // Initialize the masonry with Isotope + Packery
-    initMasonry({
-      container: '#masonry',
-      options: {
-        gutter: 10,
-        elastic: true,
-        photographyMode: true, // Enable +1 column at larger tiers
-        constrained: false,
-        boxedLayout: false,
-        masonryType: 'photography',
-        startingFilter: '*',
-        rtl: false
-      }
+    const container = document.querySelector('#masonry');
+    if (!container) return;
+    
+    // Initialize Isotope with Packery layout
+    const iso = new Isotope(container, {
+      itemSelector: '.masonry-item',
+      layoutMode: 'packery',
+      packery: {
+        gutter: 10
+      },
+      percentPosition: false,
+      transitionDuration: '0.35s'
+    });
+    
+    // Layout after images load
+    imagesLoaded(container, function() {
+      iso.layout();
+      
+      // Add animation classes
+      const items = container.querySelectorAll('.masonry-item');
+      items.forEach((item, i) => {
+        setTimeout(() => {
+          item.classList.add('animated-in');
+        }, i * 60);
+      });
+    });
+    
+    // Relayout on resize
+    let resizeTO;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTO);
+      resizeTO = setTimeout(() => iso.layout(), 100);
     });
     
     // Initialize PhotoSwipe Lightbox
     const lightbox = new PhotoSwipeLightbox({
       gallery: '.masonry-items',
       children: '.portfolio-lightbox',
-      pswpModule: () => import('photoswipe'),
+      pswpModule: () => import('/node_modules/photoswipe/dist/photoswipe.esm.js'),
       padding: { top: 20, bottom: 20, left: 20, right: 20 },
       wheelToZoom: true,
       imageClickAction: 'close',
