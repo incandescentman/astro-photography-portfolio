@@ -285,7 +285,7 @@ function mapSingle(img) {
 
 <MainLayout>
   <div class="portfolio-wrap">
-    <div id="masonry" class="masonry-items elastic" data-col-num="elastic" data-gutter="10px" data-starting-filter="*" data-masonry-type="photography">
+    <div id="masonry" class="masonry-items elastic" data-col-num="elastic" data-gutter="8px" data-starting-filter="*" data-masonry-type="photography">
       <div class="grid-sizer"></div>
       {processedImages.map((item, index) => {
         if (item && item.type === 'stacked' && Array.isArray(item.items)) {
@@ -374,11 +374,11 @@ function mapSingle(img) {
 }
 
 .masonry-item.wide {
-  width: 650px; /* 2 columns (320*2) + gap (10) */
+  width: 648px; /* 2 columns (320*2) + gap (8) */
 }
 
 .masonry-item.wide_tall {
-  width: 650px; /* 2 columns (320*2) + gap (10) */
+  width: 648px; /* 2 columns (320*2) + gap (8) */
 }
 
 /* Responsive sizing */
@@ -398,7 +398,7 @@ function mapSingle(img) {
     height: 350px !important;
   }
   .masonry-item.wide_tall {
-    height: 710px !important; /* Double height + 10px gap */
+    height: 708px !important; /* Double height + 8px gap */
   }
 }
 
@@ -418,7 +418,7 @@ function mapSingle(img) {
     height: 300px !important;
   }
   .masonry-item.wide_tall {
-    height: 610px !important; /* Double height + 10px gap */
+    height: 608px !important; /* Double height + 8px gap */
   }
 }
 
@@ -436,7 +436,7 @@ function mapSingle(img) {
     height: 400px !important;
   }
   .masonry-item.wide_tall {
-    height: 810px !important; /* Double height + 10px gap */
+    height: 808px !important; /* Double height + 8px gap */
   }
 }
 
@@ -460,7 +460,7 @@ function mapSingle(img) {
 }
 
 .masonry-item.wide_tall {
-  height: 970px !important; /* Double height (480*2 + 10px gap) */
+  height: 968px !important; /* Double height (480*2 + 8px gap) */
 }
 
 .masonry-item a {
@@ -473,7 +473,7 @@ function mapSingle(img) {
 .masonry-item .stacked-pair {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   height: 100%;
 }
 
@@ -481,7 +481,7 @@ function mapSingle(img) {
   display: block;
   overflow: hidden;
   flex: 1;
-  height: calc(50% - 5px); /* Each image gets half height minus half gap */
+  height: calc(50% - 4px); /* Each image gets half height minus half gap */
 }
 
 .masonry-item .stacked-pair img {
@@ -511,7 +511,7 @@ function mapSingle(img) {
     const pckry = new Packery(container, {
       itemSelector: '.masonry-item',
       columnWidth: '.grid-sizer',
-      gutter: 10,
+      gutter: 8,
       percentPosition: false,
       transitionDuration: '0.35s',
       stagger: 30,
