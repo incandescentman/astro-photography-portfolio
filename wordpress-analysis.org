@@ -1,0 +1,79 @@
+
+There is no custom "sorting" algorithm in that file. Item order follows the DOM order from PHP; the JS initializes Isotope/Packery to lay items out and handles filtering, breakpoints,
+  widths, and animation timing.
+
+  Here's the relevant logic in salient-portfolio.js:
+
+- Layout engine: Uses Isotope with Packery
+    - Init: If container has .masonry-items, sets layoutMode: 'packery'; otherwise fitRows.
+    - Origin: isOriginLeft flips for RTL.
+    - Filter: Applies filter: <selector> from data-starting-filter and on category clicks. No sortBy is set; DOM order is preserved.
+    - Relayout: Calls this.$el.isotope('layout') after image loads, filtering, and resizing.
+    - Relayout: Calls this.$el.isotope('layout') after image loads, filtering, and resizing.
+-
+  Where order comes from
+    - Gallery pages: DOM items are emitted in the order selected in the WPBakery vc_gallery shortcode (handled server-side).
+    - Portfolio template: Items are emitted by a WP_Query (default WordPress order unless you customize in PHP).
+    - The JS never reorders items; it only shows/hides them via Isotope filters.
+-
+  Breakpoints and column math (elastic "fullwidth" grids)
+    - Fullwidth detection: data-col-num="elastic" → compute widths client-side.
+    - Media query tiers: five, four, three, two, one selected in beforeReLayout() based on window width and container modifiers:
+    - Base rules:
+      - >1600px: `five` (or `four` when constrained/fullwidth-constrained)
+      - 1300-1600px: `four` (or `three` when constrained)
+      - 990-1300px: `three` (or `four` when constrained)
+      - 470-990px: `two`
+      - ≤470px: `one`
+    - Boxed layout tweaks force smaller tiers.
+    - Photography mode: when `[data-masonry-type="photography"]` and not `.no-masonry`, it increases columns by 1 at larger tiers: `five→6`, `four→5`, `three→4`.
+
+- Item width calculation (elastic grids)
+    - Let W = container width, colSize = number of columns from tier above.
+    - Regular tiles: width = floor(W / colSize).
+    - Wide/wide_tall tiles: width = regular width × mult, where mult = 2 except on the one tier where it's 1.
+    - If W % colSize != 0, loop i from 1..(6 or 3 on small screens), and for the first i where (W --- i) % colSize == 0, use (W --- i)/colSize to avoid subpixel gaps. This is the "fudge factor" to get
+  perfect columns.
+    - If W % colSize != 0, loop i from 1..(6 or 3 on small screens), and for the first i where (W --- i) % colSize == 0, use (W --- i)/colSize to avoid subpixel gaps. This is the "fudge factor" to get
+  perfect columns.
+-
+  Height/cropping adjustments (when not bypassing cropping)
+    - Determines a reference column class among visible items (regular, wide, wide_tall, or tall) and measures its image height.
+    - Sets heights:
+    - Tall variants: height = reference height × 2 (+ gutter adjustments).
+    - Regular/Wide: same height as reference (or half, depending on which class is the reference).
+-
+  Applies similar height adjustments to parallax layers.
+-
+  If .no-masonry and not in a gallery, sets all images to the first visible's height (except style 9/bypass cases).
+-
+  Filtering behavior
+    - Click handlers on .portfolio-filters or .portfolio-filters-inline call isotope({filter: selector}).
+    - Updates "active" classes and the visible label (#current-category).
+    - Re-groups lightbox links for the current filter selection.
+-
+  Category list hygiene
+    - isotopeCatSelection() scans items for present categories and hides filter entries that don't exist in the current page or in the configured data-categories-to-show.
+-
+  Lazy loading support
+    - For WPBakery gallery with nectar-lazy images, sets temporary width/height based on intrinsic width/height attributes, initializes masonry immediately ('0s' transition), and then calls layout as
+  images load.
+-
+  Animation timing and z-index
+    - masonryZindex() reads each item's left offset, groups unique x-positions, and assigns a data-delay-amount per column. That drives staggered reveal timing; it does not alter item order.
+    - loadAnimationWaypoint() applies "animated-in" classes when items enter the viewport, with slightly different delays in photography mode.
+-
+  Other toggles and details
+    - Gutter value read from data-gutter="Npx" influences height math.
+    - isOriginLeft is set false in RTL to mirror layout direction.
+
+  Summary: Sorting/order is not implemented in JS; it's DOM order from PHP. The JS sets up Isotope/Packery for layout, computes responsive column counts and item widths (with a small pixel-correction
+  loop), adjusts heights for tall/wide variants, and handles filtering, lazy-load relayout, and animation staggering.
+
+▌does it use packery or isotope?
+
+Both. It uses Isotope as the engine, with Packery as the layout mode for masonry grids.
+
+- Engine: Isotope (salient/js/build/third-party/isotope.min.js).
+- Layout mode: packery when the container has .masonry-items; fitRows otherwise.
+- Where set: salient/plugins/salient-portfolio/js/salient-portfolio.js → masonryInit() sets layoutMode: 'packery' for masonry. 
