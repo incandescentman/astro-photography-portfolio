@@ -36,7 +36,7 @@ export const images = [
   {
     filename: 'jeremy.jpg',
     size: 'portrait', // 2048x2560 (0.8 ratio - portrait)
-    caption: 'Jeremy Strong'
+    caption: 'Jeremy Strong at the New York Premiere of The Apprentice'
   },
   {
     filename: 'Lisa_Gilroy_at_SXSW_in_2025-1.jpg',
@@ -46,7 +46,7 @@ export const images = [
   {
     filename: 'jeremy-3.jpg',
     size: 'portrait', // 2048x2560 (0.8 ratio - portrait)
-    caption: 'Jeremy Strong'
+    caption: 'Dave Franco at Sundance 2025'
   },
   {
     filename: 'conan.jpg',
@@ -76,7 +76,7 @@ export const images = [
   {
     filename: 'jay-dixit_red-carpet_05923-1.jpg',
     size: 'portrait', // 1707x2560 (0.67 ratio - portrait)
-    caption: 'Jay Dixit Red Carpet'
+    caption: 'Emma Stone'
   },
   {
     filename: 'jeremy-4.jpg',
@@ -101,7 +101,7 @@ export const images = [
   {
     filename: 'jay-dixit_red-carpet_05456.jpg',
     size: 'portrait', // 2048x2560 (0.8 ratio - portrait)
-    caption: 'Jay Dixit Red Carpet'
+    caption: 'Rose Byrne'
   },
   {
     filename: 'Gabriel_LaBelle_at_the_2024_Toronto_International_Film_Festival_03_cropped.jpg',
@@ -116,7 +116,7 @@ export const images = [
   {
     filename: 'jeremy-7.jpg',
     size: 'portrait', // 1707x2560 (0.67 ratio - portrait, featured)
-    caption: 'Jeremy Strong'
+    caption: 'Steven Yeun'
   },
   {
     filename: 'jay-dixit_red-carpet_08042.jpg',
