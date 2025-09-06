@@ -4,6 +4,73 @@
 
 * Implementation History
 
+** 2025-09-06 - Reordering, Inline Editor, and Persistence Upgrades
+
+*** Summary
+- Added robust, filename-based reorder persistence (local + server).
+- Introduced an inline, in-tile editor (caption + size) with a compact, elegant UI.
+- Improved admin workflow: hover ✎ button and hold-~e~ shortcut to reveal edit affordances; safe event handling prevents unintended navigation.
+- Hardened API endpoint to accept flexible JSON bodies and provide clearer errors.
+
+*** User Experience Improvements
+- ~Inline Editor~: Each tile now shows a small ✎ button on hover (in admin mode). Clicking opens a tidy inline popover anchored to that tile.
+  - ~Caption~: multi-line textarea with clean focus ring.
+  - ~Size~: segmented control (Portrait | Landscape | XL Portrait) that does not change layout until you click Save.
+  - ~Stacked items~: size control hidden; caption only.
+- ~Edit key~: hold ~e~ to reveal ✎ buttons across all tiles for quick access.
+- ~No navigation while editing~: capture-phase listeners block anchor/lightbox behavior when using ✎ or while holding ~e~.
+- ~Reorder by drag~: Admin can drag tiles (Draggabilly + Packery). Sequence auto-saves to ~localStorage~ on drag end.
+- ~Admin toolbar~: Save Sequence, Reset, Export controls at the top when ~?admin=true~.
+
+*** Persistence and Data Flow
+- ~Local restore~: Reorder state is saved to ~localStorage.photoOrder~ as an array of filenames. On load, the DOM is reordered by matching filenames. For legacy data, a caption-based fallback is preserved.
+- ~Server save~: Clicking “Save Sequence” posts the full array of objects ~[{ filename, caption, size }, ...]~ to ~/api/save-order~ and writes to ~src/data/saved-order.json~.
+- ~API robustness~: ~src/pages/api/save-order.ts~ accepts either a raw array body or ~{ order: [...] }~, and also tolerates “first array property” on arbitrary objects. JSON parsing supports both ~application/json~ and raw text.
+- ~Diagnostics~: The server logs a brief ~save-order: ...~ summary to the terminal running ~npm run dev~ for debugging.
+
+*** How To Use (Admin)
+1. Enable Admin Mode: append ~?admin=true~ to the homepage URL.
+2. Resequence:
+   - Drag tiles to reorder; order auto-saves locally on drag end.
+   - Click “Save Sequence” to persist to the repository’s ~src/data/saved-order.json~.
+   - “Reset” clears local order and reloads. “Export” downloads the current order as JSON.
+3. Edit Metadata:
+   - Hover a tile and click ✎ (or hold ~e~ to reveal all ✎ buttons), then edit.
+   - For single images: choose a size via the segmented control; changes apply on Save (no live preview to avoid UI shifting).
+   - For stacked pairs: only caption is editable; size is fixed.
+   - Press Enter or click Save to persist. Press Esc or click outside to close.
+
+*** Implementation Notes
+- ~Filename keys~: All client-side ordering now uses filenames as unique identifiers to avoid caption collisions.
+- ~Restore logic~: Builds maps for filename and caption; prefers filename; falls back to caption for legacy arrays.
+- ~Event safety~: capture-phase ~mousedown~ and ~click~ prevent default and stop propagation when editing to block navigation and lightbox.
+- ~Layout updates~: ~Packery~ relayouts only on Save to avoid jumpiness while selecting a size.
+- ~Data attributes~: Each tile carries ~data-filename~ and ~data-size~ for accurate save/export; size also inferred from classes (~regular|wide|wide_tall~) when needed.
+
+*** Files Changed
+- ~src/pages/index.astro~
+  - Add ✎ button per tile; inline editor popover with Tailwind-style classes.
+  - Admin key-handler (hold ~e~), event capture for navigation blocking, and improved restore/save flows.
+  - Save/export now include ~{ filename, caption, size }~.
+- ~src/pages/api/save-order.ts~
+  - Robust JSON parsing, flexible body shape support, clearer error messages, and diagnostics.
+- ~src/data/saved-order.json~
+  - Receives the canonical order snapshot when saving.
+
+*** Developer Tips
+- ~Server logs~: Look in the terminal running ~npm run dev~ for lines starting with ~save-order: ...~ after saving.
+- ~Local vs. server state~: The page prefers ~localStorage.photoOrder~ if present. Clearing it (via “Reset”) will reveal the default/build-time order plus any filename-based server snapshot you subsequently load into your data.
+- ~Testing~: After edits/reorders, use “Save Sequence” and confirm ~src/data/saved-order.json~ updated. Hard refresh to verify restore honors your latest order.
+
+*** Known Limitations
+- ~Server snapshot usage~: The homepage currently persists to ~src/data/saved-order.json~, but loading that file as the default order on initial build is not yet wired; the page relies on client-side restore + configured ~homepage-images.js~. This can be wired at build-time if desired.
+- ~Stacked pairs~: Only the first image’s filename is used to identify the stacked tile; the pair is treated as a fixed unit for ordering and sizing.
+
+*** Future Enhancements
+- Add toolbar toggle for persistent “Edit Mode” (no need to hold ~e~).
+- Optional build-time application of ~saved-order.json~ to default order.
+- Server-side validation of filenames against current highlights set.
+
 ** 2025-08-20 - Complete Dual-System Implementation
 
 *** Major Features Added

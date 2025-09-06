@@ -2,7 +2,8 @@ import type { APIRoute } from 'astro';
 import fs from 'fs/promises';
 import path from 'path';
 
-// Mark this endpoint as server-rendered (not pre-rendered)
+// This endpoint only works in development mode
+// In production, the site is static and cannot write files
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request }) => {

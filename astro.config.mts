@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 // https://astro.build/config
 export default defineConfig({
 	site: 'https://photos.jaydixit.com',
-	output: 'server', // Allow server-side rendering for API routes
+	output: 'static', // Static output for Vercel deployment (admin features work only in dev)
 	integrations: [mdx()],
 	vite: {
 		plugins: [tailwindcss()],
