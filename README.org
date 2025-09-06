@@ -1,0 +1,80 @@
+* Jay Dixit Photography Portfolio
+
+** Image Import Solutions for Astro MDX
+
+*** Problem: Images not loading in MDX files
+When using ImageGallery components or Image components from Astro in MDX files, you may encounter "image is not defined" errors.
+
+*** Solution: Proper Image Import Pattern
+
+1. **Store images in src/assets folder**
+   - Create folder: ~/src/assets/images/[page-name]/~
+   - Copy all images to this folder instead of using ~/public/~
+
+2. **Configure path alias in astro.config.mts**
+   #+begin_src javascript
+   import path from 'path';
+   import { fileURLToPath } from 'url';
+   
+   const __filename = fileURLToPath(import.meta.url);
+   const __dirname = path.dirname(__filename);
+   
+   export default defineConfig({
+     vite: {
+       resolve: {
+         alias: {
+           '~': path.resolve(__dirname, './src'),
+         },
+       },
+     },
+   });
+   #+end_src
+
+3. **Import images in MDX using relative or tilde paths**
+   #+begin_src javascript
+   // Using tilde alias (requires config above)
+   import heroImg from '~/assets/images/wikiportraits/hero.jpg';
+   
+   // Using relative paths (works without config)
+   import heroImg from '../assets/images/wikiportraits/hero.jpg';
+   #+end_src
+
+4. **Use with ImageGallery component**
+   #+begin_src javascript
+   import ImageGallery from '@jaydixit/astro-utils/components/ImageGallery.astro';
+   
+   <ImageGallery
+     images={[
+       { src: img1, alt: "Description 1" },
+       { src: img2, alt: "Description 2" }
+     ]}
+     galleryId="unique-gallery-id"
+     columns={2}
+   />
+   #+end_src
+
+*** Key Learnings
+- Always import images as ES modules in Astro MDX files
+- Store images in src/assets, not public folder for proper bundling
+- Use either tilde alias (with config) or relative paths for imports
+- ImageGallery component from astro-utils requires image objects with src and alt properties
+
+*** Troubleshooting Tips
+- If "image not defined" error occurs, check:
+  1. Image is imported at top of MDX file
+  2. Import path is correct (relative or with ~ alias)
+  3. File exists in src/assets folder
+  4. Variable name matches usage in component
+
+** Logo Click Enhancement
+Added clickable logo in navbar that opens a modal with larger view:
+- Logo in navbar now clickable
+- Opens fullscreen modal with larger logo image
+- Uses Alpine.js for interaction
+- Escape key or click outside to close
+
+** Recent Updates
+- Fixed all image import issues in wikiportraits-story.mdx
+- Moved images from public to src/assets/images/wikiportraits
+- Updated NavBar component with clickable logo modal
+- Published @jaydixit/astro-utils v1.0.2 with Tailwind v4 compatibility fixes

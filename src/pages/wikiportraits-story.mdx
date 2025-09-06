@@ -7,22 +7,25 @@ import { Image } from 'astro:assets';
 import ImageGallery from '@jaydixit/astro-utils/components/ImageGallery.astro';
 
 // Import images for Problem section gallery
-import jeremyImg from '/public/highlights/jeremy-3.jpg';
-import frankOzImg from '/public/highlights/Frank_Oz_2024_Cropped.jpg';
-import conanImg from '/public/highlights/conan.jpg';
-import vanessaKirbyImg from '/public/highlights/vanessa-kirby.jpg';
+import jeremyImg from '../assets/images/wikiportraits/jeremy-3.jpg';
+import frankOzImg from '../assets/images/wikiportraits/Frank_Oz_2024_Cropped.jpg';
+import conanImg from '../assets/images/wikiportraits/conan.jpg';
+import vanessaKirbyImg from '../assets/images/wikiportraits/vanessa-kirby.jpg';
 
 // Import images for Events gallery
-import conanSundanceImg from '/public/photos/red-carpet/sundance/conan-obrien_sundance_2024.jpg';
-import vanessaTiffImg from '/public/photos/red-carpet/tiff/vanessa-kirby_tiff_2024.jpg';
-import nobelImg from '/public/photos/events/nobel/john-hopfield_nobel-physics_2024.jpg';
-import lisaSxswImg from '/public/highlights/Lisa_Gilroy_at_SXSW_in_2025-1.jpg';
-import anaAndSydneyImg from '/public/highlights/Ana_de_Armas_and_Sydney_Sweeney_at_the_2024_Toronto_International_Film_Festival_04.jpg';
-import juddImg from '/public/highlights/judd-apatow.jpg';
+import conanSundanceImg from '../assets/images/wikiportraits/conan-obrien_sundance_2024.jpg';
+import vanessaTiffImg from '../assets/images/wikiportraits/vanessa-kirby_tiff_2024.jpg';
+import nobelImg from '../assets/images/wikiportraits/john-hopfield_nobel-physics_2024.jpg';
+import lisaSxswImg from '../assets/images/wikiportraits/Lisa_Gilroy_at_SXSW_in_2025-1.jpg';
+import anaAndSydneyImg from '../assets/images/wikiportraits/Ana_de_Armas_and_Sydney_Sweeney_at_the_2024_Toronto_International_Film_Festival_04.jpg';
+import juddImg from '../assets/images/wikiportraits/judd-apatow.jpg';
 
 // Import Jeremy Strong before/after images
-import jeremyBeforeImg from '/public/highlights/jeremy-strong-before.jpg';
-import jeremyAfterImg from '/public/photos/portraits/studio/jeremy-strong_studio-session_2024.jpg';
+import jeremyBeforeImg from '../assets/images/wikiportraits/jeremy-strong-before.jpg';
+import jeremyAfterImg from '../assets/images/wikiportraits/jeremy-strong_studio-session_2024.jpg';
+
+// Import hero image
+import sxswHeroImg from '../assets/images/wikiportraits/2024-03-09_SXSW_Conan_Nick-Kroll_Office-Space_events_07310.jpg';
 
 <style>{`
   .pswp__img {
@@ -34,8 +37,8 @@ import jeremyAfterImg from '/public/photos/portraits/studio/jeremy-strong_studio
   {/* Hero Section */}
   <section class="relative min-h-screen flex items-center justify-center overflow-hidden">
     <div class="absolute inset-0">
-      <img 
-        src="/highlights/2024-03-09_SXSW_Conan_Nick-Kroll_Office-Space_events_07310.jpg" 
+      <Image 
+        src={sxswHeroImg} 
         alt="SXSW Event Coverage" 
         class="w-full h-full object-contain lg:object-cover"
         loading="eager" decoding="async"

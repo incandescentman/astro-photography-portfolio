@@ -34,20 +34,20 @@ const socialLinks = [
 >
 	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
 		<!-- Logo and Wordmark -->
-		<a href="/" class="flex items-center gap-3 group">
-			<div class="relative">
-				<img src="/logo.png" alt="Jay Dixit Logo" class="w-12 h-12 md:w-14 md:h-14 object-contain rounded-lg transition-transform duration-300 group-hover:scale-105" />
-				<div class="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+		<div class="flex items-center gap-3 group">
+			<div class="relative cursor-pointer" @click="$dispatch('open-logo-modal')">
+				<img src="/logo.png" alt="Jay Dixit Logo" class="w-12 h-12 md:w-14 md:h-14 object-contain rounded-lg transition-transform duration-300 hover:scale-105" />
+				<div class="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-lg opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
 			</div>
-			<div class="flex flex-col md:flex-row md:items-baseline md:gap-2">
+			<a href="/" class="flex flex-col md:flex-row md:items-baseline md:gap-2">
 				<span class="text-2xl md:text-3xl font-black tracking-tight text-gray-900" style="font-family: 'Inter', system-ui, -apple-system, sans-serif;">
 					Jay Dixit
 				</span>
 				<span class="text-2xl md:text-3xl font-black tracking-tight text-gray-900" style="font-family: 'Inter', system-ui, -apple-system, sans-serif;">
 					Photos
 				</span>
-			</div>
-		</a>
+			</a>
+		</div>
 
 		<!-- Desktop Menu -->
 		<div class="hidden lg:flex items-center gap-2">
@@ -144,3 +144,43 @@ const socialLinks = [
 		</div>
 	</div>
 </nav>
+
+<!-- Logo Modal -->
+<div 
+	x-data="{ logoModalOpen: false }"
+	@open-logo-modal.window="logoModalOpen = true"
+	@keydown.escape.window="logoModalOpen = false"
+	x-show="logoModalOpen"
+	x-transition:enter="transition ease-out duration-300"
+	x-transition:enter-start="opacity-0"
+	x-transition:enter-end="opacity-100"
+	x-transition:leave="transition ease-in duration-200"
+	x-transition:leave-start="opacity-100"
+	x-transition:leave-end="opacity-0"
+	class="fixed inset-0 z-[100] flex items-center justify-center p-4"
+	style="display: none;"
+>
+	<!-- Backdrop -->
+	<div 
+		@click="logoModalOpen = false"
+		class="absolute inset-0 bg-black/80 backdrop-blur-sm"
+	></div>
+	
+	<!-- Modal Content -->
+	<div class="relative max-w-2xl w-full">
+		<img 
+			src="/logo.png" 
+			alt="Jay Dixit Logo" 
+			class="w-full h-auto rounded-2xl shadow-2xl"
+		/>
+		<!-- Close button -->
+		<button 
+			@click="logoModalOpen = false"
+			class="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors"
+		>
+			<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+			</svg>
+		</button>
+	</div>
+</div>
