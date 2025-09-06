@@ -352,6 +352,8 @@ function mapSingle(img) {
   padding: 0;
   opacity: 0;
   transform: translateY(12px);
+  float: left;
+  margin-bottom: 10px;
 }
 
 .masonry-item.animated-in {
@@ -362,7 +364,52 @@ function mapSingle(img) {
 
 /* Packery requires a sizer for percentPosition math */
 .grid-sizer {
-  width: 33.333%;
+  width: 320px;
+}
+
+/* Size variants */
+.masonry-item.regular {
+  width: 320px;
+}
+
+.masonry-item.wide {
+  width: 650px; /* 2 columns + gap */
+}
+
+.masonry-item.wide_tall {
+  width: 650px; /* 2 columns + gap */
+}
+
+/* Responsive sizing */
+@media only screen and (max-width: 1300px) {
+  .grid-sizer,
+  .masonry-item.regular {
+    width: 25%;
+  }
+  .masonry-item.wide,
+  .masonry-item.wide_tall {
+    width: 50%;
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .grid-sizer,
+  .masonry-item.regular {
+    width: 50%;
+  }
+  .masonry-item.wide,
+  .masonry-item.wide_tall {
+    width: 100%;
+  }
+}
+
+@media only screen and (max-width: 480px) {
+  .grid-sizer,
+  .masonry-item.regular,
+  .masonry-item.wide,
+  .masonry-item.wide_tall {
+    width: 100%;
+  }
 }
 
 /* Images */
@@ -412,6 +459,7 @@ function mapSingle(img) {
     // Initialize Packery directly (not as Isotope plugin)
     const pckry = new Packery(container, {
       itemSelector: '.masonry-item',
+      columnWidth: '.grid-sizer',
       gutter: 10,
       percentPosition: false,
       transitionDuration: '0.35s',
