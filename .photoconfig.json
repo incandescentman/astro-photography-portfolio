@@ -1,0 +1,38 @@
+{
+  "cloudinary": {
+    "cloud_name": "dszpm7yps",
+    "upload_preset": "event-photos",
+    "folder_prefix": "photos"
+  },
+  "content": {
+    "output_dir": "src/content/albums",
+    "base_url": "https://photos.jaydixit.com"
+  },
+  "defaults": {
+    "credit": "Jay Dixit",
+    "image_formats": [
+      "jpg",
+      "jpeg",
+      "JPG",
+      "JPEG"
+    ],
+    "min_image_size": 100000,
+    "max_image_size": 50000000
+  },
+  "metadata": {
+    "required_fields": [
+      "caption",
+      "title"
+    ],
+    "tag_namespaces": {
+      "event": "Event name",
+      "cat": "Category",
+      "city": "City location",
+      "year": "Year taken"
+    }
+  },
+  "transformations": {
+    "gallery": "t_gallery",
+    "thumbnail": "t_thumb"
+  }
+}

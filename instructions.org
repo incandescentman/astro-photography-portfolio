@@ -1,0 +1,484 @@
+#+TITLE: Photography Upload Pipeline - Complete Instructions
+#+AUTHOR: Jay Dixit Photos
+#+DATE: 2025-01-11
+
+* 🎯 Overview
+
+This guide walks you through uploading photos to Cloudinary with proper metadata (captions, titles, tags) and generating Astro content files for your website.
+
+* 📁 Photo Organization
+
+** Where to Put Photos
+
+Place your photos in: ~./public/photos/~
+
+Organize them into logical folders:
+#+begin_example
+public/photos/
+  ├── events/
+  │   └── nobel/
+  │       └── john-hopfield_nobel-physics_2024.jpg
+  ├── portraits/
+  │   └── studio/
+  │       ├── jeremy-strong_studio-session_2024.jpg
+  │       └── jeremy-11.jpg
+  ├── red-carpet/
+  │   ├── sundance/
+  │   │   └── conan-obrien_sundance_2024.jpg
+  │   └── tiff/
+  │       └── vanessa-kirby_tiff_2024.jpg
+  └── themes/
+      └── fashion/
+          └── judd-apatow_fashion-shoot_2024.jpg
+#+end_example
+
+** Filename Convention
+
+Use this format for automatic parsing:
+- Pattern: ~subject_event_year.jpg~
+- Example: ~maria-bakalova_tiff_2025.jpg~
+- This generates: "Maria Bakalova at TIFF in 2025"
+
+* 🏷️ Adding Metadata (Two Methods)
+
+** Method 1: Using ExifTool (Professional)
+
+*** Install ExifTool
+#+begin_src bash
+brew install exiftool
+#+end_src
+
+*** Add Caption and Title to a Photo
+#+begin_src bash
+# Navigate to your photo folder
+cd public/photos/portraits/studio
+
+# Add caption and title
+exiftool -overwrite_original \
+  -IPTC:Caption-Abstract="Jeremy Strong during studio portrait session" \
+  -XMP-dc:Title="Jeremy Strong - Studio Portrait" \
+  jeremy-strong_studio-session_2024.jpg
+
+# Add multiple tags/keywords
+exiftool -overwrite_original \
+  -XMP-dc:Subject+="portrait" \
+  -XMP-dc:Subject+="studio" \
+  -XMP-dc:Subject+="2024" \
+  -XMP-dc:Subject+="jeremy-strong" \
+  jeremy-strong_studio-session_2024.jpg
+
+# Add location
+exiftool -overwrite_original \
+  -IPTC:City="New York" \
+  -IPTC:Country-PrimaryLocationName="USA" \
+  jeremy-strong_studio-session_2024.jpg
+#+end_src
+
+*** Batch Process Multiple Photos
+#+begin_src bash
+# Add the same metadata to all JPGs in a folder
+cd public/photos/red-carpet/tiff
+
+# Add event metadata to all photos
+exiftool -overwrite_original \
+  -IPTC:City="Toronto" \
+  -IPTC:Country-PrimaryLocationName="Canada" \
+  -XMP-dc:Subject+="red-carpet" \
+  -XMP-dc:Subject+="tiff" \
+  -XMP-dc:Subject+="2024" \
+  *.jpg
+
+# Then add specific captions to each
+exiftool -overwrite_original \
+  -IPTC:Caption-Abstract="Vanessa Kirby on the TIFF red carpet" \
+  -XMP-dc:Title="Vanessa Kirby - TIFF 2024" \
+  vanessa-kirby_tiff_2024.jpg
+#+end_src
+
+*** Verify Metadata
+#+begin_src bash
+# Check what metadata a photo has
+exiftool -IPTC:All -XMP:All jeremy-strong_studio-session_2024.jpg
+#+end_src
+
+** Method 2: Using tags.json Files (Simpler)
+
+Create a ~tags.json~ file in each photo folder:
+
+*** Example: public/photos/portraits/studio/tags.json
+#+begin_src json
+{
+  "album": {
+    "title": "Studio Portraits 2024",
+    "slug": "portraits-studio",
+    "date": "2024-11-15",
+    "description": "Professional studio portrait sessions",
+    "featured": true
+  },
+  "defaults": {
+    "tags": ["portrait", "studio", "2024", "professional"],
+    "city": "New York",
+    "country": "USA",
+    "venue": "Manhattan Studio",
+    "credit": "Jay Dixit",
+    "event": "Studio Sessions"
+  },
+  "captions": {
+    "jeremy-strong_studio-session_2024.jpg": "Jeremy Strong during studio portrait session",
+    "jeremy-11.jpg": "Jeremy Strong - alternative angle",
+    "jeremy-3.jpg": "Jeremy Strong - close-up portrait",
+    "jeremy-4.jpg": "Jeremy Strong - three-quarter view",
+    "jeremy-6.jpg": "Jeremy Strong - casual pose",
+    "jeremy.jpg": "Jeremy Strong - main portrait"
+  },
+  "overrides": {
+    "jeremy-strong_studio-session_2024.jpg": {
+      "title": "Jeremy Strong - Studio Portrait",
+      "tags": ["actor", "succession"],
+      "people": ["Jeremy Strong"]
+    }
+  },
+  "highlights": ["jeremy-strong_studio-session_2024.jpg", "jeremy.jpg"]
+}
+#+end_src
+
+*** Example: public/photos/red-carpet/tiff/tags.json
+#+begin_src json
+{
+  "album": {
+    "title": "TIFF 2024 - Red Carpet",
+    "slug": "red-carpet-tiff-2024",
+    "date": "2024-09-11",
+    "description": "Toronto International Film Festival red carpet photography",
+    "featured": true
+  },
+  "defaults": {
+    "tags": ["red-carpet", "tiff", "2024", "toronto", "film-festival"],
+    "city": "Toronto",
+    "country": "Canada",
+    "venue": "Roy Thomson Hall",
+    "credit": "Jay Dixit",
+    "event": "Toronto International Film Festival"
+  },
+  "captions": {
+    "vanessa-kirby_tiff_2024.jpg": "Vanessa Kirby on the TIFF red carpet"
+  },
+  "overrides": {
+    "vanessa-kirby_tiff_2024.jpg": {
+      "title": "Vanessa Kirby - TIFF 2024",
+      "tags": ["actress", "the-crown"],
+      "people": ["Vanessa Kirby"]
+    }
+  },
+  "highlights": ["vanessa-kirby_tiff_2024.jpg"]
+}
+#+end_src
+
+*** Example: public/photos/events/nobel/tags.json
+#+begin_src json
+{
+  "album": {
+    "title": "Nobel Prize 2024",
+    "slug": "events-nobel-2024",
+    "date": "2024-12-10",
+    "description": "Nobel Prize ceremony and laureate portraits",
+    "featured": true
+  },
+  "defaults": {
+    "tags": ["nobel", "2024", "science", "physics"],
+    "city": "Stockholm",
+    "country": "Sweden",
+    "venue": "Stockholm Concert Hall",
+    "credit": "Jay Dixit",
+    "event": "Nobel Prize Ceremony"
+  },
+  "captions": {
+    "john-hopfield_nobel-physics_2024.jpg": "John Hopfield receiving the Nobel Prize in Physics"
+  },
+  "overrides": {
+    "john-hopfield_nobel-physics_2024.jpg": {
+      "title": "John Hopfield - Nobel Physics Laureate 2024",
+      "tags": ["physicist", "neural-networks", "AI"],
+      "people": ["John Hopfield"]
+    }
+  },
+  "highlights": ["john-hopfield_nobel-physics_2024.jpg"]
+}
+#+end_src
+
+* 📤 Uploading Photos
+
+** Step 1: Test Basic Upload (No Metadata Required)
+
+This uploads photos as-is without validation:
+#+begin_src bash
+node scripts/upload-to-cloudinary.js ./public/photos
+#+end_src
+
+This will now skip photos that already exist in Cloudinary.
+
+** Step 2: Upload with Metadata from EXIF/IPTC
+
+If you added metadata with ExifTool:
+#+begin_src bash
+node scripts/upload-with-metadata.js ./public/photos
+#+end_src
+
+** Step 3: Upload with tags.json
+
+If you created tags.json files:
+#+begin_src bash
+node scripts/upload-with-tags-json.js ./public/photos
+#+end_src
+
+** Step 4: Full Pipeline with Validation (Recommended)
+
+*** First, check your metadata is complete:
+#+begin_src bash
+npm run photo:validate ./public/photos
+#+end_src
+
+This will show which photos are missing captions or titles.
+
+*** Preview what will happen (dry run):
+#+begin_src bash
+node scripts/photo-cli.js upload ./public/photos --dry-run --verbose
+#+end_src
+
+*** If validation passes, upload for real:
+#+begin_src bash
+npm run photo:upload ./public/photos
+#+end_src
+
+*** Force upload even with validation errors:
+#+begin_src bash
+node scripts/photo-cli.js upload ./public/photos --force
+#+end_src
+
+* 📝 Quick Metadata Templates
+
+** For Red Carpet Events
+
+#+begin_src bash
+# Set event defaults for all photos
+exiftool -overwrite_original \
+  -IPTC:City="Toronto" \
+  -IPTC:Country-PrimaryLocationName="Canada" \
+  -XMP-dc:Subject+="red-carpet" \
+  -XMP-dc:Subject+="tiff" \
+  -XMP-dc:Subject+="2025" \
+  -IPTC:By-line="Jay Dixit" \
+  *.jpg
+
+# Then add specific captions
+exiftool -overwrite_original \
+  -IPTC:Caption-Abstract="[Celebrity Name] at TIFF 2025 red carpet" \
+  -XMP-dc:Title="[Celebrity Name] - TIFF 2025" \
+  specific-photo.jpg
+#+end_src
+
+** For Portrait Sessions
+
+#+begin_src bash
+# Set session defaults
+exiftool -overwrite_original \
+  -IPTC:City="New York" \
+  -IPTC:Country-PrimaryLocationName="USA" \
+  -XMP-dc:Subject+="portrait" \
+  -XMP-dc:Subject+="studio" \
+  -XMP-dc:Subject+="2024" \
+  -IPTC:By-line="Jay Dixit" \
+  *.jpg
+
+# Add subject-specific data
+exiftool -overwrite_original \
+  -IPTC:Caption-Abstract="[Subject Name] studio portrait" \
+  -XMP-dc:Title="[Subject Name] - Studio Portrait" \
+  -IPTC:PersonInImage="[Subject Name]" \
+  specific-photo.jpg
+#+end_src
+
+** For Events
+
+#+begin_src bash
+# Set event metadata
+exiftool -overwrite_original \
+  -IPTC:City="Stockholm" \
+  -IPTC:Country-PrimaryLocationName="Sweden" \
+  -XMP-dc:Subject+="nobel" \
+  -XMP-dc:Subject+="ceremony" \
+  -XMP-dc:Subject+="2024" \
+  -IPTC:By-line="Jay Dixit" \
+  *.jpg
+
+# Add specific details
+exiftool -overwrite_original \
+  -IPTC:Caption-Abstract="[Person] at Nobel Prize ceremony" \
+  -XMP-dc:Title="[Person] - Nobel Prize 2024" \
+  specific-photo.jpg
+#+end_src
+
+* 🔍 Verifying Your Uploads
+
+** Check Cloudinary
+
+1. Go to: https://console.cloudinary.com/console/dszpm7yps/media_library
+2. Navigate to the photos folder
+3. Verify your images are there with tags
+
+** Check Generated Astro Content
+
+#+begin_src bash
+# List generated album files
+ls -la src/content/albums/
+
+# View a specific album
+cat src/content/albums/portraits-studio.json
+#+end_src
+
+** Test on Your Site
+
+#+begin_src bash
+# Start dev server
+npm run dev
+
+# Visit: http://localhost:4321/albums
+#+end_src
+
+* 🚀 Complete Workflow Example
+
+Here's a full example for uploading a new batch of photos:
+
+#+begin_src bash
+# 1. Organize photos
+mkdir -p public/photos/red-carpet/oscars-2025
+cp ~/Desktop/oscars-photos/*.jpg public/photos/red-carpet/oscars-2025/
+
+# 2. Rename files to follow convention
+cd public/photos/red-carpet/oscars-2025
+mv IMG_001.jpg emma-stone_oscars_2025.jpg
+mv IMG_002.jpg ryan-gosling_oscars_2025.jpg
+
+# 3. Add metadata with ExifTool
+exiftool -overwrite_original \
+  -IPTC:City="Los Angeles" \
+  -IPTC:Country-PrimaryLocationName="USA" \
+  -XMP-dc:Subject+="red-carpet" \
+  -XMP-dc:Subject+="oscars" \
+  -XMP-dc:Subject+="2025" \
+  -IPTC:By-line="Jay Dixit" \
+  *.jpg
+
+exiftool -overwrite_original \
+  -IPTC:Caption-Abstract="Emma Stone at the 2025 Academy Awards" \
+  -XMP-dc:Title="Emma Stone - Oscars 2025" \
+  emma-stone_oscars_2025.jpg
+
+exiftool -overwrite_original \
+  -IPTC:Caption-Abstract="Ryan Gosling at the 2025 Academy Awards" \
+  -XMP-dc:Title="Ryan Gosling - Oscars 2025" \
+  ryan-gosling_oscars_2025.jpg
+
+# 4. Create tags.json for the album
+cat > tags.json << 'EOF'
+{
+  "album": {
+    "title": "Oscars 2025 - Red Carpet",
+    "slug": "red-carpet-oscars-2025",
+    "date": "2025-03-10",
+    "featured": true
+  },
+  "defaults": {
+    "tags": ["red-carpet", "oscars", "2025", "academy-awards"],
+    "city": "Los Angeles",
+    "country": "USA",
+    "venue": "Dolby Theatre",
+    "credit": "Jay Dixit"
+  },
+  "highlights": ["emma-stone_oscars_2025.jpg"]
+}
+EOF
+
+# 5. Go back to project root
+cd ../../../..
+
+# 6. Validate metadata
+npm run photo:validate ./public/photos/red-carpet/oscars-2025
+
+# 7. Upload to Cloudinary
+npm run photo:upload ./public/photos/red-carpet/oscars-2025
+
+# 8. Check the results
+ls src/content/albums/
+npm run dev
+#+end_src
+
+* 🆘 Troubleshooting
+
+** "Missing required field: caption/title"
+
+You need to add metadata to your photos. Either:
+1. Use ExifTool to add IPTC:Caption-Abstract and XMP-dc:Title
+2. Add captions in tags.json
+3. Use --force flag to upload anyway (not recommended)
+
+** "ExifTool is not installed"
+
+Install it:
+#+begin_src bash
+brew install exiftool
+#+end_src
+
+** Photos already uploaded
+
+The script now checks for duplicates. To re-upload:
+1. Delete from Cloudinary Media Library first
+2. Or use a different filename
+
+** Can't find uploaded photos
+
+Check the Cloudinary console:
+- URL: https://console.cloudinary.com/console/dszpm7yps/media_library
+- Look in the "photos" folder
+
+* 📚 Reference
+
+** Required Metadata Fields
+- *Caption*: Description of what's in the photo
+- *Title*: Short title for the photo
+
+** Optional but Recommended
+- *Tags/Keywords*: For searching and categorization
+- *City/Country*: Location information
+- *People*: Who's in the photo
+- *Credit*: Photographer name
+- *Event*: Event name
+
+** File Structure
+#+begin_example
+public/photos/
+  [category]/
+    [event]/
+      subject_event_year.jpg
+      tags.json (optional)
+#+end_example
+
+** Command Summary
+| Command | Purpose |
+|---------|---------|
+| ~npm run photo:init~ | Create config file |
+| ~npm run photo:validate DIR~ | Check metadata |
+| ~npm run photo:upload DIR~ | Upload with validation |
+| ~node scripts/upload-to-cloudinary.js DIR~ | Simple upload |
+| ~node scripts/upload-with-metadata.js DIR~ | Upload with EXIF |
+| ~node scripts/upload-with-tags-json.js DIR~ | Upload with JSON |
+
+* 🎯 Next Steps
+
+1. Choose your metadata method (ExifTool or tags.json)
+2. Add captions and titles to your existing photos
+3. Run validation to check everything is ready
+4. Upload to Cloudinary
+5. Verify in Cloudinary console and your Astro site
+
+Need help? The validation tool will tell you exactly what's missing!

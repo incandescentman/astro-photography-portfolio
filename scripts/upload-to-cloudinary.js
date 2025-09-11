@@ -14,6 +14,10 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
+import dotenv from 'dotenv';
+
+// Load environment variables from .env file
+dotenv.config();
 
 const require = createRequire(import.meta.url);
 let cloudinary;
@@ -75,29 +79,42 @@ async function run() {
     return;
   }
 
-  console.log(`Uploading ${files.length} images...`);
+  console.log(`Checking ${files.length} images...`);
 
   let ok = 0;
   let fail = 0;
+  let skip = 0;
   for (const file of files) {
     const rel = path.relative(sourceDir, file);
     const withoutExt = rel.replace(/\.[^.]+$/, '');
     const publicId = [prefix, withoutExt.replace(/\\/g, '/')].filter(Boolean).join('/');
+    
     try {
+      // Check if already exists
+      try {
+        await cloudinary.api.resource(publicId, { type: 'upload' });
+        skip++;
+        console.log(`Skipped (exists): ${rel}`);
+        continue;
+      } catch (e) {
+        // Resource doesn't exist, proceed with upload
+      }
+      
       await cloudinary.uploader.upload(file, {
         public_id: publicId,
         overwrite: false,
         resource_type: 'image',
       });
       ok++;
-      if ((ok + fail) % 10 === 0) console.log(`Progress: ${ok} uploaded, ${fail} failed`);
+      console.log(`Uploaded: ${rel}`);
+      if ((ok + fail + skip) % 10 === 0) console.log(`Progress: ${ok} uploaded, ${skip} skipped, ${fail} failed`);
     } catch (err) {
       fail++;
       console.warn(`Failed: ${rel} -> ${publicId}: ${err.message}`);
     }
   }
 
-  console.log(`Done. Uploaded: ${ok}, Failed: ${fail}`);
+  console.log(`\nDone. Uploaded: ${ok}, Skipped: ${skip}, Failed: ${fail}`);
 }
 
 run().catch((e) => {

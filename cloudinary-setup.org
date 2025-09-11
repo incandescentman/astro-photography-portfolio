@@ -1,3 +1,1018 @@
+* Photography Pipeline Specification
+** Cloudinary Upload & Astro Integration System
+
+*** Project Overview
+
+Build a CLI tool and workflow system that manages photography metadata, uploads to Cloudinary, and generates content files for an Astro-based photography website. The system uses a hybrid approach: EXIF/IPTC metadata embedded in photos (for portability) + JSON sidecar files (for flexibility).
+
+*Primary User:* Jay Dixit --- Photographer/Writer  
+*Website:* photos.jaydixit.com (Astro framework)  
+*Photo Types:* Event photography, red carpet, portraits  
+*Volume:* Hundreds to thousands of photos per event
+
+** 1. System Architecture
+
+#+end_src 
+
+Local Filesystem          →    CLI Tool    →    Cloudinary
+photos/                        (Node.js)         (CDN/DAM)
+  red-carpet/                      ↓
+    tiff-2025/                 Astro Site
+      *.jpg                    (Content)
+      tags.json
+#+end_src 
+
+*** Core Components
+
+1. *Photo Files* --- JPEGs with embedded EXIF/IPTC metadata
+2. *Sidecar Files* --- `tags.json` per folder with overrides and album data
+3. *CLI Tool* --- Node.js script for upload and content generation
+4. *Cloudinary* --- Image hosting with tags and context metadata
+5. *Astro Content* --- Generated JSON files for static site building
+
+** 2. Data Models & Schemas
+
+*** 2.1 EXIF/IPTC Fields (Embedded in Photos)
+
+#+begin_src yaml
+Required Fields:
+ - IPTC:Caption-Abstract       # Main photo caption
+ - XMP-dc:Title                 # Photo title/headline
+ - XMP-dc:Subject               # Keywords (array) → Cloudinary tags
+
+Recommended Fields:
+ - IPTC:City                    # Location city
+ - IPTC:Country-PrimaryLocationName  # Location country
+ - IPTC:By-line                 # Photographer credit
+ - XMP-dc:Creator               # Photographer name
+ - IPTC:PersonInImage           # People shown (array)
+ - EXIF:GPSLatitude/GPSLongitude # GPS coordinates
+
+Optional Fields:
+ - IPTC:ObjectName              # Alternative title
+ - XMP:Description              # Extended description
+ - IPTC:Source                  # Publication/client
+ - IPTC:SpecialInstructions     # Usage rights
+#+end_src 
+
+*** 2.2 tags.json Schema (Per Folder)
+
+#+begin_src typescript
+interface TagsJSON {
+  // Album metadata for Astro
+  album: {
+    title: string;           // "Red Carpet --- TIFF 2025"
+    slug: string;            // "red-carpet/tiff-2025"
+    description?: string;    // Album description for SEO
+    date?: string;           // "2025-09-11" (ISO format)
+    featured?: boolean;      // Show on homepage
+  };
+  
+  // Default values for all photos in folder
+  defaults: {
+    tags: string[];          // ["red-carpet", "tiff", "2025"]
+    city?: string;           // "Toronto"
+    country?: string;        // "Canada"
+    venue?: string;          // "Roy Thomson Hall"
+    credit?: string;         // "Jay Dixit"
+    event?: string;          // "Toronto International Film Festival"
+  };
+  
+  // Per-file caption overrides (filename → caption)
+  captions?: {
+    [filename: string]: string;
+  };
+  
+  // Per-file metadata overrides
+  overrides?: {
+    [filename: string]: {
+      tags?: string[];       // Additional tags
+      title?: string;        // Override title
+      people?: string[];     // People in image
+      exclude?: boolean;     // Skip this file
+    };
+  };
+  
+  // Featured photos for this album
+  highlights?: string[];     // ["maria-bakalova_tiff_2025.jpg"]
+  
+  // Display order (if not alphabetical)
+  order?: string[];          // Explicit filename order
+}
+#+end_src 
+
+*** 2.3 Cloudinary Upload Schema
+
+#+begin_src typescript
+interface CloudinaryUploadParams {
+  folder: string;            // "photos/red-carpet/tiff-2025"
+  public_id: string;         // "maria-bakalova_tiff_2025"
+  use_filename: true;
+  unique_filename: false;
+  overwrite: true;
+  resource_type: "image";
+  
+  // Combined from EXIF + JSON
+  tags: string[];            // ["red-carpet", "tiff", "2025", "maria-bakalova"]
+  
+  // Context metadata (searchable key-value pairs)
+  context: {
+    caption?: string;
+    title?: string;
+    city?: string;
+    country?: string;
+    venue?: string;
+    people?: string;         // Comma-separated
+    credit?: string;
+    event?: string;
+    gps?: string;            // "lat,lng"
+    date_taken?: string;     // ISO date from EXIF
+  };
+  
+  // Processing options
+  image_metadata: true;      // Include EXIF in response
+  phash: true;               // For duplicate detection
+  colors: true;              // Dominant colors
+  
+  // Optional transformation preset
+  upload_preset?: string;    // "event-photos"
+}
+#+end_src 
+
+*** 2.4 Astro Content Schema
+
+#+begin_src typescript
+// Generated: src/content/albums/[slug].json
+interface AlbumContent {
+  title: string;
+  slug: string;
+  description?: string;
+  date?: string;
+  featured?: boolean;
+  
+  photos: Array<{
+    publicId: string;        // Cloudinary public_id
+    filename: string;        // Original filename
+    alt: string;             // From caption or title
+    title?: string;          // Photo title
+    caption?: string;        // Full caption
+    
+    // From Cloudinary response
+    width: number;
+    height: number;
+    format: string;
+    
+    // Metadata
+    tags?: string[];
+    people?: string[];
+    city?: string;
+    country?: string;
+    
+    // Special flags
+    highlight?: boolean;     // Featured photo
+    cover?: boolean;         // Album cover image
+  }>;
+  
+  // Stats
+  photoCount: number;
+  uploadedAt: string;        // ISO timestamp
+  lastModified: string;
+}
+#+end_src 
+
+** 3. CLI Tool Requirements
+
+*** 3.1 Commands
+
+#+begin_src bash
+* Main upload command
+photo-upload [directory] [options]
+
+* Commands:
+photo-upload upload <dir>    # Upload directory to Cloudinary
+photo-upload sync <dir>      # Sync (update changed files only)
+photo-upload preview <dir>   # Dry run, show what would upload
+photo-upload generate <dir>  # Generate Astro content only
+photo-upload validate <dir>  # Check metadata completeness
+
+* Options:
+--env <path>                 # .env file location
+--config <path>              # Config file (default: .photoconfig.json)
+--no-content                 # Skip Astro content generation
+--no-upload                  # Generate content without uploading
+--verbose                    # Detailed logging
+--dry-run                    # Preview without changes
+#+end_src 
+
+*** 3.2 Configuration File (.photoconfig.json)
+
+#+begin_src json
+{
+  "cloudinary": {
+    "cloud_name": "jaydixit",
+    "upload_preset": "event-photos",
+    "folder_prefix": "photos"
+  },
+  
+  "content": {
+    "output_dir": "src/content/albums",
+    "base_url": "https://photos.jaydixit.com"
+  },
+  
+  "defaults": {
+    "credit": "Jay Dixit",
+    "image_formats": ["jpg", "jpeg", "JPG", "JPEG"],
+    "min_image_size": 100000,  // Skip tiny files (100KB)
+    "max_image_size": 50000000  // Warning for huge files (50MB)
+  },
+  
+  "metadata": {
+    "required_fields": ["caption", "title"],
+    "tag_namespaces": {
+      "event": "Event name",
+      "cat": "Category", 
+      "city": "City location",
+      "year": "Year taken"
+    }
+  },
+  
+  "transformations": {
+    "gallery": "t_gallery",     // Named transformation
+    "thumbnail": "t_thumb"
+  }
+}
+#+end_src 
+
+*** 3.3 Core Functionality
+
+**** A. Metadata Extraction
+
+#+begin_src javascript
+// Extract EXIF/IPTC using ExifTool
+async function extractMetadata(filepath) {
+  const { stdout } = await execa('exiftool', ['-json', filepath]);
+  const [data] = JSON.parse(stdout);
+  
+  return {
+    // Core fields
+    title: data['XMP-dc:Title'] || data['IPTC:ObjectName'],
+    caption: data['IPTC:Caption-Abstract'] || data['XMP:Description'],
+    
+    // Keywords → tags
+    keywords: parseKeywords(
+      data['XMP-dc:Subject'] || 
+      data['IPTC:Keywords'] || 
+      []
+    ),
+    
+    // Location
+    city: data['IPTC:City'],
+    country: data['IPTC:Country-PrimaryLocationName'],
+    gps: parseGPS(data),
+    
+    // People & Credit
+    people: parseArray(data['IPTC:PersonInImage']),
+    credit: data['IPTC:By-line'] || data['XMP-dc:Creator'],
+    
+    // Technical
+    dateTaken: data['EXIF:DateTimeOriginal'],
+    camera: data['EXIF:Model'],
+    lens: data['EXIF:LensModel']
+  };
+}
+#+end_src 
+
+**** B. Metadata Merging (Precedence Rules)
+
+#+begin_src javascript
+function mergeMetadata(exif, folderDefaults, fileOverrides) {
+  // 1. Start with EXIF as base
+  const merged = { ...exif };
+  
+  // 2. Apply folder defaults (don't override existing)
+  Object.keys(folderDefaults).forEach(key => {
+    if (!merged[key] || merged[key].length === 0) {
+      merged[key] = folderDefaults[key];
+    }
+  });
+  
+  // 3. Apply file-specific overrides (always override)
+  if (fileOverrides) {
+    Object.assign(merged, fileOverrides);
+    
+    // Special handling for arrays (tags, people)
+    if (fileOverrides.tags) {
+      merged.tags = [...new Set([
+        ...(merged.tags || []),
+        ...(fileOverrides.tags || [])
+      ])];
+    }
+  }
+  
+  return merged;
+}
+#+end_src 
+
+**** C. Upload Logic
+
+#+begin_src javascript
+async function uploadPhoto(filepath, metadata, config) {
+  const publicId = generatePublicId(filepath, config);
+  
+  const uploadParams = {
+    folder: config.folder,
+    public_id: publicId,
+    use_filename: true,
+    unique_filename: false,
+    overwrite: true,
+    resource_type: 'image',
+    
+    // Tags (deduplicated)
+    tags: metadata.tags || [],
+    
+    // Context (only non-empty values)
+    context: cleanObject({
+      caption: metadata.caption,
+      title: metadata.title,
+      city: metadata.city,
+      country: metadata.country,
+      venue: metadata.venue,
+      people: arrayToString(metadata.people),
+      credit: metadata.credit,
+      event: metadata.event,
+      gps: metadata.gps,
+      date_taken: metadata.dateTaken
+    }),
+    
+    // Extra data
+    image_metadata: true,
+    phash: true,
+    colors: true
+  };
+  
+  if (config.upload_preset) {
+    uploadParams.upload_preset = config.upload_preset;
+  }
+  
+  return cloudinary.uploader.upload(filepath, uploadParams);
+}
+#+end_src 
+
+**** D. Content Generation
+
+#+begin_src javascript
+async function generateAlbumContent(photos, tagsJson, uploadResults) {
+  const album = {
+    ...tagsJson.album,
+    photos: photos.map(photo => {
+      const result = uploadResults[photo.filename];
+      const metadata = photo.metadata;
+      
+      return {
+        publicId: result.public_id,
+        filename: photo.filename,
+        alt: metadata.caption || metadata.title || prettifyFilename(photo.filename),
+        title: metadata.title,
+        caption: metadata.caption,
+        
+        // From Cloudinary
+        width: result.width,
+        height: result.height,
+        format: result.format,
+        
+        // Metadata
+        tags: metadata.tags,
+        people: metadata.people,
+        city: metadata.city,
+        country: metadata.country,
+        
+        // Flags
+        highlight: tagsJson.highlights?.includes(photo.filename),
+        cover: tagsJson.highlights?.[0] === photo.filename
+      };
+    }),
+    
+    photoCount: photos.length,
+    uploadedAt: new Date().toISOString(),
+    lastModified: new Date().toISOString()
+  };
+  
+  // Write to Astro content directory
+  const outputPath = path.join(
+    config.content.output_dir,
+    `${tagsJson.album.slug.replace(/\//g, '-')}.json`
+  );
+  
+  await fs.writeFile(outputPath, JSON.stringify(album, null, 2));
+  
+  return album;
+}
+#+end_src 
+
+** 4. Installation & Setup
+
+*** 4.1 Dependencies
+
+#+begin_src json
+{
+  "dependencies": {
+    "cloudinary": "^2.0.0",
+    "commander": "^11.0.0",
+    "execa": "^8.0.0",
+    "fast-glob": "^3.3.0",
+    "dotenv": "^16.0.0",
+    "chalk": "^5.0.0",
+    "ora": "^7.0.0",
+    "p-limit": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}
+#+end_src 
+
+*** 4.2 System Requirements
+
+- *Node.js:* v18+ (for native fetch)
+- *ExifTool:* Install via `brew install exiftool`
+- *Cloudinary Account:* With API credentials
+- *Git:* For version control of tags.json files
+
+*** 4.3 Environment Variables (.env)
+
+#+begin_src bash
+* Cloudinary credentials
+CLOUDINARY_CLOUD_NAME=jaydixit
+CLOUDINARY_API_KEY=your_api_key_here
+CLOUDINARY_API_SECRET=your_api_secret_here
+
+* Optional overrides
+CLOUDINARY_UPLOAD_PRESET=event-photos
+CONTENT_OUTPUT_DIR=src/content/albums
+#+end_src 
+
+** 5. Workflow Instructions
+
+*** 5.1 Initial Setup
+
+#+begin_src bash
+* 1. Install the CLI tool
+npm install -g @jaydixit/photo-upload
+* or link locally
+npm link
+
+* 2. Install ExifTool
+brew install exiftool
+
+* 3. Configure credentials
+cp .env.example .env
+* Edit .env with Cloudinary credentials
+
+* 4. Create config file
+photo-upload init
+* Creates .photoconfig.json with defaults
+#+end_src 
+
+*** 5.2 Photo Preparation Workflow
+
+#+begin_src bash
+* 1. Organize photos into folders
+photos/
+  red-carpet/
+    tiff-2025/
+      IMG_001.jpg → maria-bakalova_tiff_2025.jpg
+      IMG_002.jpg → jude-law_tiff_2025.jpg
+
+* 2. Add EXIF/IPTC metadata (using ExifTool)
+cd photos/red-carpet/tiff-2025
+
+* Batch add location to all photos
+exiftool -overwrite_original \
+ -IPTC:City="Toronto" \
+ -IPTC:Country-PrimaryLocationName="Canada" \
+  *.jpg
+
+* Add specific captions
+exiftool -overwrite_original \
+ -IPTC:Caption-Abstract="Maria Bakalova on the red carpet at TIFF 2025" \
+ -XMP-dc:Title="Maria Bakalova --- TIFF 2025" \
+  maria-bakalova_tiff_2025.jpg
+
+* 3. Create tags.json for the folder
+cat > tags.json << 'EOF'
+{
+  "album": {
+    "title": "Red Carpet --- TIFF 2025",
+    "slug": "red-carpet/tiff-2025",
+    "date": "2025-09-11",
+    "featured": true
+  },
+  "defaults": {
+    "tags": ["red-carpet", "tiff", "2025", "event:tiff-2025"],
+    "city": "Toronto",
+    "country": "Canada",
+    "venue": "Roy Thomson Hall",
+    "credit": "Jay Dixit",
+    "event": "Toronto International Film Festival"
+  },
+  "highlights": [
+    "maria-bakalova_tiff_2025.jpg",
+    "jude-law_tiff_2025.jpg"
+  ]
+}
+EOF
+
+* 4. Preview what will be uploaded
+photo-upload preview .
+
+* 5. Upload to Cloudinary and generate content
+photo-upload upload .
+#+end_src 
+
+*** 5.3 Batch Operations
+
+#+begin_src bash
+* Process multiple events at once
+photo-upload upload photos/red-carpet --recursive
+
+* Sync only changed files
+photo-upload sync photos/red-carpet/tiff-2025
+
+* Generate Astro content without uploading
+photo-upload generate photos/red-carpet --no-upload
+
+* Validate metadata completeness
+photo-upload validate photos/red-carpet --recursive
+#+end_src 
+
+** 6. Error Handling & Validation
+
+*** 6.1 Validation Rules
+
+#+begin_src javascript
+const validationRules = {
+  // Required metadata
+  required: {
+    caption: 'Every photo needs a caption',
+    title: 'Every photo needs a title',
+    tags: 'At least one tag required'
+  },
+  
+  // File checks
+  file: {
+    minSize: 100 * 1024,  // 100KB minimum
+    maxSize: 50 * 1024 * 1024,  // 50MB maximum
+    formats: ['.jpg', '.jpeg'],
+    naming: /^[a-z0-9-_]+\.(jpg|jpeg)$/i
+  },
+  
+  // Tag format
+  tags: {
+    pattern: /^[a-z0-9-:]+$/,
+    namespaces: ['event', 'cat', 'city', 'year', 'subject']
+  }
+};
+#+end_src 
+
+*** 6.2 Error Recovery
+
+- *Failed uploads:* Log to `upload-errors.json` with retry capability
+- *Partial uploads:* Track progress in `.upload-state.json`
+- *Validation errors:* Report before upload begins
+- *Network issues:* Exponential backoff with 3 retries
+
+** 7. Performance Optimizations
+
+*** 7.1 Concurrent Uploads
+
+#+begin_src javascript
+// Use p-limit for controlled concurrency
+const limit = pLimit(3);  // 3 concurrent uploads
+
+const uploadPromises = photos.map(photo => 
+  limit(() => uploadPhoto(photo))
+);
+
+await Promise.all(uploadPromises);
+#+end_src 
+
+*** 7.2 Caching
+
+- Cache EXIF reads in `.metadata-cache.json`
+- Skip unchanged files using checksums
+- Store Cloudinary responses for incremental updates
+
+*** 7.3 Large Batch Handling
+
+- Process in chunks of 50 photos
+- Show progress bar with ETA
+- Generate content files incrementally
+
+** 8. Testing Requirements
+
+*** 8.1 Test Coverage
+
+#+begin_src javascript
+describe('Photo Upload Pipeline', () => {
+  test('extracts EXIF metadata correctly');
+  test('merges metadata with correct precedence');
+  test('handles missing tags.json gracefully');
+  test('validates required fields');
+  test('generates valid Cloudinary parameters');
+  test('creates Astro content files');
+  test('handles upload failures with retry');
+  test('preserves folder structure in public_id');
+});
+#+end_src 
+
+*** 8.2 Test Data
+
+Provide test photos with various metadata scenarios:
+- Photos with complete EXIF/IPTC
+- Photos with missing metadata
+- Photos with conflicting metadata
+- Edge cases (0-byte files, corrupted EXIF)
+
+** 9. Deployment & CI/CD
+
+*** 9.1 GitHub Actions Workflow
+
+#+begin_src yaml
+name: Upload Photos
+
+on:
+  push:
+    paths:
+     - 'photos/*'
+     - '*/tags.json'
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+     - uses: actions/checkout@v3
+      
+     - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+     - name: Install ExifTool
+        run: sudo apt-get install -y exiftool
+      
+     - name: Install CLI
+        run: npm ci
+      
+     - name: Upload Changed Photos
+        env:
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+        run: |
+          photo-upload sync photos --recursive
+      
+     - name: Commit Content Files
+        run: |
+          git config user.name "GitHub Actions"
+          git add src/content/albums
+          git commit -m "Update album content" || true
+          git push
+#+end_src 
+
+** 10. Monitoring & Maintenance
+
+*** 10.1 Logging
+
+#+begin_src javascript
+// Log levels and output
+const logger = {
+  verbose: process.env.VERBOSE === 'true',
+  
+  info: (msg) => console.log(chalk.blue('ℹ'), msg),
+  success: (msg) => console.log(chalk.green('✓'), msg),
+  warning: (msg) => console.log(chalk.yellow('⚠'), msg),
+  error: (msg) => console.error(chalk.red('✗'), msg),
+  
+  // Detailed logs to file
+  logFile: 'photo-upload.log'
+};
+#+end_src 
+
+*** 10.2 Cloudinary Monitoring
+
+- Track upload success rates
+- Monitor storage usage
+- Alert on quota limits
+- Log transformation usage
+
+** 11. Future Enhancements
+
+*** Phase 2 Features
+
+1. *AI Tagging:* Auto-generate tags using Cloudinary's AI
+2. *Face Recognition:* Group photos by people automatically
+3. *Web UI:* Simple web interface for metadata editing
+4. *Webhooks:* Trigger site rebuilds on upload
+5. *Mobile App:* Upload directly from phone with captions
+
+*** Phase 3 Features
+
+1. *RAW Support:* Handle DNG/CR2 files with conversion
+2. *Video Support:* Extend to video files
+3. *Backup System:* Automatic local/cloud backups
+4. *Analytics:* Track photo views and popular images
+5. *Client Galleries:* Password-protected galleries
+
+** 12. Developer Handoff Checklist
+
+- [ ] Review this specification completely
+- [ ] Set up development environment with Node 18+
+- [ ] Install ExifTool via Homebrew
+- [ ] Create Cloudinary account (or get credentials)
+- [ ] Clone/create repository structure
+- [ ] Implement core upload functionality
+- [ ] Add metadata extraction and merging
+- [ ] Implement Astro content generation
+- [ ] Create CLI interface with Commander
+- [ ] Add progress bars and logging
+- [ ] Write comprehensive tests
+- [ ] Document API and usage
+- [ ] Create example photos with metadata
+- [ ] Test with 100+ photo batch
+- [ ] Optimize for performance
+- [ ] Deploy and test in production
+
+** Questions for Jay
+
+1. *Naming Convention:* Confirm format: `subject_event_year.jpg`?
+2. *Tag Namespaces:* Which namespaces do you want? (event:, cat:, city:, year:, subject:)?
+3. *Cloudinary Transformations:* What named transformations exist in your account?
+4. *Astro Structure:* Confirm content collection schema matches your site?
+5. *Backup Strategy:* Do you want local backups before upload?
+6. *GUI Preference:* Want a simple web UI later, or CLI only?
+
+** Support & Documentation
+
+- *ExifTool Docs:* https://exiftool.org/
+- *Cloudinary Upload API:* https://cloudinary.com/documentation/image_upload_api_reference
+- *Astro Content Collections:* https://docs.astro.build/en/guides/content-collections/
+- *IPTC Photo Metadata:* https://iptc.org/standards/photo-metadata/
+
+*Delivery Note:* This specification provides a complete blueprint for building the photo upload pipeline. The developer should start with the CLI tool core functionality, then add features incrementally. The system is designed to be maintainable, scalable, and user-friendly for a photographer's workflow.
+
+** 🚀 IMPLEMENTATION STATUS (2025-01-11)
+
+*** ✅ What Has Been Implemented
+
+**** 1. Three Upload Scripts Created
+
+***** A. scripts/upload-with-metadata.js
+- Extracts EXIF/IPTC/XMP metadata using ExifTool
+- Maps IPTC Keywords → Cloudinary tags
+- Maps Caption/Title/Location/GPS/People → Cloudinary context
+- Falls back to filename parsing if no metadata exists
+- Checks for existing uploads to avoid duplicates
+
+Usage:
+#+begin_src bash
+brew install exiftool  # Required dependency
+node scripts/upload-with-metadata.js ./photos/red-carpet/tiff-2025
+#+end_src
+
+***** B. scripts/upload-with-tags-json.js  
+- Uses tags.json sidecar files for metadata
+- No ExifTool dependency required
+- Supports folder-level defaults and per-file captions
+- Parses filenames as fallback (subject_event_year.jpg)
+
+Usage:
+#+begin_src bash
+node scripts/upload-with-tags-json.js ./public/photos
+#+end_src
+
+***** C. scripts/photo-cli.js (MAIN CLI TOOL - Full Spec Implementation)
+- Complete implementation of this specification
+- Commander-based CLI with multiple commands
+- Full metadata extraction and merging pipeline
+- Astro content generation
+- Validation and error handling
+- Progress tracking with ora spinners
+- Concurrent uploads (3 at a time)
+
+**** 2. CLI Commands Available
+
+#+begin_src bash
+# Initialize configuration file
+npm run photo:init
+
+# Upload photos with full pipeline
+npm run photo:upload ./photos/red-carpet/tiff-2025
+
+# Validate metadata completeness
+npm run photo:validate ./photos
+
+# With options
+node scripts/photo-cli.js upload ./photos --verbose --dry-run --no-content
+#+end_src
+
+**** 3. Package.json Scripts Added
+
+#+begin_src json
+"scripts": {
+  "photo": "node scripts/photo-cli.js",
+  "photo:init": "node scripts/photo-cli.js init",
+  "photo:upload": "node scripts/photo-cli.js upload",
+  "photo:validate": "node scripts/photo-cli.js validate"
+}
+#+end_src
+
+**** 4. Dependencies Installed
+
+#+begin_src bash
+# Core dependencies
+npm install cloudinary    # Cloudinary SDK
+npm install dotenv        # Environment variables
+npm install execa         # Run ExifTool
+npm install fast-glob     # File finding
+
+# CLI dependencies  
+npm install commander     # CLI framework
+npm install chalk         # Colored output
+npm install ora           # Progress spinners
+npm install p-limit       # Concurrent upload control
+#+end_src
+
+**** 5. Environment Configuration
+
+.env file configured with:
+- PUBLIC_CLOUDINARY_CLOUD_NAME=dszpm7yps
+- CLOUDINARY_URL with API credentials
+- PUBLIC_CLOUDINARY_TRANSFORM=gallery
+
+*** 📋 Testing Checklist
+
+**** Prerequisites
+- [ ] ExifTool installed: `brew install exiftool`
+- [ ] Node.js 18+ installed
+- [ ] Cloudinary credentials in .env file
+
+**** Test 1: Basic Upload Script
+#+begin_src bash
+# Test the simple upload script (already working)
+node scripts/upload-to-cloudinary.js ./public/photos
+#+end_src
+
+**** Test 2: Upload with Metadata Extraction
+#+begin_src bash
+# Test EXIF/IPTC extraction
+node scripts/upload-with-metadata.js ./public/photos/portraits
+#+end_src
+
+**** Test 3: Upload with tags.json
+#+begin_src bash
+# Create a test tags.json
+cat > ./public/photos/tags.json << 'EOF'
+{
+  "tags": ["test", "2025"],
+  "location": "Toronto, Canada",
+  "captions": {
+    "jeremy.jpg": "Test caption for Jeremy"
+  }
+}
+EOF
+
+# Run upload
+node scripts/upload-with-tags-json.js ./public/photos
+#+end_src
+
+**** Test 4: Full CLI Tool
+#+begin_src bash
+# Initialize config
+npm run photo:init
+
+# Dry run to preview
+node scripts/photo-cli.js upload ./public/photos --dry-run --verbose
+
+# Validate metadata
+npm run photo:validate ./public/photos
+
+# Full upload with content generation
+npm run photo:upload ./public/photos
+#+end_src
+
+**** Test 5: Check Generated Content
+#+begin_src bash
+# Look for generated Astro content files
+ls -la src/content/albums/
+cat src/content/albums/*.json
+#+end_src
+
+*** 🔧 Configuration Files
+
+**** .photoconfig.json (created by photo:init)
+#+begin_src json
+{
+  "cloudinary": {
+    "cloud_name": "dszpm7yps",
+    "upload_preset": "event-photos",
+    "folder_prefix": "photos"
+  },
+  "content": {
+    "output_dir": "src/content/albums",
+    "base_url": "https://photos.jaydixit.com"
+  },
+  "defaults": {
+    "credit": "Jay Dixit",
+    "image_formats": ["jpg", "jpeg", "JPG", "JPEG"],
+    "min_image_size": 100000,
+    "max_image_size": 50000000
+  },
+  "metadata": {
+    "required_fields": ["caption", "title"],
+    "tag_namespaces": {
+      "event": "Event name",
+      "cat": "Category",
+      "city": "City location",
+      "year": "Year taken"
+    }
+  }
+}
+#+end_src
+
+**** Example tags.json (per folder)
+#+begin_src json
+{
+  "album": {
+    "title": "Studio Portraits 2024",
+    "slug": "portraits/studio",
+    "date": "2024-11-15",
+    "featured": true
+  },
+  "defaults": {
+    "tags": ["portrait", "studio", "2024"],
+    "city": "New York",
+    "country": "USA",
+    "credit": "Jay Dixit"
+  },
+  "captions": {
+    "jeremy-strong_studio-session_2024.jpg": "Jeremy Strong studio portrait session"
+  },
+  "highlights": ["jeremy-strong_studio-session_2024.jpg"]
+}
+#+end_src
+
+*** 🐛 Known Issues & Fixes Applied
+
+1. **Fixed: dotenv not loading** - Added dotenv.config() to all scripts
+2. **Fixed: Missing dependencies** - Installed commander, chalk, ora, p-limit
+3. **Fixed: ExifTool detection** - Added check and installation instructions
+
+*** 📝 Quick Start Guide
+
+#+begin_src bash
+# 1. Install ExifTool (one-time)
+brew install exiftool
+
+# 2. Check your .env has credentials
+cat .env | grep CLOUDINARY
+
+# 3. Initialize the CLI config
+npm run photo:init
+
+# 4. Test with a dry run
+node scripts/photo-cli.js upload ./public/photos --dry-run
+
+# 5. Upload for real
+npm run photo:upload ./public/photos
+
+# 6. Check generated content
+ls src/content/albums/
+#+end_src
+
+*** 🎯 Next Steps for Testing
+
+1. **Start simple**: Test basic upload script first (confirmed working)
+2. **Add metadata**: Try upload-with-metadata.js with ExifTool
+3. **Test tags.json**: Create tags.json and test that workflow  
+4. **Full pipeline**: Use photo-cli.js for complete workflow
+5. **Verify output**: Check Cloudinary Media Library and generated Astro content
+
+*** 📊 Implementation Coverage
+
+- ✅ Metadata extraction (EXIF/IPTC/XMP)
+- ✅ tags.json schema support
+- ✅ Metadata merging with precedence rules
+- ✅ Cloudinary upload with tags/context
+- ✅ Astro content generation
+- ✅ Validation system
+- ✅ CLI with multiple commands
+- ✅ Progress tracking and logging
+- ✅ Concurrent uploads
+- ✅ Configuration file support
+- ✅ Error handling and recovery
+- ⏳ GitHub Actions workflow (not yet implemented)
+- ⏳ Web UI (future enhancement) 
+
 #+TITLE: Cloudinary Albums Setup
 #+AUTHOR: Project Guide
 
