@@ -1,0 +1,37 @@
+# -*- coding: utf-8 -*-
+"""
+Pywikibot configuration for Wikimedia Commons uploads
+
+This configuration file sets up pywikibot to work with Wikimedia Commons.
+Copy this to user-config.py and fill in your credentials.
+"""
+
+# The family of sites we are working on
+family = 'commons'
+
+# The language/project code for Wikimedia Commons
+mylang = 'commons'
+
+# Initialize usernames dictionary
+from collections import defaultdict
+usernames = defaultdict(dict)
+
+# Your Wikimedia Commons username (use bot password name)
+# Get from: https://commons.wikimedia.org/wiki/Special:BotPasswords
+usernames['commons']['commons'] = 'YourUsername@botname'
+
+# Bot password
+# IMPORTANT: Keep this secret! Never commit user-config.py to git.
+password = 'your_bot_password_here'
+
+# Maximum number of times to retry on server errors
+max_retries = 5
+
+# Delay in seconds between actions to avoid rate limiting
+put_throttle = 1
+
+# Console encoding
+console_encoding = 'utf-8'
+
+# Transliteration mode for non-ASCII characters
+transliteration_target = None

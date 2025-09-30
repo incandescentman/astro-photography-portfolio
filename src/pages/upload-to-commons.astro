@@ -1,0 +1,425 @@
+---
+/**
+ * Upload to Commons page
+ * Allows selecting photos from galleries and uploading them to Wikimedia Commons
+ */
+
+// Get all photos from all galleries
+const photoModules = import.meta.glob('/public/photos/**/*.{jpg,jpeg,png}', { eager: true });
+const allPhotos = Object.keys(photoModules).map(path => {
+  const relativePath = path.replace('/public', '');
+  const parts = relativePath.split('/');
+  const filename = parts[parts.length - 1];
+  const gallery = parts.slice(2, -1).join('/');
+
+  return {
+    path: relativePath,
+    filename,
+    gallery,
+    fullPath: path.replace('/public', '')
+  };
+});
+
+// Group by gallery
+const photosByGallery = allPhotos.reduce((acc, photo) => {
+  if (!acc[photo.gallery]) {
+    acc[photo.gallery] = [];
+  }
+  acc[photo.gallery].push(photo);
+  return acc;
+}, {} as Record<string, typeof allPhotos>);
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload to Wikimedia Commons | Jay Dixit Photos</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .intro {
+      color: #666;
+      margin-bottom: 30px;
+      line-height: 1.6;
+    }
+
+    .selected-count {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #2563eb;
+      color: white;
+      padding: 15px 25px;
+      border-radius: 30px;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+      font-weight: 600;
+      display: none;
+      z-index: 100;
+    }
+
+    .selected-count.visible {
+      display: block;
+    }
+
+    .upload-btn {
+      background: #059669;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-left: 15px;
+    }
+
+    .upload-btn:hover {
+      background: #047857;
+    }
+
+    .upload-btn:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+    }
+
+    .gallery-section {
+      margin-bottom: 40px;
+    }
+
+    .gallery-title {
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+      color: #111;
+      text-transform: capitalize;
+    }
+
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+    }
+
+    .photo-item {
+      position: relative;
+      aspect-ratio: 1;
+      border-radius: 6px;
+      overflow: hidden;
+      cursor: pointer;
+      border: 3px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .photo-item:hover {
+      border-color: #93c5fd;
+    }
+
+    .photo-item.selected {
+      border-color: #2563eb;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    .photo-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .photo-checkbox {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 24px;
+      height: 24px;
+      background: white;
+      border: 2px solid #ddd;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+
+    .photo-item.selected .photo-checkbox {
+      background: #2563eb;
+      border-color: #2563eb;
+    }
+
+    .photo-checkbox::after {
+      content: '✓';
+      color: white;
+      font-size: 14px;
+      font-weight: bold;
+      display: none;
+    }
+
+    .photo-item.selected .photo-checkbox::after {
+      display: block;
+    }
+
+    .photo-filename {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(transparent, rgba(0,0,0,0.7));
+      color: white;
+      padding: 20px 8px 8px;
+      font-size: 11px;
+      word-break: break-all;
+    }
+
+    .upload-form {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+      max-width: 600px;
+      width: 90%;
+      display: none;
+      z-index: 200;
+    }
+
+    .upload-form.visible {
+      display: block;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      z-index: 199;
+    }
+
+    .overlay.visible {
+      display: block;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #333;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .form-group textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: #2563eb;
+      color: white;
+    }
+
+    .btn-secondary {
+      background: #e5e7eb;
+      color: #374151;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📤 Upload to Wikimedia Commons</h1>
+    <p class="intro">
+      Select photos from your galleries to upload to Wikimedia Commons.
+      Click on photos to select them, then click the upload button to configure metadata.
+    </p>
+
+    {Object.entries(photosByGallery).sort().map(([gallery, photos]) => (
+      <div class="gallery-section">
+        <h2 class="gallery-title">{gallery.replace(/\//g, ' / ')}</h2>
+        <div class="photo-grid">
+          {photos.map(photo => (
+            <div
+              class="photo-item"
+              data-path={photo.path}
+              data-filename={photo.filename}
+              data-gallery={photo.gallery}
+            >
+              <div class="photo-checkbox"></div>
+              <img src={photo.path} alt={photo.filename} loading="lazy" />
+              <div class="photo-filename">{photo.filename}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <div class="selected-count">
+    <span class="count">0</span> photos selected
+    <button class="upload-btn" onclick="showUploadForm()">Upload to Commons</button>
+  </div>
+
+  <div class="overlay" onclick="hideUploadForm()"></div>
+
+  <div class="upload-form">
+    <h2>Upload Configuration</h2>
+    <form id="upload-config-form">
+      <div class="form-group">
+        <label>Categories (comma-separated)</label>
+        <input type="text" id="categories" placeholder="Film festivals, Toronto, 2024" />
+      </div>
+
+      <div class="form-group">
+        <label>License</label>
+        <select id="license">
+          <option value="{{self|cc-by-sa-4.0}}">CC BY-SA 4.0</option>
+          <option value="{{self|cc-by-4.0}}">CC BY 4.0</option>
+          <option value="{{self|cc-zero}}">CC0 (Public Domain)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Additional Description (optional)</label>
+        <textarea id="additional-desc" placeholder="Add any additional context..."></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" onclick="hideUploadForm()">Cancel</button>
+        <button type="submit" class="btn btn-primary">Generate Upload Commands</button>
+      </div>
+    </form>
+
+    <div id="upload-commands" style="display: none; margin-top: 20px;">
+      <h3>Run these commands in your terminal:</h3>
+      <pre id="commands-output" style="background: #f5f5f5; padding: 15px; border-radius: 6px; overflow-x: auto; font-size: 12px;"></pre>
+    </div>
+  </div>
+
+  <script>
+    const selectedPhotos = new Set();
+
+    // Handle photo selection
+    document.querySelectorAll('.photo-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const path = item.dataset.path;
+
+        if (selectedPhotos.has(path)) {
+          selectedPhotos.delete(path);
+          item.classList.remove('selected');
+        } else {
+          selectedPhotos.add(path);
+          item.classList.add('selected');
+        }
+
+        updateSelectedCount();
+      });
+    });
+
+    function updateSelectedCount() {
+      const countEl = document.querySelector('.selected-count');
+      const countNum = document.querySelector('.selected-count .count');
+      const count = selectedPhotos.size;
+
+      countNum.textContent = count;
+
+      if (count > 0) {
+        countEl.classList.add('visible');
+      } else {
+        countEl.classList.remove('visible');
+      }
+    }
+
+    function showUploadForm() {
+      if (selectedPhotos.size === 0) return;
+
+      document.querySelector('.overlay').classList.add('visible');
+      document.querySelector('.upload-form').classList.add('visible');
+    }
+
+    function hideUploadForm() {
+      document.querySelector('.overlay').classList.remove('visible');
+      document.querySelector('.upload-form').classList.remove('visible');
+      document.getElementById('upload-commands').style.display = 'none';
+    }
+
+    document.getElementById('upload-config-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const categories = document.getElementById('categories').value;
+      const license = document.getElementById('license').value;
+      const additionalDesc = document.getElementById('additional-desc').value;
+
+      // Generate commands
+      const commands = [];
+      const photoArray = Array.from(selectedPhotos);
+
+      photoArray.forEach(path => {
+        const publicPath = `/Users/jay/Library/CloudStorage/Dropbox/github/photos-jaydixit/public${path}`;
+        const catArg = categories ? ` "${categories}"` : '';
+        commands.push(`python3 scripts/commons-uploader.py "${publicPath}"${catArg}`);
+      });
+
+      document.getElementById('commands-output').textContent = commands.join('\n\n');
+      document.getElementById('upload-commands').style.display = 'block';
+    });
+
+    window.showUploadForm = showUploadForm;
+    window.hideUploadForm = hideUploadForm;
+  </script>
+</body>
+</html>

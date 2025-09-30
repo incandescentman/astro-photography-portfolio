@@ -1,0 +1,304 @@
+#+TITLE: Wikimedia Commons Upload Guide
+#+AUTHOR: Jay Dixit Photography
+#+DATE: 2025-09-30
+
+* Overview
+
+This document explains how to upload photos from the Jay Dixit Photography portfolio to Wikimedia Commons using pywikibot.
+
+* Authentication Setup
+
+** Bot Account Details
+- Wikimedia Username: =Jaydixit=
+- Bot Username: =Jaydixit@pyuploadwiki=
+- Bot Password: =rbfg4pl7lf7ba58gdhca6pvurai55fh2=
+- Bot Password Page: https://commons.wikimedia.org/wiki/Special:BotPasswords
+
+** Configuration File Location
+=/Users/jay/Library/CloudStorage/Dropbox/github/photos-jaydixit/user-config.py=
+
+The configuration is already set up with:
+- Family: =commons=
+- Language: =commons=
+- Username: =Jaydixit@pyuploadwiki=
+- Password: stored in config
+
+* Upload Methods
+
+** Method 1: Command Line Script
+
+*** Location
+=scripts/commons-uploader.py=
+
+*** Usage
+#+BEGIN_SRC bash
+python3 scripts/commons-uploader.py <photo_path> [categories]
+#+END_SRC
+
+*** Example
+#+BEGIN_SRC bash
+python3 scripts/commons-uploader.py public/photos/tiff/vanessa-kirby_toronto-film-festival_2024.jpg "Film festivals,TIFF,2024"
+#+END_SRC
+
+*** What the Script Does
+1. Parses filename using format: =subject_event_year.jpg=
+2. Extracts: subject, event, year
+3. Generates Commons description with:
+   - Subject and event information
+   - License: CC BY-SA 4.0 (default)
+   - Author: Jay Dixit
+   - Categories (if provided)
+4. Uploads to Commons using pywikibot
+
+** Method 2: Web Interface
+
+*** Location
+=src/pages/upload-to-commons.astro=
+
+*** Usage
+1. Start dev server: =npm run dev=
+2. Visit: http://localhost:4321/upload-to-commons
+3. Click photos to select them
+4. Click "Upload to Commons" button
+5. Configure:
+   - Categories (comma-separated)
+   - License template
+   - Additional description (optional)
+6. Generate commands
+7. Copy and run commands in terminal
+
+*** Benefits
+- Visual selection of photos
+- Batch configuration
+- Preview of what will be uploaded
+
+** Method 3: Direct pywikibot (Advanced)
+
+*** Official Documentation
+https://www.mediawiki.org/wiki/Manual:Pywikibot/upload.py
+
+*** Basic Usage
+#+BEGIN_SRC bash
+pwb upload <file_path> -description:"<wiki_markup>" -filename:"<target_name>"
+#+END_SRC
+
+*** Important Parameters
+- =-keep= - Preserve original filename
+- =-filename:targetFilename= - Specify target filename on wiki
+- =-summary:text= - Add upload summary
+- =-ignorewarn= - Overwrite existing files (use with caution)
+- =-chunked= - Upload large files in chunks (recommended for Commons)
+- =-descfile:path= - Use description from file
+- =-noverify= - Skip description verification
+
+*** Advanced Example
+#+BEGIN_SRC bash
+pwb upload photo.jpg "Image description" -keep -noverify -chunked
+#+END_SRC
+
+*** Batch Upload Directory
+#+BEGIN_SRC bash
+pwb upload /path/to/photos/ "Batch upload description" -keep -noverify -ignorewarn
+#+END_SRC
+
+* Filename Parsing Convention
+
+The system automatically parses filenames in this format:
+
+=subject_event_year.jpg=
+
+*** Examples
+- =vanessa-kirby_toronto-film-festival_2024.jpg=
+  - Subject: Vanessa Kirby
+  - Event: Toronto Film Festival
+  - Year: 2024
+
+- =maria-bakalova_locarno.jpg=
+  - Subject: Maria Bakalova
+  - Event: Locarno
+  - Year: (none)
+
+- =jeremy-11.jpg=
+  - Subject: Jeremy 11
+  - Event: (none)
+  - Year: (none)
+
+* Commons Description Template
+
+The generated description follows this format:
+
+#+BEGIN_EXAMPLE
+{{Information
+|Description=<Subject> at <Event> in <Year>
+|Source={{Own}}
+|Author=[[User:Jaydixit|Jay Dixit]]
+|Date=<Year>
+}}
+
+{{self|cc-by-sa-4.0}}
+
+[[Category:<Category1>]]
+[[Category:<Category2>]]
+#+END_EXAMPLE
+
+* License Options
+
+Default license is CC BY-SA 4.0, but can be changed to:
+- =cc-by-sa-4.0= - Creative Commons Attribution-ShareAlike 4.0
+- =cc-by-4.0= - Creative Commons Attribution 4.0
+- =cc-zero= - CC0 Public Domain
+
+* Categories
+
+*** Common Categories to Use
+- =Film festivals=
+- =TIFF= (Toronto International Film Festival)
+- =Locarno Film Festival=
+- =Portraits=
+- =Studio photography=
+- =Celebrity photographs=
+- =Red carpet=
+- =2024= (or appropriate year)
+
+*** How to Add Categories
+Method 1 (CLI):
+#+BEGIN_SRC bash
+python3 scripts/commons-uploader.py photo.jpg "Category1,Category2,Category3"
+#+END_SRC
+
+Method 2 (Web UI):
+Enter in the "Categories" field: =Category1,Category2,Category3=
+
+* Troubleshooting
+
+** Authentication Issues
+
+If you get "Not logged in" errors:
+
+#+BEGIN_SRC bash
+pwb login -family:commons -lang:commons
+#+END_SRC
+
+The bot password should authenticate automatically.
+
+** Password Prompts Don't Work
+
+This is expected when running through Claude Code. The password is stored in =user-config.py= so interactive prompts aren't needed.
+
+** Configuration Errors
+
+If you see errors about =usernames= being undefined:
+- Check that =user-config.py= exists in project root
+- Verify =usernames['commons']['commons']= is set correctly
+- Ensure password is configured
+
+** Upload Failures
+
+Check:
+1. File exists at the specified path
+2. Bot has upload permissions enabled at Special:BotPasswords
+3. Filename is valid (no special characters)
+4. File size is within Commons limits (typically 100MB for images)
+
+* Important Notes
+
+** Required Bot Permissions
+The bot password must have these grants enabled:
+- High volume editing
+- Edit existing pages
+- Upload new files
+- Upload files
+
+** File Requirements
+- Supported formats: JPG, JPEG, PNG, GIF, SVG, TIFF
+- Must have appropriate license
+- Must be your own work or properly licensed
+- No copyright violations
+
+** Rate Limiting
+The config includes =put_throttle = 1= which adds 1 second delay between actions to avoid rate limiting.
+
+** Backup Configuration
+Before making changes to =user-config.py=, back it up:
+#+BEGIN_SRC bash
+cp user-config.py user-config.py.backup
+#+END_SRC
+
+* Quick Reference Commands
+
+** Test Upload (single file)
+#+BEGIN_SRC bash
+python3 scripts/commons-uploader.py public/photos/portraits/studio/jeremy-11.jpg "Portraits,Studio"
+#+END_SRC
+
+** Launch Web Interface
+#+BEGIN_SRC bash
+npm run dev
+# Visit http://localhost:4321/upload-to-commons
+#+END_SRC
+
+** Check pywikibot Version
+#+BEGIN_SRC bash
+pwb version
+#+END_SRC
+
+** Login Manually (if needed)
+#+BEGIN_SRC bash
+pwb login -family:commons -lang:commons
+#+END_SRC
+
+* File Structure
+
+#+BEGIN_EXAMPLE
+photos-jaydixit/
+├── user-config.py              # Pywikibot configuration
+├── scripts/
+│   ├── commons-uploader.py     # Main upload script
+│   └── upload-to-commons.py    # Alternative detailed uploader
+├── src/
+│   └── pages/
+│       └── upload-to-commons.astro  # Web interface
+├── public/
+│   └── photos/                 # Photo source directory
+└── docs/
+    └── wikimedia-commons-upload.org  # This file
+#+END_EXAMPLE
+
+* Future Enhancements
+
+** Potential Improvements
+- Batch upload multiple files at once
+- EXIF data extraction for automatic dating
+- Template for different photo types (portraits, events, etc.)
+- Integration with Cloudinary metadata
+- Automatic category suggestion based on filename
+- Upload history tracking
+- Duplicate detection before upload
+
+** API Alternatives
+Currently using pywikibot. Alternative approaches:
+- Direct MediaWiki API via HTTP requests
+- OAuth 2.0 authentication
+- Wikimedia Commons Upload Wizard integration
+
+* Contact & Support
+
+** Wikimedia Commons Help
+- Help desk: https://commons.wikimedia.org/wiki/Commons:Help_desk
+- Upload help: https://commons.wikimedia.org/wiki/Commons:First_steps/Uploading_files
+- Bot policy: https://commons.wikimedia.org/wiki/Commons:Bots
+
+** Pywikibot Documentation
+- Manual: https://www.mediawiki.org/wiki/Manual:Pywikibot
+- Scripts Reference: https://www.mediawiki.org/wiki/Manual:Pywikibot/Scripts
+- Upload.py: https://www.mediawiki.org/wiki/Manual:Pywikibot/upload.py
+
+** Key Pywikibot Scripts for Reference
+From https://www.mediawiki.org/wiki/Manual:Pywikibot/Scripts:
+- =upload.py= - Uploads images to a wiki (what we use)
+- =login.py= - Used to log in and authenticate
+- =basic.py= - Template for creating custom bots
+- =image.py= - Change one image to another or remove entirely
+- =imagetransfer.py= - Copies images to another wiki
+
+* End

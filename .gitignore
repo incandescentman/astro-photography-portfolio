@@ -5,3 +5,10 @@ dist/
 .DS_Store
 .env
 coverage/
+
+# Pywikibot
+user-config.py
+apicache/
+logs/
+throttle.ctrl
+pywikibot.lwp
