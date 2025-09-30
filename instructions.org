@@ -6,6 +6,16 @@
 
 This guide walks you through uploading photos to Cloudinary with proper metadata (captions, titles, tags) and generating Astro content files for your website.
 
+* ✅ Prerequisites
+
+- ~Node.js~ and ~npm~ installed
+- ~ExifTool~ installed: ~brew install exiftool~
+- ~.env~ configured with Cloudinary settings:
+  - ~PUBLIC_CLOUDINARY_CLOUD_NAME=dszpm7yps~
+  - ~PUBLIC_CLOUDINARY_TRANSFORM=gallery~
+  - Auth for scripts: either ~CLOUDINARY_URL=cloudinary://<api_key>:<api_secret>@dszpm7yps~ or set ~CLOUDINARY_API_KEY~, ~CLOUDINARY_API_SECRET~, ~CLOUDINARY_CLOUD_NAME~
+- Optional: initialize config file once: ~npm run photo:init~ (creates ~.photoconfig.json~)
+
 * 📁 Photo Organization
 
 ** Where to Put Photos
@@ -38,6 +48,10 @@ Use this format for automatic parsing:
 - Pattern: ~subject_event_year.jpg~
 - Example: ~maria-bakalova_tiff_2025.jpg~
 - This generates: "Maria Bakalova at TIFF in 2025"
+
+Notes:
+- Keep names lowercase, use hyphens between words, and underscores between parts.
+- Ensure filenames are unique within an album to prevent collisions.
 
 * 🏷️ Adding Metadata (Two Methods)
 
@@ -104,6 +118,9 @@ exiftool -IPTC:All -XMP:All jeremy-strong_studio-session_2024.jpg
 ** Method 2: Using tags.json Files (Simpler)
 
 Create a ~tags.json~ file in each photo folder:
+
+Notes:
+- ~album.slug~ is used to name the generated content file (~src/content/albums/<slug>.json~) and the album route (~/albums/<slug>~). Keep it URL-friendly (hyphens) and unique across albums.
 
 *** Example: public/photos/portraits/studio/tags.json
 #+begin_src json
@@ -212,10 +229,12 @@ Create a ~tags.json~ file in each photo folder:
 
 This uploads photos as-is without validation:
 #+begin_src bash
-node scripts/upload-to-cloudinary.js ./public/photos
+node scripts/upload-to-cloudinary.js ./public/photos photos
 #+end_src
 
-This will now skip photos that already exist in Cloudinary.
+Notes:
+- Adding the ~photos~ prefix keeps Cloudinary folder paths consistent with the CLI (~photos/...~).
+- The script skips photos that already exist in Cloudinary.
 
 ** Step 2: Upload with Metadata from EXIF/IPTC
 
@@ -235,7 +254,7 @@ node scripts/upload-with-tags-json.js ./public/photos
 
 *** First, check your metadata is complete:
 #+begin_src bash
-npm run photo:validate ./public/photos
+npm run photo:validate -- ./public/photos
 #+end_src
 
 This will show which photos are missing captions or titles.
@@ -247,13 +266,17 @@ node scripts/photo-cli.js upload ./public/photos --dry-run --verbose
 
 *** If validation passes, upload for real:
 #+begin_src bash
-npm run photo:upload ./public/photos
+npm run photo:upload -- ./public/photos
 #+end_src
 
 *** Force upload even with validation errors:
 #+begin_src bash
 node scripts/photo-cli.js upload ./public/photos --force
 #+end_src
+
+Behavior notes:
+- The full CLI uses ~overwrite: true~. Uploading the same ~public_id~ overwrites the existing asset.
+- The basic uploader and EXIF uploader skip existing assets unless you remove them or change filenames.
 
 * 📝 Quick Metadata Templates
 
@@ -403,10 +426,10 @@ EOF
 cd ../../../..
 
 # 6. Validate metadata
-npm run photo:validate ./public/photos/red-carpet/oscars-2025
+npm run photo:validate -- ./public/photos/red-carpet/oscars-2025
 
 # 7. Upload to Cloudinary
-npm run photo:upload ./public/photos/red-carpet/oscars-2025
+npm run photo:upload -- ./public/photos/red-carpet/oscars-2025
 
 # 8. Check the results
 ls src/content/albums/
@@ -467,8 +490,8 @@ public/photos/
 | Command | Purpose |
 |---------|---------|
 | ~npm run photo:init~ | Create config file |
-| ~npm run photo:validate DIR~ | Check metadata |
-| ~npm run photo:upload DIR~ | Upload with validation |
+| ~npm run photo:validate -- DIR~ | Check metadata |
+| ~npm run photo:upload -- DIR~ | Upload with validation |
 | ~node scripts/upload-to-cloudinary.js DIR~ | Simple upload |
 | ~node scripts/upload-with-metadata.js DIR~ | Upload with EXIF |
 | ~node scripts/upload-with-tags-json.js DIR~ | Upload with JSON |
@@ -482,3 +505,62 @@ public/photos/
 5. Verify in Cloudinary console and your Astro site
 
 Need help? The validation tool will tell you exactly what's missing!
+ 
+* ✅ Implementation Checklist (Repo Status)
+
+- [x] ~.env~ contains ~PUBLIC_CLOUDINARY_CLOUD_NAME=dszpm7yps~ and ~PUBLIC_CLOUDINARY_TRANSFORM=gallery~
+- [x] Upload auth available via ~CLOUDINARY_URL~ or ~CLOUDINARY_API_KEY/SECRET/CLOUD_NAME~
+- [x] Front-end Cloudinary helper present: ~src/lib/cloudinary.ts~ (~cldUrl~, ~cldSrcset~, ~cldSizes~)
+- [x] Preconnect added in layout: ~src/layouts/MainLayout.astro~ → ~https://res.cloudinary.com~
+- [x] Gallery renders via Cloudinary URLs: ~src/components/Gallery.astro~
+- [x] CLI and scripts present: ~scripts/photo-cli.js~, ~upload-to-cloudinary.js~, ~upload-with-metadata.js~, ~upload-with-tags-json.js~
+- [x] npm scripts wired: ~photo~, ~photo:init~, ~photo:validate~, ~photo:upload~
+- [x] Config file exists: ~.photoconfig.json~ (with ~folder_prefix: "photos"~)
+- [x] Astro Content Collection for albums: ~src/content/config.ts~
+
+* 🔎 Verify Now (Quick Commands)
+
+#+begin_src bash
+# 1) Env + ExifTool
+rg -n "PUBLIC_CLOUDINARY|CLOUDINARY_URL" .env || cat .env
+exiftool -ver
+
+# 2) Dry-run full pipeline
+node scripts/photo-cli.js upload ./public/photos --dry-run --verbose
+
+# 3) Validate metadata
+npm run photo:validate -- ./public/photos
+
+# 4) Simple upload to Cloudinary (keeps folder prefix consistent)
+node scripts/upload-to-cloudinary.js ./public/photos photos
+
+# 5) Generate content by real upload of a small folder
+npm run photo:upload -- ./public/photos/<some-folder>
+ls -la src/content/albums
+
+# 6) Run the site
+npm run dev
+#+end_src
+
+* 📐 Content Collection Schema Notes
+
+- Albums live under ~src/content/albums/~ as JSON. Filename is ~<album.slug>.json~.
+- The current schema (in ~src/content/config.ts~) expects keys:
+  - top-level: ~title~, ~date?~, ~coverPublicId?~, ~tags?~, ~photos: [{ publicId, alt, width?, height? }]~
+  - Extra fields written by the CLI (e.g., ~photoCount~, ~uploadedAt~, ~lastModified~, per-photo ~caption~/~tags~/~city~) may be ignored by schema consumers; the Gallery uses ~publicId~, ~alt~, ~width~, ~height~.
+- If an album page 404s, ensure a JSON file exists for that slug and it validates against the schema.
+
+* 🔐 Environment & Behavior Notes
+
+- Full CLI uses ~overwrite: true~ (re-uploads replace a matching ~public_id~).
+- Basic and EXIF uploaders skip existing assets (to force, delete in Cloudinary or change filename/public_id).
+- Keep filenames lowercase with hyphens; use underscores to separate parts: ~subject_event_year.jpg~.
+- ~album.slug~ should be unique and hyphenated; it determines the JSON filename and route under ~/albums/<slug>~.
+
+* 📝 Changelog (Guide Updates)
+
+- Added Prerequisites (~.env~, ExifTool, optional ~photo:init~)
+- Fixed npm arg passing using ~--~ in ~photo:validate~ and ~photo:upload~ examples
+- Standardized basic upload usage: ~node scripts/upload-to-cloudinary.js ./public/photos photos~
+- Clarified overwrite vs skip behavior between scripts
+- Added filename and slug guidance; added tags.json slug notes

@@ -1,0 +1,235 @@
+Cloudinary's state-of-the-art Media Library and DAM allows developers
+and non-technical teams to easily manage their assets at scale, but how
+can we just as easily access those assets programmatically to deliver
+them in our websites and apps?
+
+The Astro team just launched their new Content Layer feature, which is a
+perfect fit for natively sourcing your assets inside of your Astro
+project. And we're excited to be their launching partner.
+
+[[https://res.cloudinary.com/cloudinary-marketing/images/w_900,h_400,c_scale/f_auto,q_auto/v1726681151/Web_Assets/blog/blog-Source-Cloudinary-Assets-in-Astro-With-the-Astro-Content-Layer-1/blog-Source-Cloudinary-Assets-in-Astro-With-the-Astro-Content-Layer-1.png?_i=AA]]
+
+We'll discuss how we can use the Cloudinary Astro SDK and
+the ~cldAssetLoader~ to load your images and videos into your app.
+
+*Note:* 
+Astro Cloudinary is a community library supported by the Cloudinary
+Developer Experience team.
+
+** [[https://cloudinary.com/blog/source-cloudinary-assets-astro-content-layer#what_is_the_astro_content_layer_][What is the Astro Content Layer?]]
+
+Copy
+link to this heading
+
+The Astro Content Layer builds on top of Astro's existing Content
+Collections, which allows you to easily source local content, like
+Markdown or MDX, into your project. Content Collections are a powerful
+way to build blogs, online stores, and any site with file-based content.
+
+Taking that a step further, the Content Layer allows you to source local
+content /and/ source data from remote locations like an API, CMS, or
+even a DAM, which is where Cloudinary comes in.
+
+[[https://res.cloudinary.com/cloudinary-marketing/images/w_1024,h_637,c_scale/f_auto,q_auto/v1726681146/Web_Assets/blog/blog-Source-Cloudinary-Assets-in-Astro-With-the-Astro-Content-Layer-2/blog-Source-Cloudinary-Assets-in-Astro-With-the-Astro-Content-Layer-2.png?_i=AA]]
+
+The Content Layer also improves on Collections from a technology
+perspective, but we'll let the Astro team fill you in on those details.
+
+** [[https://cloudinary.com/blog/source-cloudinary-assets-astro-content-layer#cloudinary_and_the_astro_content_layer][Cloudinary and the Astro Content Layer]]
+
+Copy
+link to this heading
+
+To make it as easy as ever to source assets stored in Cloudinary into
+your Astro project, we've built a Cloudinary content loader available
+through a new Cloudinary Astro SDK.
+
+By using the ~cldAssetsLoader~, you can define a new collection,
+configure options for how you want your data to be queried or how much
+of that data to load, and through Astro's Content Layer, query it
+alongside the rest of your content.
+
+Want to watch the video version? Check out the Dev Hint or follow along
+with the steps below.
+
+
+* An error occurred.
+
+
+[[https://www.youtube.com/watch?v=iS3bHR0bVOI][Try watching this video
+on www.youtube.com]], or enable JavaScript if it is disabled in your
+browser.
+
+*** [[https://cloudinary.com/blog/source-cloudinary-assets-astro-content-layer#step_1_installing_and_configuring_astro_cloudinary][Step 1: Installing and Configuring Astro Cloudinary]]
+
+Copy
+link to this heading
+
+To get started, we first need
+to [[https://astro.cloudinary.dev/installation][install the Astro
+Cloudinary SDK]].
+
+In your terminal, run:
+
+#+begin_src wp-block-code :aria-describedby shcb-language-1 :shcb-language-name Shell Session :shcb-language-slug shell :style scroll-margin-top: 122px; box-sizing: border-box; margin: 1.25em 0px 0px; border: 0px; padding: 0.625rem 1.875rem 0.625rem 0.875rem; text-size-adjust: 100%; font-family: "Roboto Mono", Consolas, Menlo, Monaco, "Lucida Console", "Liberation Mono", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Courier New", monospace, serif; background-color: rgb(17, 20, 25); border-radius: 0.25rem; color: rgb(255, 255, 255); font-size: 0.875rem; margin-block: 1.875rem; overflow-wrap: break-word; position: relative; white-space: pre-wrap; word-break: break-word; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;
+npm install astro-cloudinaryCode language: Shell Session (shell)
+#+end_src
+
+Then configure your Cloudinary cloud name, API key, and API secret in
+your ~.env.~ file:
+
+#+begin_src wp-block-code :aria-describedby shcb-language-2 :shcb-language-name Shell Session :shcb-language-slug shell :style scroll-margin-top: 122px; box-sizing: border-box; margin: 1.25em 0px 0px; border: 0px; padding: 0.625rem 1.875rem 0.625rem 0.875rem; text-size-adjust: 100%; font-family: "Roboto Mono", Consolas, Menlo, Monaco, "Lucida Console", "Liberation Mono", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Courier New", monospace, serif; background-color: rgb(17, 20, 25); border-radius: 0.25rem; color: rgb(255, 255, 255); font-size: 0.875rem; margin-block: 1.875rem; overflow-wrap: break-word; position: relative; white-space: pre-wrap; word-break: break-word; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;
+PUBLIC_CLOUDINARY_CLOUD_NAME="<Cloud Name>"
+PUBLIC_CLOUDINARY_API_KEY="<API Key>"
+CLOUDINARY_API_SECRET="<API Secret>"Code language: Shell Session (shell)
+#+end_src
+
+*Note:* 
+Need help finding your
+credentials? [[https://www.youtube.com/watch?v=1SIp9VL5TMo&list=PL8dVGjLA2oMpaTbvoKCaRNBMQzBUIv7N8&index=10][Learn
+more]].
+
+*** [[https://cloudinary.com/blog/source-cloudinary-assets-astro-content-layer#step_2_sourcing_assets_with_code_cldassetloader_code_][Step 2: Sourcing Assets With ~cldAssetLoader~]]
+
+Copy
+link to this heading
+
+To source our assets, we can use the ~cldAssetLoader~ to create a new
+Collection in Astro. This will allow us to programmatically access our
+images and videos anywhere in our Astro project.
+
+Inside of your ~content/config.ts~ file, import the
+Astro ~defineCollection~ and Cloudinary ~cldAssetsLoader~ functions:
+
+#+begin_src wp-block-code :aria-describedby shcb-language-3 :shcb-language-name JavaScript :shcb-language-slug javascript :style scroll-margin-top: 122px; box-sizing: border-box; margin: 1.25em 0px 0px; border: 0px; padding: 0.625rem 1.875rem 0.625rem 0.875rem; text-size-adjust: 100%; font-family: "Roboto Mono", Consolas, Menlo, Monaco, "Lucida Console", "Liberation Mono", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Courier New", monospace, serif; background-color: rgb(17, 20, 25); border-radius: 0.25rem; color: rgb(255, 255, 255); font-size: 0.875rem; margin-block: 1.875rem; overflow-wrap: break-word; position: relative; white-space: pre-wrap; word-break: break-word; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;
+import { defineCollection } from 'astro:content';
+import { cldAssetsLoader } from 'astro-cloudinary/loaders';Code language: JavaScript (javascript)
+#+end_src
+
+Next, define a new collect by exporting an object that represents each
+object that you want to make available in your Astro project:
+
+#+begin_src wp-block-code :aria-describedby shcb-language-4 :shcb-language-name JavaScript :shcb-language-slug javascript :style scroll-margin-top: 122px; box-sizing: border-box; margin: 1.25em 0px 0px; border: 0px; padding: 0.625rem 1.875rem 0.625rem 0.875rem; text-size-adjust: 100%; font-family: "Roboto Mono", Consolas, Menlo, Monaco, "Lucida Console", "Liberation Mono", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Courier New", monospace, serif; background-color: rgb(17, 20, 25); border-radius: 0.25rem; color: rgb(255, 255, 255); font-size: 0.875rem; margin-block: 1.875rem; overflow-wrap: break-word; position: relative; white-space: pre-wrap; word-break: break-word; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;
+export const collections = {
+  myAssets: defineCollection({
+    loader: cldAssetsLoader({
+      limit: 4,
+      folder: 'samples/food'
+    })
+  }),
+}Code language: JavaScript (javascript)
+#+end_src
+
+*Note:* 
+By default, excluding the limit and folder will query the Cloudinary
+API's default limit inside of the root directory. Check out
+the [[https://astro.cloudinary.dev/cldassetsloader/configuration][~cldAssetsLoader~ configuration]] to
+learn more.
+
+And with that configured, you're now able to query those assets inside
+of your Astro project!
+
+For instance, if you want to query your assets inside of an Astro
+component, you can use the getCollection function by adding:
+
+#+begin_src wp-block-code :aria-describedby shcb-language-5 :shcb-language-name JavaScript :shcb-language-slug javascript :style scroll-margin-top: 122px; box-sizing: border-box; margin: 1.25em 0px 0px; border: 0px; padding: 0.625rem 1.875rem 0.625rem 0.875rem; text-size-adjust: 100%; font-family: "Roboto Mono", Consolas, Menlo, Monaco, "Lucida Console", "Liberation Mono", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Courier New", monospace, serif; background-color: rgb(17, 20, 25); border-radius: 0.25rem; color: rgb(255, 255, 255); font-size: 0.875rem; margin-block: 1.875rem; overflow-wrap: break-word; position: relative; white-space: pre-wrap; word-break: break-word; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;
+---
+import { getCollection } from 'astro:content';
+const assets = await getCollection('myAssets');
+---Code language: JavaScript (javascript)
+#+end_src
+
+Where the first argument of ~getCollection~ would be the same name you
+used to define your collection.
+
+If you want to query an individual asset from your collection, you can
+alternatively use the ~getEntry~ function by adding:
+
+#+begin_src wp-block-code :aria-describedby shcb-language-6 :shcb-language-name JavaScript :shcb-language-slug javascript :style scroll-margin-top: 122px; box-sizing: border-box; margin: 1.25em 0px 0px; border: 0px; padding: 0.625rem 1.875rem 0.625rem 0.875rem; text-size-adjust: 100%; font-family: "Roboto Mono", Consolas, Menlo, Monaco, "Lucida Console", "Liberation Mono", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Courier New", monospace, serif; background-color: rgb(17, 20, 25); border-radius: 0.25rem; color: rgb(255, 255, 255); font-size: 0.875rem; margin-block: 1.875rem; overflow-wrap: break-word; position: relative; white-space: pre-wrap; word-break: break-word; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;
+---
+import { getEntry } from 'astro:content';
+const asset = await getEntry('myAssets', 'samples/food/dessert');
+---Code language: JavaScript (javascript)
+#+end_src
+
+Where the first argument to ~getEntry~ is similarly the collection name
+and the second argument is your asset's Public ID.
+
+*** [[https://cloudinary.com/blog/source-cloudinary-assets-astro-content-layer#step_3_adding_cloudinary_images_and_videos_in_astro][Step 3: Adding Cloudinary Images and Videos in Astro]]
+
+Copy
+link to this heading
+
+Now that you've sourced
+your [[https://cloudinary.com/products/digital_asset_management][Cloudinary
+assets]], you need a great way to render them onto a page, which is
+where the Astro Cloudinary's CldImage or CldVideoPlayer components come
+in.
+
+If you're adding images, you can use
+the [[https://astro.cloudinary.dev/cldimage/basic-usage][~CldImage~]] component
+with a few basic props:
+
+#+begin_src wp-block-code :aria-describedby shcb-language-7 :shcb-language-name JavaScript :shcb-language-slug javascript :style scroll-margin-top: 122px; box-sizing: border-box; margin: 1.25em 0px 0px; border: 0px; padding: 0.625rem 1.875rem 0.625rem 0.875rem; text-size-adjust: 100%; font-family: "Roboto Mono", Consolas, Menlo, Monaco, "Lucida Console", "Liberation Mono", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Courier New", monospace, serif; background-color: rgb(17, 20, 25); border-radius: 0.25rem; color: rgb(255, 255, 255); font-size: 0.875rem; margin-block: 1.875rem; overflow-wrap: break-word; position: relative; white-space: pre-wrap; word-break: break-word; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;
+---
+import { getCollection } from 'astro:content';
+import { CldImage } from 'astro-cloudinary';
+const images ~ await getCollection('myImages');
+---
+<ul>
+  {images.map(image ~> {
+    return (
+      <li>
+        <CldImage
+          src={image.data.public_id}
+          width={image.data.width}
+          height={image.data.height}
+          alt={image.data.context?.caption || ''}
+        />
+      </li>
+    )
+  })}
+</ul>Code language: JavaScript (javascript)
+#+end_src
+
+Similarly, if adding videos, you can use
+the [[https://astro.cloudinary.dev/cldvideoplayer/basic-usage][~CldVideoPlayer~]]:
+
+#+begin_src wp-block-code :aria-describedby shcb-language-8 :shcb-language-name JavaScript :shcb-language-slug javascript :style scroll-margin-top: 122px; box-sizing: border-box; margin: 1.25em 0px 0px; border: 0px; padding: 0.625rem 1.875rem 0.625rem 0.875rem; text-size-adjust: 100%; font-family: "Roboto Mono", Consolas, Menlo, Monaco, "Lucida Console", "Liberation Mono", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Courier New", monospace, serif; background-color: rgb(17, 20, 25); border-radius: 0.25rem; color: rgb(255, 255, 255); font-size: 0.875rem; margin-block: 1.875rem; overflow-wrap: break-word; position: relative; white-space: pre-wrap; word-break: break-word; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;
+---
+import { getCollection } from 'astro:content';
+import { CldVideoPlayer } from 'astro-cloudinary';
+const videos ~ await getCollection('myVideos');
+---
+<ul>
+  {videos.map(video ~> {
+    return (
+      <li>
+        <CldVideoPlayer
+          src={video.data.public_id}
+          width={video.data.width}
+          height={video.data.height}
+        />
+      </li>
+    )
+  })}
+</ul>Code language: JavaScript (javascript)
+#+end_src
+
+** [[https://cloudinary.com/blog/source-cloudinary-assets-astro-content-layer#building_visual_experiences_with_astro][Building Visual Experiences With Astro]]
+
+Copy
+link to this heading
+
+Astro is rapidly becoming the go-to solution for building dynamic
+visual, content-driven experiences on the web, and we're thrilled to
+give you the tools you need to make building those experiences with
+Cloudinary as easy as possible.
+We're looking for additional feedback on the Astro Cloudinary SDK!
+
+Head over
+to [[https://github.com/cloudinary-community/astro-cloudinary][the
+GitHub repository]] to submit any feedback or issues (or give us a
+star!) or
+email [[mailto:devrel@cloudinary.com][devrel@cloudinary.com]] for direct
+contact.
