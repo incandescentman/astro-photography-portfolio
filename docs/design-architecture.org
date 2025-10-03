@@ -1,0 +1,216 @@
+#+TITLE: Design & Architecture - Jay Dixit Photography Portfolio
+#+DATE: 2025-10-03
+
+* Architecture Overview
+
+** Tech Stack
+- *Framework*: Astro 5.13.5 (Static Site Generator)
+- *Styling*: Tailwind CSS + Custom CSS
+- *Layout*: Packery (desktop masonry) + Flexbox (mobile)
+- *Lightbox*: PhotoSwipe
+- *Image Loading*: imagesLoaded.js
+- *Deployment*: Vercel
+- *Source Control*: GitHub
+
+** Core Design Principles
+
+*** 1. Static-First Architecture
+*Goal*: Maximum performance, minimal complexity, zero server costs
+
+*Implementation*:
+- Astro with =output: 'static'=
+- All content generated at build time
+- No backend required (except optional dev-only API endpoints)
+- CDN-optimized delivery via Vercel
+
+*Tradeoffs*:
+- ✅ Fast page loads, excellent SEO, free hosting
+- ❌ No server-side image processing in production
+- ❌ Admin features only work in development
+
+*** 2. Responsive Layout Strategy
+*Goal*: Optimal viewing experience on all devices
+
+*Desktop (>480px)*:
+- Packery masonry grid with absolute positioning
+- Multiple columns (elastic: 2-4 columns based on viewport)
+- Fixed heights (480px regular, 968px wide_tall)
+- =object-fit: cover= to fill containers
+- Hover effects and caption overlays
+
+*Mobile (≤480px)*:
+- Flexbox column layout (natural document flow)
+- One photo per row at 100% width
+- Auto heights (respect aspect ratios)
+- =object-fit: contain= to show full images
+- No gaps (8px between items only)
+
+*Rationale*:
+Packery masonry works beautifully on desktop but creates layout issues on mobile:
+- Absolute positioning leaves white gaps
+- Fixed heights crop images awkwardly
+- Complex to debug breakpoint issues
+
+Flexbox on mobile is simpler, more predictable, and better for portrait-oriented viewing.
+
+*** 3. Progressive Enhancement for Performance
+*Goal*: Fastest perceived load time, smooth user experience
+
+*Strategy*:
+- Show images as they load (progressive reveal)
+- Don't block on full gallery load
+- Incremental layout updates
+- Fast stagger animations (40ms)
+
+*Implementation*:
+#+begin_src javascript
+// Progressive loading with imagesLoaded
+imagesLoaded(container).on('progress', function(instance, image) {
+  const item = image.img.closest('.masonry-item');
+  item.classList.add('animated-in'); // Fade in immediately
+  pckry.shiftLayout(); // Reflow layout
+});
+#+end_src
+
+*Rationale*:
+Users should see content ASAP, not stare at blank screens. Photography portfolios need to hook visitors fast.
+
+*** 4. Mobile-First Display Philosophy
+*Goal*: Full image visibility on mobile devices
+
+*Desktop*: Artistic composition via cropping (=object-fit: cover=)
+*Mobile*: Complete image visibility (=object-fit: contain=)
+
+*Reasoning*:
+- Desktop has space for artistic cropping and hover interactions
+- Mobile users want to see the full photo without zooming
+- Portrait photos (common in photography) need full vertical space
+
+** Key Components
+
+*** Homepage (=src/pages/index.astro=)
+- Curated photo grid with manual ordering
+- Admin mode for drag-and-drop reordering (=?admin=true=)
+- PhotoSwipe lightbox integration
+- Masonry layout with imagesLoaded and Packery
+- Image metadata from =src/data/homepage-images.js=
+
+*** Gallery Pages (=src/pages/gallery/[...folder].astro=)
+- Dynamic routes from =public/photos/**= folder structure
+- Automatic caption parsing from filenames
+- Tag extraction and filtering
+- Support for nested folders (e.g., =/gallery/red-carpet/tiff=)
+
+*** Image Metadata System
+*Filename Convention*: =subject_event_year.jpg=
+*Example*: =vanessa-kirby_toronto-film-festival_2024.jpg=
+*Generates*: "Vanessa Kirby at Toronto Film Festival in 2024"
+
+*Optional*: =tags.json= per folder for custom tags
+
+** Performance Optimizations
+
+*** Image Loading
+- Progressive reveal (show as loaded, not after all loaded)
+- =imagesLoaded= for layout stability
+- Optimized images via Astro's image pipeline in production
+- Lazy loading for off-screen images (future enhancement)
+
+*** Layout Performance
+- Packery grid with =shiftLayout()= for gap filling
+- Debounced resize handlers (100ms)
+- CSS transforms for smooth animations
+- GPU-accelerated hover effects
+
+*** Bundle Size
+- Tree-shaking via Vite
+- Code splitting per route
+- External PhotoSwipe loaded dynamically
+- Tailwind CSS purging in production
+
+** Deployment Architecture
+
+*** Build Process
+1. Astro compiles all routes statically
+2. Images optimized to WebP
+3. CSS purged and minified
+4. JS bundled and code-split
+5. Output to =dist/= directory
+
+*** Vercel Configuration (=vercel.json=)
+- Framework: Astro
+- Build command: =npm run build=
+- Output directory: =dist=
+- Region: iad1 (US East)
+- Cache headers for immutable assets (31536000s)
+
+*** Deployment Flow
+1. Push to =main= branch on GitHub
+2. Vercel webhook triggers build
+3. Build runs in Vercel infrastructure
+4. Static assets deployed to CDN
+5. Live at =photos.jaydixit.com=
+
+** Design Goals
+
+*** User Experience
+- *Fast*: First image visible in <1 second
+- *Beautiful*: Professional masonry layout on desktop
+- *Mobile-friendly*: Full images, no cropping, easy scrolling
+- *Accessible*: Semantic HTML, keyboard navigation, alt text
+
+*** Developer Experience
+- *Simple*: Static site, no backend complexity
+- *Maintainable*: Clear separation of content and code
+- *Extensible*: Easy to add new galleries and features
+- *Git-based*: All content in version control
+
+*** Content Management
+- *Filesystem-based*: Folders = galleries, files = photos
+- *Convention over configuration*: Filenames encode metadata
+- *Admin UI*: Drag-and-drop reordering in dev mode
+- *No CMS*: Keep it simple, avoid external dependencies
+
+** Future Considerations
+
+*** Potential Enhancements
+- [ ] Add loading skeleton/spinner for initial load
+- [ ] Implement true lazy loading for below-fold images
+- [ ] Add EXIF data extraction (camera, lens, settings)
+- [ ] Create dedicated photo detail pages
+- [ ] Implement server-side image optimization (if needed)
+- [ ] Add social share buttons per photo
+
+*** Performance Monitoring
+- Consider adding Vercel Analytics
+- Track Core Web Vitals (LCP, FID, CLS)
+- Monitor bundle sizes over time
+- A/B test different loading strategies
+
+** Technical Constraints
+
+*** Static Site Limitations
+- No dynamic image uploads in production
+- Admin features only work locally
+- Order changes require rebuild/redeploy
+- API endpoints disabled in production
+
+*** Browser Compatibility
+- Modern browsers only (ES6+)
+- CSS Grid and Flexbox required
+- IntersectionObserver for lazy loading (future)
+- PhotoSwipe requires JavaScript enabled
+
+** Success Metrics
+
+*** Performance Targets
+- LCP (Largest Contentful Paint): <2.5s
+- FID (First Input Delay): <100ms
+- CLS (Cumulative Layout Shift): <0.1
+- Bundle size: <200KB (gzipped)
+
+*** User Engagement
+- Low bounce rate on homepage
+- High click-through to galleries
+- Time on site >2 minutes
+- Low mobile abandonment rate

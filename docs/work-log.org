@@ -1,0 +1,83 @@
+#+TITLE: Work Log - Jay Dixit Photography Portfolio
+#+DATE: 2025-10-03
+
+* 2025-10-03 - Vercel Deployment & Mobile Optimization
+
+** Vercel Configuration
+*** Initial Setup
+- Configured project for Vercel static deployment
+- Fixed build issues:
+  - Changed API endpoint =save-order.ts= from =prerender: false= to =prerender: true=
+  - Removed empty placeholder image files that broke build
+  - Resolved conflicting gallery routes (=[folder].astro= vs =[...folder].astro=)
+  - Fixed =getStaticPaths= to return string paths instead of arrays for catch-all routes
+  - Temporarily disabled =wikiportraits-story.mdx= (image import issue)
+
+*** Git Integration
+- Connected Vercel project to GitHub repository =incandescentman/astro-photography-portfolio=
+- Enabled automatic deployments on push to =main= branch
+- Added custom domain =photos.jaydixit.com= (DNS configuration pending)
+
+** Mobile Display Optimization
+*** Problem
+Mobile view had significant issues:
+- Photos were cropped (=object-fit: cover=)
+- Large white gaps between photos
+- Fixed heights didn't respect image aspect ratios
+
+*** Solution
+Changed mobile layout from Packery masonry to flexbox:
+- Disabled Packery absolute positioning on mobile (<480px)
+- Switched to =display: flex= with =flex-direction: column=
+- Set images to =object-fit: contain= with =height: auto=
+- Result: One photo per row, full width, no cropping, no gaps
+
+** Performance Optimization
+*** Problem
+Initial page load was very slow (5-10 seconds of blank screen):
+- =imagesLoaded()= waited for ALL images to fully download
+- Only then did photos fade in with staggered animation
+- Poor perceived performance
+
+*** Solution - Progressive Image Loading
+Implemented progressive reveal strategy:
+- Show images as soon as each one loads (not after all load)
+- Use =imagesLoaded().on('progress')= to trigger individual animations
+- Reduced stagger timing from 60ms to 40ms
+- Layout updates incrementally with =pckry.shiftLayout()=
+- Result: First images visible in ~1 second instead of 5-10 seconds
+
+*** Technical Implementation
+#+begin_src javascript
+// Before: Wait for all images, then animate
+imagesLoaded(container, function() {
+  allItems.forEach((item, i) => {
+    setTimeout(() => item.classList.add('animated-in'), i * 60);
+  });
+});
+
+// After: Animate each image as it loads
+imagesLoaded(container).on('progress', function(instance, image) {
+  const item = image.img.closest('.masonry-item');
+  setTimeout(() => item.classList.add('animated-in'), loadedCount * 40);
+  pckry.shiftLayout();
+});
+#+end_src
+
+** Key Decisions
+1. *Static deployment over SSR* - Chose Vercel static output for simplicity and performance
+2. *Flexbox on mobile* - Abandoned Packery masonry on mobile in favor of natural document flow
+3. *Progressive loading* - Prioritized perceived performance over perfect layout timing
+4. *Object-fit contain* - Full image display over cropped composition on mobile
+
+** Files Changed
+- =src/pages/index.astro= - Mobile CSS and progressive loading logic
+- =src/pages/api/save-order.ts= - Changed to =prerender: true=
+- =src/pages/gallery/[...folder].astro= - Fixed getStaticPaths
+- =vercel.json= - Deployment configuration (already existed)
+- =.vercel/= - Auto-generated deployment metadata
+
+** Deployment URLs
+- *Production*: https://photos-jaydixit-79enk9mo3-incandescentmans-projects.vercel.app
+- *Custom Domain*: https://photos.jaydixit.com (pending DNS configuration)
+- *Vercel Dashboard*: https://vercel.com/incandescentmans-projects/photos-jaydixit
