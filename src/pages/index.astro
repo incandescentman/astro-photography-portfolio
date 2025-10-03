@@ -487,20 +487,42 @@ function mapSingle(img) {
 }
 
 @media only screen and (max-width: 480px) {
-  .grid-sizer,
-  .masonry-item.regular,
-  .masonry-item.wide,
-  .masonry-item.wide_tall {
-    width: 100%;
+  /* Disable Packery positioning on mobile - use natural flow */
+  .masonry-items {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    position: relative !important;
   }
-  
-  /* Mobile heights */
-  .masonry-item.regular,
-  .masonry-item.wide {
-    height: 400px !important;
+
+  .grid-sizer {
+    display: none !important;
   }
-  .masonry-item.wide_tall {
-    height: 808px !important; /* Double height + 8px gap */
+
+  .masonry-item {
+    position: relative !important; /* Override absolute positioning */
+    width: 100% !important;
+    height: auto !important;
+    transform: none !important;
+    left: auto !important;
+    top: auto !important;
+  }
+
+  /* Allow images to show full without cropping on mobile */
+  .masonry-item img {
+    object-fit: contain !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  /* Stacked pairs should also flow naturally */
+  .masonry-item .stacked-pair {
+    height: auto;
+    gap: 8px;
+  }
+
+  .masonry-item .stacked-pair img {
+    height: auto !important;
   }
 }
 
@@ -1613,31 +1635,47 @@ body.edit-key-active .masonry-item .edit-btn {
       });
     }
     
-    // Layout after images load
+    // Show items immediately as they load (progressive reveal)
+    const allItems = container.querySelectorAll('.masonry-item');
+    let loadedCount = 0;
+
+    // Trigger fade-in for each image as it loads
+    imagesLoaded(container).on('progress', function(instance, image) {
+      const item = image.img.closest('.masonry-item');
+      if (item && !item.classList.contains('animated-in')) {
+        // Stagger animation based on order loaded
+        setTimeout(() => {
+          item.classList.add('animated-in');
+        }, loadedCount * 40); // 40ms stagger (faster than before)
+        loadedCount++;
+      }
+      // Layout as each image loads
+      pckry.shiftLayout();
+    });
+
+    // Final layout after all images load
     imagesLoaded(container, function() {
       pckry.layout();
-      
+
       // Packery's shiftLayout method fills gaps better
       pckry.shiftLayout();
-      
+
       // Sort items to fill gaps - move smaller items to fill holes
       const items = pckry.getItemElements();
-      
+
       // Fit each item to fill available gaps
       items.forEach(item => {
         pckry.fit(item);
       });
-      
+
       // Final layout pass
       pckry.layout();
-      
-      // Make items draggable
-      const allItems = container.querySelectorAll('.masonry-item');
-      allItems.forEach((item, i) => {
-        // Add animation classes
-        setTimeout(() => {
+
+      // Ensure all items are visible (fallback)
+      allItems.forEach((item) => {
+        if (!item.classList.contains('animated-in')) {
           item.classList.add('animated-in');
-        }, i * 60);
+        }
         
         // Only make draggable in admin mode
         if (isAdminMode) {
@@ -1706,12 +1744,7 @@ body.edit-key-active .masonry-item .edit-btn {
         });
       }
     });
-    
-    // Also layout as each image loads for progressive rendering
-    imagesLoaded(container).on('progress', function() {
-      pckry.shiftLayout();
-    });
-    
+
     // Relayout on resize
     let resizeTO;
     window.addEventListener('resize', () => {
