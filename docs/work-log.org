@@ -81,3 +81,68 @@ imagesLoaded(container).on('progress', function(instance, image) {
 - *Production*: https://photos-jaydixit-79enk9mo3-incandescentmans-projects.vercel.app
 - *Custom Domain*: https://photos.jaydixit.com (pending DNS configuration)
 - *Vercel Dashboard*: https://vercel.com/incandescentmans-projects/photos-jaydixit
+
+* 2025-10-03 - Masonry Implementation Review
+
+** Overview
+- Home page masonry lives in ~src/pages/index.astro~ with ~Packery~ orchestrating absolute-positioned ~.masonry-item~ articles.
+- Each item carries a variant class (~regular~/~wide~/~wide_tall~) and a ~.grid-sizer~ of 320px anchors Packery's column math.
+- Mobile (<480px) forces a flex-column fallback with ~object-fit: contain~ so small screens bypass Packery entirely.
+- Catch-all gallery page (~src/pages/gallery/[...folder].astro~) implements a CSS-grid masonry variant with ~grid-auto-rows: 10px~ and span-based sizing.
+
+** Index Page Details (~src/pages/index.astro~)
+- Layout CSS assigns fixed heights (~480px~ regular, ~968px~ wide_tall) using ~!important~, so Packery crops via ~object-fit: cover~ rather than respecting natural ratios.
+- The script initializes ~Packery~ directly (~initLayout: false~, ~stagger: 30~) and drives progressive reveal with ~imagesLoaded().on('progress')~ plus ~pckry.shiftLayout()~.
+- Admin mode injects a toolbar, toggles edit affordances, and wires ~Draggabilly~ handles for drag-to-resequence with autosave into ~localStorage~ and POSTs to ~/api/save-order~.
+- Observed quirks:
+  - Inline helpers test ~window.pckry~ but never assign ~window.pckry = pckry~; use the closure-bound instance instead.
+  - ~applySize(newSize)~ never runs because ~sizeInput~ was removed; replace the guard with the segmented control (~sizeGroup~) so variant classes update when saving.
+  - Fixed-height CSS conflicts with any future height normalization attempts (inline JS cannot override ~!important~ styles).
+
+** Gallery Catch-all (~src/pages/gallery/[...folder].astro~)
+- Uses CSS grid for pseudo-masonry: variant classes (~small~/~medium~/~tall~/~wide~…) come from array index patterns, not actual asset metadata.
+- Search + tag filters hide items by toggling a ~hidden~ class; likes persist in ~localStorage~ (Supabase TODO noted).
+- GLightbox powers detail view; no Packery/Isotope present here.
+
+** Shared Masonry Script (~src/scripts/masonry.ts~)
+- Provides an ~initMasonry~ helper mirroring Salient's Isotope+Packery combo with elastic column tiers, gutter fudge, staggered reveals, and filter hooks.
+- Currently unused on the main page; consider consolidating bespoke ~index.astro~ logic into this module for reuse across galleries.
+
+** Follow-ups / Questions
+- Fix admin size editor so saved variants immediately reflow (~applySize~ guard) and consider exposing inline width/height adjustments without ~!important~ locks.
+- Decide whether Packery should remain page-specific or whether to adopt the shared ~initMasonry~ helper for consistency.
+- Evaluate if gallery CSS-grid variant should derive spans from actual image dimensions or YAML metadata for predictable layout.
+- When enabling admin mode, ensure PhotoSwipe links remain disabled during drags (current pointer-event toggle works, but confirm after fixes).
+
+** Verification Checklist
+- ~npm run dev~ → visit the home page masonry and inspect Packery column widths, staggered reveal, and admin drag mode.
+- Resize below 480px to confirm flex fallback removes absolute positioning and preserves full-image display.
+- Visit a folder route (~/gallery/<slug>~) to confirm CSS-grid masonry, tag filters, and lightbox behaviour.
+- Run ~npm run build~ periodically to catch any Packery/Draggabilly SSR warnings before deployment.
+
+* 2025-10-03 - Packery Consolidation & Mobile Fixes
+
+** Shared Helper
+- Extracted bespoke homepage logic into ~src/scripts/packeryGallery.ts~, exposing ~initPackeryGallery~ for reuse across pages.
+- Module handles mobile fallback, order restoration, admin toolbar + popover editing, Draggabilly binding, and PhotoSwipe setup.
+- Assigned instance to ~window.pckry~ inside the helper so legacy checks remain valid.
+- Lazy-loaded Draggabilly inside ~setupPackeryLifecycle~ so admin drag features ship only when needed, keeping baseline bundle smaller.
+
+** Page Integrations
+- Homepage now imports the helper via ~import initPackeryGallery from '/src/scripts/packeryGallery.ts';~ (
+  absolute path ensures Vite bundles correctly), replacing the 800+ line inline script.
+- Catch-all gallery route renders the same ~.masonry-item~ markup/styling and invokes the helper with admin tooling disabled.
+- Search + tag filters call Packery ~layout()/shiftLayout()~ after toggling ~display~, keeping the grid gapless.
+
+** Mobile Improvements
+- Fallback branch forces flex-column layout on the container and overrides desktop ~!important~ heights using ~style.setProperty(..., 'important')~ so cards expand to full height without whitespace.
+- Images switch to ~object-fit: contain~ at narrow widths; gap tightened to 8px for consistent vertical rhythm.
+- Auto-applied ~animated-in~ class on mobile so cards become visible even without Packery transitions.
+
+** DX Notes
+- Added `/src/...` import guidance and mobile height override lessons to ~docs/codebase-wisdom.org~ to prevent future 404s/gaps.
+- New checklist item: verify frontend helpers use absolute imports and pass ~npm run build~ before landing.
+- Replaced admin toolbar inline styles with CSS injected via ~injectAdminToolbarStyles()~, making future tweaks easier.
+
+** Validation
+- ~npm run build~ (passes; existing album collection warnings unchanged).

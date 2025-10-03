@@ -1,0 +1,855 @@
+import PhotoSwipeLightbox from 'photoswipe/lightbox';
+import 'photoswipe/style.css';
+import Packery from 'packery';
+import imagesLoaded from 'imagesloaded';
+
+type PackeryInstance = any;
+
+export interface PackeryGalleryOptions {
+  container: string | HTMLElement;
+  adminMode?: boolean;
+  adminQueryParam?: string;
+  localStorageKey?: string;
+  mobileBreakpoint?: number;
+  enableToolbar?: boolean;
+  enablePhotoSwipe?: boolean;
+}
+
+declare global {
+  interface Window {
+    pckry?: PackeryInstance;
+  }
+}
+
+export default function initPackeryGallery(options: PackeryGalleryOptions) {
+  if (typeof window === 'undefined') return;
+
+  const {
+    container,
+    adminMode,
+    adminQueryParam = 'admin',
+    localStorageKey = 'photoOrder',
+    mobileBreakpoint = 480,
+    enableToolbar = true,
+    enablePhotoSwipe = true,
+  } = options;
+
+  const resolveContainer = () =>
+    typeof container === 'string'
+      ? document.querySelector<HTMLElement>(container)
+      : container;
+
+  const getAdminMode = () => {
+    if (typeof adminMode === 'boolean') return adminMode;
+    const searchParams = new URLSearchParams(window.location.search);
+    return searchParams.get(adminQueryParam) === 'true';
+  };
+
+  const isAdminMode = getAdminMode();
+
+  const onReady = async () => {
+    const containerEl = resolveContainer();
+    if (!containerEl) return;
+
+    if (isAdminMode && enableToolbar) {
+      createAdminToolbar();
+    }
+
+    const isMobileLayout = window.matchMedia(`(max-width: ${mobileBreakpoint}px)`).matches;
+
+    if (isMobileLayout) {
+      setupMobileFallback(containerEl);
+      return;
+    }
+
+    const pckry: PackeryInstance = new Packery(containerEl, {
+      itemSelector: '.masonry-item',
+      columnWidth: '.grid-sizer',
+      gutter: 8,
+      percentPosition: false,
+      transitionDuration: '0.35s',
+      stagger: 30,
+      resize: true,
+      initLayout: false,
+      horizontal: false,
+      originLeft: true,
+      originTop: true,
+    });
+
+    window.pckry = pckry;
+
+    restoreSavedOrder(containerEl, localStorageKey);
+
+    setupAdminFeatures({ container: containerEl, pckry, isAdminMode, localStorageKey });
+
+    await setupPackeryLifecycle({ container: containerEl, pckry, isAdminMode, localStorageKey });
+
+    if (enablePhotoSwipe) {
+      setupPhotoSwipe({ container: containerEl, isAdminMode });
+    }
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      onReady().catch((error) => console.error('initPackeryGallery failed', error));
+    }, { once: true });
+  } else {
+    onReady().catch((error) => console.error('initPackeryGallery failed', error));
+  }
+}
+
+let adminToolbarStylesInjected = false;
+
+function injectAdminToolbarStyles() {
+  if (adminToolbarStylesInjected) return;
+  const style = document.createElement('style');
+  style.setAttribute('data-admin-toolbar', '');
+  style.textContent = `
+    .admin-toolbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      height: 72px;
+      background: #1e3a8a;
+      color: #fff;
+      padding: 16px 24px;
+      z-index: 999999;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .admin-toolbar__left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-right: auto;
+    }
+
+    .admin-toolbar__badge {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.3);
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+      backdrop-filter: blur(10px);
+    }
+
+    .admin-toolbar__title {
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: -0.025em;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .admin-toolbar__subtitle {
+      font-size: 12px;
+      opacity: 0.9;
+      margin-top: 2px;
+    }
+
+    .admin-toolbar__actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .admin-toolbar__button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 12px;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.025em;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
+
+    .admin-toolbar__button:hover {
+      background: rgba(255,255,255,0.3);
+      transform: translateY(-1px);
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+    }
+
+    .admin-toolbar__button--ghost {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+  `;
+  document.head.appendChild(style);
+  adminToolbarStylesInjected = true;
+}
+
+function createAdminToolbar() {
+  document.addEventListener('DOMContentLoaded', function createToolbarOnce() {
+    document.removeEventListener('DOMContentLoaded', createToolbarOnce);
+    injectAdminToolbarStyles();
+    const toolbar = document.createElement('div');
+    toolbar.className = 'admin-toolbar';
+    toolbar.innerHTML = `
+      <div class="admin-toolbar__left">
+        <div class="admin-toolbar__badge" aria-hidden="true">✨</div>
+        <div>
+          <div class="admin-toolbar__title">Admin Mode</div>
+          <div class="admin-toolbar__subtitle">Drag to resequence • Changes auto-save</div>
+        </div>
+      </div>
+      <div class="admin-toolbar__actions">
+        <button id="save-order" type="button" class="admin-toolbar__button">
+          <span aria-hidden="true">💾</span>
+          <span>Save Sequence</span>
+        </button>
+        <button id="reset-order" type="button" class="admin-toolbar__button admin-toolbar__button--ghost">
+          <span aria-hidden="true">↺</span>
+          <span>Reset</span>
+        </button>
+        <button id="export-order" type="button" class="admin-toolbar__button admin-toolbar__button--ghost">
+          <span aria-hidden="true">📥</span>
+          <span>Export</span>
+        </button>
+      </div>
+    `;
+    document.body.insertBefore(toolbar, document.body.firstChild);
+    document.body.style.paddingTop = '72px';
+  });
+}
+
+function setupMobileFallback(container: HTMLElement) {
+  container.classList.add('masonry-mobile');
+  container.style.gap = '8px';
+  const items = Array.from(container.querySelectorAll<HTMLElement>('.masonry-item'));
+
+  container.style.display = 'flex';
+  container.style.flexDirection = 'column';
+  container.style.alignItems = 'stretch';
+  container.style.justifyContent = 'flex-start';
+  container.style.gap = '8px';
+  container.style.padding = '0';
+  container.style.margin = '0 auto';
+
+  items.forEach((item) => {
+    item.style.position = 'relative';
+    item.style.left = 'auto';
+    item.style.top = 'auto';
+    item.style.transform = 'none';
+    item.style.width = '100%';
+    item.style.maxWidth = '100%';
+    item.style.margin = '0';
+    item.style.setProperty('height', 'auto', 'important');
+    item.style.display = 'block';
+    item.classList.add('animated-in');
+    const img = item.querySelector('img');
+    if (img) {
+      img.style.width = '100%';
+      img.style.setProperty('height', 'auto', 'important');
+      img.style.setProperty('object-fit', 'contain', 'important');
+      img.style.setProperty('max-height', 'none', 'important');
+    }
+  });
+
+  const gridSizer = container.querySelector<HTMLElement>('.grid-sizer');
+  if (gridSizer) {
+    gridSizer.style.display = 'none';
+  }
+
+  let loadedCount = 0;
+  imagesLoaded(container).on('progress', function instanceProgress(_, image) {
+    const item = image.img.closest<HTMLElement>('.masonry-item');
+    if (!item || item.classList.contains('animated-in')) return;
+    const delay = Math.min(loadedCount, 10) * 40;
+    setTimeout(() => item.classList.add('animated-in'), delay);
+    loadedCount += 1;
+  });
+
+  imagesLoaded(container, function allLoaded() {
+    items.forEach((item) => {
+      if (!item.classList.contains('animated-in')) {
+        item.classList.add('animated-in');
+      }
+    });
+  });
+}
+
+function restoreSavedOrder(container: HTMLElement, storageKey: string) {
+  const savedOrder = localStorage.getItem(storageKey);
+  if (!savedOrder) return;
+
+  try {
+    const orderArray: string[] = JSON.parse(savedOrder);
+    const items = Array.from(container.querySelectorAll<HTMLElement>('.masonry-item'));
+
+    const filenameMap = new Map<string, HTMLElement>();
+    const captionMap = new Map<string, HTMLElement>();
+    items.forEach((item) => {
+      const img = item.querySelector('img');
+      if (!img) return;
+      const src = img.getAttribute('src') || '';
+      const filename = src.split('/').pop() || '';
+      const caption = img.getAttribute('alt') || '';
+      if (filename) filenameMap.set(filename, item);
+      if (caption) captionMap.set(caption, item);
+    });
+
+    const looksLikeFilenames = orderArray.every(
+      (value) => typeof value === 'string' && /\.[a-zA-Z0-9]+$/.test(value),
+    );
+
+    orderArray.forEach((key) => {
+      const item = looksLikeFilenames
+        ? filenameMap.get(key)
+        : filenameMap.get(key) || captionMap.get(key);
+      if (item) container.appendChild(item);
+    });
+
+    console.log('Restored saved order');
+  } catch (error) {
+    console.error('Failed to restore order:', error);
+  }
+}
+
+type AdminFeatureParams = {
+  container: HTMLElement;
+  pckry: PackeryInstance;
+  isAdminMode: boolean;
+  localStorageKey: string;
+};
+
+function setupAdminFeatures({ container, pckry, isAdminMode, localStorageKey }: AdminFeatureParams) {
+  if (!isAdminMode) return;
+
+  container.classList.add('admin-mode');
+
+  const setEditKey = (on: boolean) => {
+    document.body.classList.toggle('edit-key-active', on);
+  };
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key.toLowerCase() === 'e') setEditKey(true);
+  });
+  document.addEventListener('keyup', (event) => {
+    if (event.key.toLowerCase() === 'e') setEditKey(false);
+  });
+
+  container.addEventListener('mousedown', (event) => {
+    const wantEdit =
+      event.shiftKey ||
+      document.body.classList.contains('edit-key-active') ||
+      !!(event.target as HTMLElement | null)?.closest('.edit-btn');
+    if (!wantEdit) return;
+    const anchor = (event.target as HTMLElement | null)?.closest('a');
+    if (anchor) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  }, true);
+
+  const saveImageMetadata = async (filename: string, updates: { caption?: string; size?: string }) => {
+    try {
+      const items = Array.from(container.querySelectorAll<HTMLElement>('.masonry-item'));
+      const metadata = items.map((entry) => {
+        const img = entry.querySelector('img');
+        const entryFilename = entry.getAttribute('data-filename');
+        const size = entry.getAttribute('data-size');
+        const caption = img?.getAttribute('alt') || '';
+        if (entryFilename === filename) {
+          return {
+            filename: entryFilename,
+            caption: updates.caption ?? caption,
+            size: updates.size ?? size,
+          };
+        }
+        return {
+          filename: entryFilename,
+          caption,
+          size,
+        };
+      });
+
+      const response = await fetch('/api/save-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(metadata),
+      });
+
+      if (response.ok) {
+        console.log('Metadata saved successfully');
+      }
+    } catch (error) {
+      console.error('Error saving metadata:', error);
+    }
+  };
+
+  const openEditPopover = (item: HTMLElement) => {
+    document.querySelectorAll('.edit-popover').forEach((el) => el.remove());
+
+    const targetImg = item.querySelector('img');
+    const filename =
+      item.getAttribute('data-filename') || targetImg?.getAttribute('src')?.split('/').pop() || '';
+    const currentSize =
+      item.getAttribute('data-size') ||
+      (item.classList.contains('wide_tall')
+        ? 'xlportrait'
+        : item.classList.contains('wide')
+        ? 'landscape'
+        : 'portrait');
+    const currentCaption = (targetImg?.getAttribute('data-caption') || targetImg?.getAttribute('alt') || '')
+      .replace('Jay Dixit photo: ', '');
+
+    const pop = document.createElement('div');
+    pop.className = 'edit-popover w-80 rounded-xl border border-gray-200 bg-white shadow-xl p-4';
+    pop.innerHTML = `
+        <div class="mb-1 text-[11px] font-medium uppercase tracking-wide text-gray-500">Edit Image</div>
+        <div class="text-xs text-gray-500 mb-2 truncate">${filename}</div>
+
+        <label class="block text-xs font-medium text-gray-700 mb-1">Caption</label>
+        <textarea id="ep-caption" class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-y min-h-16" placeholder="Enter image caption...">${currentCaption.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+
+        ${item.querySelector('.stacked-pair')
+          ? ''
+          : `
+          <div class="mt-3">
+            <label class="block text-xs font-medium text-gray-700 mb-1">Size</label>
+            <div id="ep-size-group" class="inline-flex items-center rounded-lg border border-gray-200 bg-gray-50 p-0.5 text-[11px] font-medium text-gray-700 shadow-inner">
+              <button data-size="portrait" type="button" class="px-2.5 py-1 rounded-md hover:bg-white">Portrait</button>
+              <button data-size="landscape" type="button" class="px-2.5 py-1 rounded-md hover:bg-white">Landscape</button>
+              <button data-size="xlportrait" type="button" class="px-2.5 py-1 rounded-md hover:bg-white">XL Portrait</button>
+            </div>
+            <div class="mt-1.5 text-[11px] text-gray-400">portrait = 1x1 • landscape = 2x1 • xlportrait = 2x2</div>
+          </div>`}
+
+        <div class="mt-3 flex items-center justify-end gap-2 border-t border-gray-200 pt-3">
+          <button class="cancel inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">Cancel</button>
+          <button class="save inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700">Save</button>
+        </div>
+      `;
+    item.appendChild(pop);
+
+    const capInput = pop.querySelector<HTMLTextAreaElement>('#ep-caption');
+    const sizeGroup = pop.querySelector<HTMLElement>('#ep-size-group');
+    let selectedSize = currentSize;
+
+    setTimeout(() => {
+      capInput?.focus();
+      capInput?.select();
+    }, 0);
+
+    const applySize = (val: string) => {
+      item.setAttribute('data-size', val);
+      item.classList.remove('regular', 'wide', 'wide_tall');
+      item.classList.add(val === 'landscape' ? 'wide' : val === 'xlportrait' ? 'wide_tall' : 'regular');
+      try {
+        pckry.layout();
+        if (typeof (pckry as any).shiftLayout === 'function') {
+          (pckry as any).shiftLayout();
+        }
+      } catch (error) {
+        console.warn('Packery layout failed after size change', error);
+      }
+    };
+
+    if (sizeGroup) {
+      const updateButtons = () => {
+        sizeGroup.querySelectorAll('button').forEach((btn) => {
+          const val = btn.getAttribute('data-size');
+          const active = val === selectedSize;
+          btn.classList.toggle('bg-white', active);
+          btn.classList.toggle('text-indigo-600', active);
+          btn.classList.toggle('shadow', active);
+          btn.classList.toggle('ring-1', active);
+          btn.classList.toggle('ring-indigo-200', active);
+        });
+      };
+      sizeGroup.addEventListener('click', (event) => {
+        const button = (event.target as HTMLElement | null)?.closest<HTMLButtonElement>('button[data-size]');
+        if (!button) return;
+        const value = button.getAttribute('data-size');
+        if (!value) return;
+        selectedSize = value;
+        updateButtons();
+      });
+      updateButtons();
+    }
+
+    const cleanup = () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('mousedown', onAway, true);
+      pop.remove();
+    };
+
+    const doSave = async () => {
+      const newCaption = (capInput?.value || '').trim();
+      const newSize = selectedSize;
+
+      if (targetImg) {
+        targetImg.setAttribute('alt', 'Jay Dixit photo: ' + newCaption);
+        targetImg.setAttribute('data-caption', newCaption);
+      }
+      const captionOverlay = item.querySelector('.caption-overlay h3');
+      if (captionOverlay) {
+        captionOverlay.textContent = newCaption;
+      }
+
+      if (sizeGroup) {
+        applySize(newSize);
+      }
+
+      await saveImageMetadata(filename, { size: newSize, caption: newCaption });
+      cleanup();
+    };
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') cleanup();
+      if (event.key === 'Enter') doSave();
+    };
+    const onAway = (event: MouseEvent) => {
+      if (!pop.contains(event.target as Node)) cleanup();
+    };
+
+    document.addEventListener('keydown', onKeyDown);
+    setTimeout(() => document.addEventListener('mousedown', onAway, true), 0);
+
+    pop.querySelector('.save')?.addEventListener('click', doSave);
+    pop.querySelector('.cancel')?.addEventListener('click', cleanup);
+  };
+
+  container.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement | null;
+    const triggeredByBtn = !!target?.closest('.edit-btn');
+    const wantEdit =
+      triggeredByBtn ||
+      event.shiftKey ||
+      document.body.classList.contains('edit-key-active');
+    if (!wantEdit) return;
+
+    const item = target?.closest<HTMLElement>('.masonry-item');
+    if (!item) return;
+    if (item.classList.contains('is-dragging')) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation();
+
+    openEditPopover(item);
+  }, true);
+
+  document.getElementById('save-order')?.addEventListener('click', async () => {
+    const items = pckry.getItemElements();
+    const order = items.map((entry) => {
+      const img = entry.querySelector('img');
+      const src = img?.getAttribute('src') || '';
+      const filename = entry.getAttribute('data-filename') || src.split('/').pop();
+      const size =
+        entry.getAttribute('data-size') ||
+        (entry.classList.contains('wide_tall')
+          ? 'xlportrait'
+          : entry.classList.contains('wide')
+          ? 'landscape'
+          : 'portrait');
+      return {
+        filename,
+        caption: img?.getAttribute('alt') || '',
+        size,
+      };
+    });
+
+    const orderFilenames = order.map((entry) => entry.filename).filter(Boolean) as string[];
+    localStorage.setItem(localStorageKey, JSON.stringify(orderFilenames));
+
+    try {
+      const response = await fetch('/api/save-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(order),
+      });
+
+      const result = await response.json();
+      const button = document.getElementById('save-order');
+      if (button) {
+        if (response.ok) {
+          button.textContent = 'Sequence Saved!';
+          button.setAttribute('style', `${button.getAttribute('style') || ''}; background: #10b981;`);
+          console.log('Sequence saved to server:', result);
+        } else {
+          button.textContent = 'Error Saving';
+          button.setAttribute('style', `${button.getAttribute('style') || ''}; background: #ef4444;`);
+          console.error('Failed to save to server:', result);
+        }
+        setTimeout(() => {
+          button.textContent = 'Save Sequence';
+        }, 3000);
+      }
+    } catch (error) {
+      console.error('Error saving to server:', error);
+      const button = document.getElementById('save-order');
+      if (button) {
+        button.textContent = 'Saved Locally';
+        setTimeout(() => {
+          button.textContent = 'Save Sequence';
+        }, 2000);
+      }
+    }
+  });
+
+  document.getElementById('reset-order')?.addEventListener('click', () => {
+    if (confirm('Reset to default order?')) {
+      localStorage.removeItem(localStorageKey);
+      window.location.reload();
+    }
+  });
+
+  document.getElementById('export-order')?.addEventListener('click', () => {
+    const items = pckry.getItemElements();
+    const order = items.map((entry) => {
+      const img = entry.querySelector('img');
+      const src = img?.getAttribute('src') || '';
+      const filename = entry.getAttribute('data-filename') || src.split('/').pop();
+      const size =
+        entry.getAttribute('data-size') ||
+        (entry.classList.contains('wide_tall')
+          ? 'xlportrait'
+          : entry.classList.contains('wide')
+          ? 'landscape'
+          : 'portrait');
+      return {
+        filename,
+        caption: img?.getAttribute('alt') || '',
+        size,
+      };
+    });
+
+    const dataStr = JSON.stringify(order, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+    const exportLink = document.createElement('a');
+    exportLink.setAttribute('href', dataUri);
+    exportLink.setAttribute('download', 'photo-order.json');
+    document.body.appendChild(exportLink);
+    exportLink.click();
+    document.body.removeChild(exportLink);
+  });
+}
+
+type PackeryLifecycleOptions = {
+  container: HTMLElement;
+  pckry: PackeryInstance;
+  isAdminMode: boolean;
+  localStorageKey: string;
+};
+
+async function setupPackeryLifecycle({ container, pckry, isAdminMode, localStorageKey }: PackeryLifecycleOptions) {
+  const allItems = container.querySelectorAll('.masonry-item');
+  let loadedCount = 0;
+
+  imagesLoaded(container).on('progress', function (_, image) {
+    const item = image.img.closest<HTMLElement>('.masonry-item');
+    if (item && !item.classList.contains('animated-in')) {
+      setTimeout(() => item.classList.add('animated-in'), loadedCount * 40);
+      loadedCount += 1;
+    }
+    pckry.shiftLayout();
+  });
+
+  const DraggabillyCtor = isAdminMode
+    ? (await import('draggabilly')).default
+    : undefined;
+
+  imagesLoaded(container, function () {
+    pckry.layout();
+    pckry.shiftLayout();
+
+    const items = pckry.getItemElements();
+    items.forEach((item) => {
+      pckry.fit(item);
+    });
+
+    pckry.layout();
+
+    allItems.forEach((item) => {
+      if (!item.classList.contains('animated-in')) {
+        item.classList.add('animated-in');
+      }
+
+      if (isAdminMode && DraggabillyCtor) {
+        const draggie = new DraggabillyCtor(item as Element, {
+          handle: '.masonry-link',
+          containment: container,
+        });
+
+        let dragging = false;
+
+        draggie.on('dragStart', () => {
+          dragging = true;
+          item.classList.add('is-dragging');
+          container.classList.add('is-sorting');
+          item.querySelectorAll('.masonry-link').forEach((link) => {
+            (link as HTMLElement).style.pointerEvents = 'none';
+          });
+        });
+
+        draggie.on('dragEnd', () => {
+          setTimeout(() => {
+            dragging = false;
+            item.querySelectorAll('.masonry-link').forEach((link) => {
+              (link as HTMLElement).style.pointerEvents = '';
+            });
+          }, 100);
+
+          item.classList.remove('is-dragging');
+          container.classList.remove('is-sorting');
+        });
+
+        item.addEventListener(
+          'click',
+          (event) => {
+            if (dragging) {
+              event.preventDefault();
+              event.stopPropagation();
+            }
+          },
+          true,
+        );
+
+        pckry.bindDraggabillyEvents(draggie);
+      }
+    });
+
+    if (isAdminMode) {
+      pckry.on('dragItemPositioned', () => {
+        const items = pckry.getItemElements();
+        const orderFilenames = items
+          .map((item) => {
+            const img = item.querySelector('img');
+            if (!img) return '';
+            const src = img.getAttribute('src') || '';
+            return src.split('/').pop() || '';
+          })
+          .filter(Boolean);
+        localStorage.setItem(localStorageKey, JSON.stringify(orderFilenames));
+        console.log('Sequence auto-saved locally');
+      });
+    }
+  });
+
+  let resizeTO: number | undefined;
+  window.addEventListener('resize', () => {
+    window.clearTimeout(resizeTO);
+    resizeTO = window.setTimeout(() => {
+      pckry.layout();
+      pckry.shiftLayout();
+    }, 100);
+  });
+}
+
+type PhotoSwipeOptions = {
+  container: HTMLElement;
+  isAdminMode: boolean;
+};
+
+function setupPhotoSwipe({ container, isAdminMode }: PhotoSwipeOptions) {
+  const lightbox = new PhotoSwipeLightbox({
+    gallery: '.masonry-items',
+    children: '.portfolio-lightbox',
+    pswpModule: () => import('/node_modules/photoswipe/dist/photoswipe.esm.js'),
+    padding: { top: 20, bottom: 80, left: 20, right: 20 },
+    wheelToZoom: true,
+    imageClickAction: 'close',
+    tapAction: 'toggle-controls',
+    doubleTapAction: 'zoom',
+    preloaderDelay: 0,
+    showHideAnimationType: 'fade',
+  });
+
+  if (isAdminMode) {
+    lightbox.on('clickEvent', (event) => {
+      const target = event.originalEvent.target as HTMLElement | null;
+      const item = target?.closest('.masonry-item');
+      if (item && item.classList.contains('is-dragging')) {
+        event.preventDefault();
+      }
+    });
+  }
+
+  lightbox.addFilter('itemData', (itemData) => {
+    const linkEl = itemData.element as HTMLElement;
+    const imgEl = linkEl.querySelector('img');
+
+    if (imgEl) {
+      itemData.w = imgEl.naturalWidth || 1600;
+      itemData.h = imgEl.naturalHeight || 1200;
+      itemData.alt = imgEl.alt;
+      const caption = imgEl.getAttribute('data-caption') || imgEl.alt || '';
+      if (caption) {
+        itemData.title = caption;
+      }
+    }
+
+    return itemData;
+  });
+
+  lightbox.on('uiRegister', () => {
+    lightbox.pswp.ui.registerElement({
+      name: 'custom-caption',
+      order: 9,
+      isButton: false,
+      appendTo: 'root',
+      onInit: (el, pswp) => {
+        el.style.position = 'absolute';
+        el.style.left = '0';
+        el.style.bottom = '0';
+        el.style.width = '100%';
+        el.style.maxWidth = '100%';
+        el.style.padding = '15px 20px';
+        el.style.background = 'rgba(0, 0, 0, 0.75)';
+        el.style.color = '#fff';
+        el.style.fontSize = '16px';
+        el.style.fontFamily =
+          '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+        el.style.textAlign = 'center';
+        el.style.lineHeight = '1.4';
+        el.style.zIndex = '10';
+
+        pswp.on('change', () => {
+          const currSlideData = pswp.currSlide?.data;
+          if (currSlideData?.title) {
+            el.innerHTML = currSlideData.title;
+            el.style.display = 'block';
+          } else {
+            el.style.display = 'none';
+          }
+        });
+
+        setTimeout(() => {
+          const currSlideData = pswp.currSlide?.data;
+          if (currSlideData?.title) {
+            el.innerHTML = currSlideData.title;
+            el.style.display = 'block';
+          }
+        }, 0);
+      },
+    });
+  });
+
+  lightbox.init();
+}

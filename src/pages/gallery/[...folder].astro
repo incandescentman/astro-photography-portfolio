@@ -168,40 +168,47 @@ export const getStaticPaths = async () => {
       </div>
 
       <!-- Masonry Gallery -->
-      <div class="photo-grid">
+      <div id="masonry" class="masonry-items" data-gutter="8px">
+        <div class="grid-sizer"></div>
         {images.map((image, index) => {
-          const sizeClass = index % 7 === 0 ? 'wide-tall' : 
-                           index % 5 === 0 ? 'wide-short' : 
-                           index % 4 === 1 ? 'tall' : 
-                           index % 6 === 2 ? 'wide' : 
-                           index % 8 === 3 ? 'small' : 'medium';
-          
+          const heuristic = index % 7 === 0 ? 'wide-tall'
+            : index % 5 === 0 ? 'wide-short'
+            : index % 4 === 1 ? 'tall'
+            : index % 6 === 2 ? 'wide'
+            : index % 8 === 3 ? 'medium'
+            : 'regular';
+
+          let variant = 'regular';
+          let dataSize = 'portrait';
+          if (heuristic === 'wide' || heuristic === 'wide-short') {
+            variant = 'wide';
+            dataSize = 'landscape';
+          } else if (heuristic === 'wide-tall' || heuristic === 'tall') {
+            variant = 'wide_tall';
+            dataSize = 'xlportrait';
+          }
+
           return (
-            <div 
-              class={`photo-item ${sizeClass}`}
+            <article
+              class={`masonry-item ${variant}`}
+              data-idx={index}
+              data-filename={image.filename}
+              data-size={dataSize}
               data-caption={image.caption}
               data-tags={JSON.stringify(image.tags)}
             >
-              <a href={image.src} data-gallery="gallery">
-                <img 
-                  src={image.src} 
+              <a class="masonry-link portfolio-lightbox" href={image.src}>
+                <img
+                  src={image.src}
                   alt={image.caption}
                   loading="lazy"
-                  class="photo-image"
+                  data-caption={image.caption}
                 />
-              </a>
-              <div class="photo-caption">
-                <div class="flex justify-between items-center px-2 mt-2">
-                  <p class="text-sm text-gray-700 flex-1">{image.caption}</p>
-                  <button class="like-button ml-2" data-photo-id={image.filename}>
-                    <svg class="heart w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                    </svg>
-                    <span class="like-count text-xs ml-1">0</span>
-                  </button>
+                <div class="caption-overlay">
+                  <h3>{image.caption}</h3>
                 </div>
-              </div>
-            </div>
+              </a>
+            </article>
           );
         })}
       </div>
@@ -213,241 +220,244 @@ export const getStaticPaths = async () => {
 </MainLayout>
 
 <style>
-.photo-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  grid-gap: 10px;
-  grid-auto-rows: 10px;
-  margin: 0;
-}
-
-@media (min-width: 640px) {
-  .photo-grid {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  }
-}
-
-@media (min-width: 1024px) {
-  .photo-grid {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  }
-}
-
-.photo-item {
-  overflow: hidden;
-  cursor: pointer;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.photo-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-}
-
-/* Size variations */
-.photo-item.small {
-  grid-row-end: span 20;
-  grid-column-end: span 1;
-}
-
-.photo-item.medium {
-  grid-row-end: span 30;
-  grid-column-end: span 1;
-}
-
-.photo-item.tall {
-  grid-row-end: span 45;
-  grid-column-end: span 1;
-}
-
-.photo-item.wide {
-  grid-row-end: span 25;
-  grid-column-end: span 2;
-}
-
-.photo-item.wide-short {
-  grid-row-end: span 20;
-  grid-column-end: span 2;
-}
-
-.photo-item.wide-tall {
-  grid-row-end: span 40;
-  grid-column-end: span 2;
-}
-
-.photo-image {
+.masonry-items {
+  position: relative;
   width: 100%;
-  height: calc(100% - 40px);
+  margin: 0 auto;
+  padding: 0;
+  min-height: 400px;
+}
+
+.masonry-item {
+  box-sizing: border-box;
+  padding: 0;
+  opacity: 0;
+  transform: translateY(12px);
+  position: absolute;
+  overflow: hidden;
+}
+
+.masonry-item.animated-in {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity .35s ease, transform .35s ease;
+}
+
+.grid-sizer {
+  width: 320px;
+}
+
+.masonry-item.regular {
+  width: 320px;
+}
+
+.masonry-item.wide,
+.masonry-item.wide_tall {
+  width: 648px;
+}
+
+@media only screen and (max-width: 1300px) {
+  .grid-sizer,
+  .masonry-item.regular {
+    width: 25%;
+  }
+  .masonry-item.wide,
+  .masonry-item.wide_tall {
+    width: 50%;
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .grid-sizer,
+  .masonry-item.regular {
+    width: 50%;
+  }
+  .masonry-item.wide,
+  .masonry-item.wide_tall {
+    width: 100%;
+  }
+}
+
+@media only screen and (max-width: 480px) {
+  .masonry-items {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    position: relative !important;
+  }
+
+  .grid-sizer {
+    display: none !important;
+  }
+
+  .masonry-item {
+    position: relative !important;
+    width: 100% !important;
+    height: auto !important;
+    transform: none !important;
+    left: auto !important;
+    top: auto !important;
+  }
+
+  .masonry-item img {
+    object-fit: contain !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+}
+
+.masonry-item img {
   display: block;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  border-radius: 8px 8px 0 0;
+  transition: transform 0.45s cubic-bezier(0.3, 0.1, 0.3, 1);
 }
 
-.photo-caption {
-  padding: 8px;
-  min-height: 40px;
-  display: flex;
-  align-items: center;
+.masonry-item a {
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
 }
 
-/* Hidden by default for filtering */
-.photo-item.hidden {
-  display: none;
+.masonry-item a::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 1;
+  pointer-events: none;
 }
 
-/* Like button styles */
-.like-button {
-  display: flex;
-  align-items: center;
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: transform 0.2s ease, color 0.2s ease;
-  color: #9ca3af;
-  padding: 4px;
-  border-radius: 4px;
+.masonry-item:hover img {
+  transform: scale(1.07);
 }
 
-.like-button:hover {
-  transform: scale(1.1);
-  color: #ef4444;
+.masonry-item:hover a::before {
+  opacity: 1;
 }
 
-.like-button.liked {
-  color: #ef4444;
+.caption-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  text-align: center;
+  width: 85%;
+  max-width: 500px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 2;
+  padding: 0 10px;
 }
 
-.like-button.liked .heart {
-  animation: heartbeat 0.6s ease-in-out;
+.caption-overlay h3 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+  letter-spacing: 0.5px;
+  line-height: 1.3;
 }
 
-@keyframes heartbeat {
-  0% { transform: scale(1); }
-  14% { transform: scale(1.3); }
-  28% { transform: scale(1); }
-  42% { transform: scale(1.2); }
-  70% { transform: scale(1); }
+.masonry-item:hover .caption-overlay {
+  opacity: 1;
+}
+
+.tag-filter.active,
+.tag-filter.is-active {
+  background: #3b82f6;
+  color: #fff;
+  border-color: transparent;
+}
+
+.tag-filter-all.is-active {
+  background: #1f2937;
+  color: #fff;
 }
 </style>
 
-<script>
-  import GLightbox from 'glightbox';
-  
-  // Initialize GLightbox
-  const lightbox = GLightbox({
-    selector: '[data-gallery="gallery"]',
-    touchNavigation: true,
-    loop: true,
-    autoplayVideos: false,
-    zoomable: true,
-    draggable: true,
+<script type="module">
+  import initPackeryGallery from '/src/scripts/packeryGallery.ts';
+
+  initPackeryGallery({
+    container: '#masonry',
+    adminMode: false,
+    enableToolbar: false,
   });
-  
-  // Search and filter functionality
+
+  const activeTags = new Set();
+
   document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('search');
-    const tagButtons = document.querySelectorAll('.tag-filter');
+    const tagButtons = Array.from(document.querySelectorAll('.tag-filter'));
     const allButton = document.querySelector('.tag-filter-all');
-    const photoItems = document.querySelectorAll('.photo-item');
-    const likeButtons = document.querySelectorAll('.like-button');
-    let activeTags = new Set();
+    const items = Array.from(document.querySelectorAll('.masonry-item'));
 
-    function filterPhotos() {
-      const searchTerm = searchInput?.value.toLowerCase() || '';
-      
-      photoItems.forEach(item => {
-        const caption = item.dataset.caption?.toLowerCase() || '';
-        const tags = JSON.parse(item.dataset.tags || '[]');
-        
+    const applyFilters = () => {
+      const searchTerm = searchInput && 'value' in searchInput ? searchInput.value.toLowerCase() : '';
+
+      items.forEach((item) => {
+        const caption = item.getAttribute('data-caption')?.toLowerCase() || '';
+        const tags = JSON.parse(item.getAttribute('data-tags') || '[]');
+
         const matchesSearch = !searchTerm || caption.includes(searchTerm);
-        const matchesTags = activeTags.size === 0 || 
-          [...activeTags].every(tag => tags.includes(tag));
-        
-        if (matchesSearch && matchesTags) {
-          item.classList.remove('hidden');
-        } else {
-          item.classList.add('hidden');
-        }
+        const matchesTags = activeTags.size === 0 || Array.from(activeTags).every((tag) => tags.includes(tag));
+
+        item.style.display = matchesSearch && matchesTags ? '' : 'none';
       });
-    }
 
-    // Search input
-    searchInput?.addEventListener('input', filterPhotos);
+      const packery = window.pckry;
+      if (packery) {
+        try {
+          packery.layout();
+          if (typeof (packery as any).shiftLayout === 'function') {
+            (packery as any).shiftLayout();
+          }
+        } catch (error) {
+          console.warn('Packery relayout after filter failed', error);
+        }
+      }
+    };
 
-    // Tag filters
-    tagButtons.forEach(button => {
+    searchInput?.addEventListener('input', applyFilters);
+
+    tagButtons.forEach((button) => {
       button.addEventListener('click', () => {
         const tag = button.dataset.tag;
-        
+        if (!tag) return;
+
         if (activeTags.has(tag)) {
           activeTags.delete(tag);
-          button.classList.remove('bg-blue-500', 'text-white');
-          button.classList.add('border-gray-300');
+          button.classList.remove('is-active');
         } else {
           activeTags.add(tag);
-          button.classList.add('bg-blue-500', 'text-white');
-          button.classList.remove('border-gray-300');
+          button.classList.add('is-active');
         }
-        
-        filterPhotos();
+
+        if (allButton) allButton.classList.remove('is-active');
+        applyFilters();
       });
     });
 
-    // All button
     allButton?.addEventListener('click', () => {
       activeTags.clear();
-      tagButtons.forEach(btn => {
-        btn.classList.remove('bg-blue-500', 'text-white');
-        btn.classList.add('border-gray-300');
-      });
-      filterPhotos();
+      tagButtons.forEach((btn) => btn.classList.remove('is-active'));
+      allButton.classList.add('is-active');
+      applyFilters();
     });
 
-    // Like functionality
-    likeButtons.forEach(button => {
-      const photoId = button.dataset.photoId;
-      const likeCount = button.querySelector('.like-count');
-      
-      // Load initial like state from localStorage
-      const likes = JSON.parse(localStorage.getItem('photoLikes') || '{}');
-      const currentLikes = likes[photoId] || { count: 0, liked: false };
-      
-      likeCount.textContent = currentLikes.count;
-      if (currentLikes.liked) {
-        button.classList.add('liked');
-      }
-      
-      button.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        const likes = JSON.parse(localStorage.getItem('photoLikes') || '{}');
-        const current = likes[photoId] || { count: 0, liked: false };
-        
-        if (current.liked) {
-          // Unlike
-          current.liked = false;
-          current.count = Math.max(0, current.count - 1);
-          button.classList.remove('liked');
-        } else {
-          // Like
-          current.liked = true;
-          current.count += 1;
-          button.classList.add('liked');
-        }
-        
-        likes[photoId] = current;
-        localStorage.setItem('photoLikes', JSON.stringify(likes));
-        likeCount.textContent = current.count;
-        
-        // TODO: Integrate with Supabase for persistent likes
-        // This currently uses localStorage for demo purposes
-        console.log(`Photo ${photoId}: ${current.liked ? 'liked' : 'unliked'} (${current.count} total)`);
-      });
-    });
+    allButton?.classList.add('is-active');
+    applyFilters();
   });
 </script>
 </MainLayout>
