@@ -203,7 +203,7 @@ PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloud_name
 
 - Lives under =src/pages/blog= with a list view (=index.astro=) and slug detail pages (= [slug].astro =).
 - Content is sourced from the =blog= content collection (see =src/content/config.ts=). Frontmatter supports Cloudinary public IDs (=imagePublicId=) so every post hero uses the same =t_gallery= transform.
-- Listing cards render through =@jaydixit/astro-utils/components/Image.astro= which auto-generates responsive markup for Cloudinary URLs. Cloudinary helpers in =src/lib/cloudinary.ts= build the delivery URLs/sizes.
+- Listing cards render Cloudinary heroes via the shared helper functions in =src/lib/cloudinary.ts= (URL + srcset generation). Images are output as vanilla =<img>= tags with responsive `srcset/sizes` so no extra dependency chain is required.
 - Blog typography reuses shared styles via =@jaydixit/astro-utils/styles/blocks.css=, and smart quotes/excerpts are handled with =smartQuotes= from the same package for consistent copy styling across projects.
 - Navigation exposes the new section via a “Journal” link in =NavBar.astro=; individual posts add generous top padding so content clears the fixed nav without being obscured.
 

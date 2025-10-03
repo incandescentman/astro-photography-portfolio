@@ -1,9 +1,8 @@
 ---
 import { getCollection } from 'astro:content';
 import MainLayout from '../../layouts/MainLayout.astro';
-import ImageCard from '@jaydixit/astro-utils/components/Image.astro';
 import { smartQuotes } from '@jaydixit/astro-utils';
-import { cldUrl } from '../../lib/cloudinary';
+import { cldUrl, cldSrcset, cldSizes } from '../../lib/cloudinary';
 
 const posts = await getCollection('blog', ({ data }) => !data.draft);
 const sortedPosts = posts
@@ -18,7 +17,7 @@ const sortedPosts = posts
 ---
 
 <MainLayout title="Blog">
-  <section class="mx-auto max-w-4xl px-6 pb-24 pt-36 md:pt-48">
+  <section class="mx-auto max-w-4xl px-6 pb-24 pt-44 md:pt-56">
     <header class="mb-16 text-center">
       <p class="text-xs uppercase tracking-[0.3em] leading-[1.8] text-gray-500">Journal</p>
       <h1 class="mt-3 text-4xl font-semibold sm:text-5xl">Notes From The Field</h1>
@@ -42,7 +41,8 @@ const sortedPosts = posts
             })
           : null;
 
-        const heroImage = data.imagePublicId ? cldUrl(data.imagePublicId, 1200) : data.image ?? null;
+        const heroImage = data.imagePublicId ? cldUrl(data.imagePublicId, 1600) : data.image ?? null;
+        const heroSrcset = data.imagePublicId ? cldSrcset(data.imagePublicId) : undefined;
         const excerpt = data.excerpt ? smartQuotes(data.excerpt) : null;
 
         return (
@@ -50,11 +50,13 @@ const sortedPosts = posts
             <a href={`/blog/${slug}/`} class="block no-underline">
               {heroImage && (
                 <figure class="relative aspect-[3/2] overflow-hidden bg-slate-100">
-                  <ImageCard
+                  <img
                     src={heroImage}
+                    srcset={heroSrcset}
+                    sizes={cldSizes('(max-width: 768px) 100vw, 50vw')}
                     alt={data.imageAlt ?? data.title}
-                    width={1200}
-                    height={800}
+                    loading="lazy"
+                    decoding="async"
                     class="h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
                   />
                 </figure>
