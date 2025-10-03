@@ -199,6 +199,14 @@ export function cldSrcset(publicId: string, widths = [480, 768, 1024, 1600, 2200
 PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloud_name
 #+END_EXAMPLE 
 
+** Journal / Blog System
+
+- Lives under =src/pages/blog= with a list view (=index.astro=) and slug detail pages (= [slug].astro =).
+- Content is sourced from the =blog= content collection (see =src/content/config.ts=). Frontmatter supports Cloudinary public IDs (=imagePublicId=) so every post hero uses the same =t_gallery= transform.
+- Listing cards render through =@jaydixit/astro-utils/components/Image.astro= which auto-generates responsive markup for Cloudinary URLs. Cloudinary helpers in =src/lib/cloudinary.ts= build the delivery URLs/sizes.
+- Blog typography reuses shared styles via =@jaydixit/astro-utils/styles/blocks.css=, and smart quotes/excerpts are handled with =smartQuotes= from the same package for consistent copy styling across projects.
+- Navigation exposes the new section via a “Journal” link in =NavBar.astro=; individual posts add generous top padding so content clears the fixed nav without being obscured.
+
 *** 4) Gallery component (masonry grid + lazy images)
 
 `src/components/Gallery.astro`
@@ -618,4 +626,3 @@ const matchesTags = activeTags.size === 0 ||
 - *Build*: Node.js environment
 
 This architecture provides a robust, maintainable, and visually appealing photography portfolio that balances automation with flexibility, performance with features, and simplicity with sophistication.
-

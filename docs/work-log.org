@@ -144,5 +144,22 @@ imagesLoaded(container).on('progress', function(instance, image) {
 - New checklist item: verify frontend helpers use absolute imports and pass ~npm run build~ before landing.
 - Replaced admin toolbar inline styles with CSS injected via ~injectAdminToolbarStyles()~, making future tweaks easier.
 
+* 2025-10-04 - Journal / Blog Rollout
+
+** Content Pipeline
+- Added ~blog~ content collection with schema for Cloudinary public IDs so posts inherit the existing `t_gallery` transform.
+- Seeded `hello-world.mdx` sample entry that references real red-carpet imagery hosted on Cloudinary.
+
+** Templates
+- New listing view at ~src/pages/blog/index.astro~ mirrors the Socratic layout: hero card, smart-quoted excerpts, responsive Cloudinary hero via ~@jaydixit/astro-utils/components/Image.astro~.
+- Detail page (~src/pages/blog/[slug].astro~) renders hero figure, SEO-friendly excerpt, tags, and clears the fixed nav with generous top padding.
+
+** Shared Utilities
+- Imported ~@jaydixit/astro-utils/styles/blocks.css~ for blockquote/prompt styling parity and wired ~smartQuotes~ for frontmatter excerpts.
+- Cloudinary helpers from ~src/lib/cloudinary.ts~ now service the journal, complementing the gallery system.
+
+** Navigation & Styling
+- NavBar adds a “Journal” link; blog sections receive top padding so the fixed header no longer obscures the intro label.
+
 ** Validation
 - ~npm run build~ (passes; existing album collection warnings unchanged).
