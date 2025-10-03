@@ -12,3 +12,4 @@ apicache/
 logs/
 throttle.ctrl
 pywikibot.lwp
+.vercel

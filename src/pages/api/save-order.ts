@@ -4,7 +4,8 @@ import path from 'path';
 
 // This endpoint only works in development mode
 // In production, the site is static and cannot write files
-export const prerender = false;
+// Setting to true allows static build to succeed; endpoint won't work in production
+export const prerender = true;
 
 export const POST: APIRoute = async ({ request }) => {
   try {

@@ -113,7 +113,7 @@ export const getStaticPaths = async () => {
         
         if (hasImages) {
           paths.push({
-            params: { folder: relativePath.split('/') }
+            params: { folder: relativePath }
           });
         }
         
