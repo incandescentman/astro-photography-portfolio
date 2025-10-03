@@ -1,0 +1,46 @@
+#+TITLE: Session Handoff 2025-10-04
+#+AUTHOR: ChatGPT
+#+DATE: 2025-10-04
+
+* Current Repository State
+- Blog ("Journal") is live at `src/pages/blog/` with listing + detail templates.
+- Blog entries live in `src/content/blog/*.mdx` with frontmatter fields (`image`, `imagePublicId`, etc.).
+- `@jaydixit/astro-utils` is installed; we import typography helpers and shared block styles, but we do not depend on the package's unpublished image component.
+- Cloudinary helpers (`cldUrl`, `cldSrcset`, `cldSizes`) are centralized in `src/lib/cloudinary.ts`.
+- Navigation includes a "Journal" link; blog pages add top padding so the fixed nav does not crop content.
+- Two sample posts exist (`hello-world.mdx`, `nobel-portrait-session.mdx`), each referencing Cloudinary imagery.
+- `design-architecture.org` and `docs/work-log.org` are updated to reflect the journal architecture and Cloudinary workflow.
+
+* Key Discussions & Decisions
+- Journal posts will use local images for now; Cloudinary references remain optional via `imagePublicId`.
+- The larger searchable photo index will be powered by the Cloudinary pipeline defined in `cloudinary-setup.org` (CLI uploads → Content Collections → Cloudinary transforms).
+- The searchable gallery spec (data schema, CLI, album JSON files) already lives in `cloudinary-setup.org`; the UI is yet to be implemented.
+- Blog hero imagery relies on plain `<img>` tags populated via the Cloudinary helpers for responsive `srcset/sizes`.
+- `@jaydixit/astro-utils` currently provides smart quotes + typography styles, but we intentionally avoid components that aren’t published in the package dist.
+
+* Next Steps
+1. **Data Prep for Searchable Gallery**
+   - Run the Cloudinary upload CLI on representative folders so `src/content/albums/*.json` exists with full metadata (tags, captions, people fields).
+   - Confirm the JSON content contains everything the future UI will need (event tags, city, people arrays, etc.).
+
+2. **Search Page Implementation**
+   - Scaffold a Cloudinary-backed explorer (likely `src/pages/photos/index.astro`): search input, tag filters, optional people facet, grid layout using the same Cloudinary helpers.
+   - Decide whether the search is client-side only (load all albums once) or whether to build a serialized index during the CLI step.
+
+3. **Blog Content**
+   - Add real journal entries under `src/content/blog/`, pointing to local or Cloudinary imagery as needed.
+   - Wire any additional typography/components from `@jaydixit/astro-utils` (e.g., smart quotes in body content) if desired.
+
+4. **Cloudinary Config**
+   - Ensure `.env` still includes `PUBLIC_CLOUDINARY_CLOUD_NAME` (`dszpm7yps`) and `PUBLIC_CLOUDINARY_TRANSFORM=gallery` for consistent hero rendering.
+   - Create a named transform in the Cloudinary console if not already done (`gallery` with `c_fill,g_auto,f_auto,q_auto`).
+
+5. **Testing**
+   - After content or UI changes, run `npm run build` to confirm routes generate cleanly (watch for `albums` warnings if the content collection is empty).
+
+* Quick Links
+- Blog listing: `src/pages/blog/index.astro`
+- Blog detail template: `src/pages/blog/[slug].astro`
+- Sample posts: `src/content/blog/hello-world.mdx`, `src/content/blog/nobel-portrait-session.mdx`
+- Cloudinary helpers: `src/lib/cloudinary.ts`
+- Spec for searchable gallery pipeline: `cloudinary-setup.org`

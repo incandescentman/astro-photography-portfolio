@@ -71,14 +71,14 @@ Cloudinary SDK]].
 
 In your terminal, run:
 
-#+begin_src wp-block-code :aria-describedby shcb-language-1 :shcb-language-name Shell Session :shcb-language-slug shell :style scroll-margin-top: 122px; box-sizing: border-box; margin: 1.25em 0px 0px; border: 0px; padding: 0.625rem 1.875rem 0.625rem 0.875rem; text-size-adjust: 100%; font-family: "Roboto Mono", Consolas, Menlo, Monaco, "Lucida Console", "Liberation Mono", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Courier New", monospace, serif; background-color: rgb(17, 20, 25); border-radius: 0.25rem; color: rgb(255, 255, 255); font-size: 0.875rem; margin-block: 1.875rem; overflow-wrap: break-word; position: relative; white-space: pre-wrap; word-break: break-word; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;
+#+begin_src 
 npm install astro-cloudinaryCode language: Shell Session (shell)
 #+end_src
 
 Then configure your Cloudinary cloud name, API key, and API secret in
 your ~.env.~ file:
 
-#+begin_src wp-block-code :aria-describedby shcb-language-2 :shcb-language-name Shell Session :shcb-language-slug shell :style scroll-margin-top: 122px; box-sizing: border-box; margin: 1.25em 0px 0px; border: 0px; padding: 0.625rem 1.875rem 0.625rem 0.875rem; text-size-adjust: 100%; font-family: "Roboto Mono", Consolas, Menlo, Monaco, "Lucida Console", "Liberation Mono", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Courier New", monospace, serif; background-color: rgb(17, 20, 25); border-radius: 0.25rem; color: rgb(255, 255, 255); font-size: 0.875rem; margin-block: 1.875rem; overflow-wrap: break-word; position: relative; white-space: pre-wrap; word-break: break-word; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;
+#+begin_src 
 PUBLIC_CLOUDINARY_CLOUD_NAME="<Cloud Name>"
 PUBLIC_CLOUDINARY_API_KEY="<API Key>"
 CLOUDINARY_API_SECRET="<API Secret>"Code language: Shell Session (shell)
@@ -101,7 +101,7 @@ images and videos anywhere in our Astro project.
 Inside of your ~content/config.ts~ file, import the
 Astro ~defineCollection~ and Cloudinary ~cldAssetsLoader~ functions:
 
-#+begin_src wp-block-code :aria-describedby shcb-language-3 :shcb-language-name JavaScript :shcb-language-slug javascript :style scroll-margin-top: 122px; box-sizing: border-box; margin: 1.25em 0px 0px; border: 0px; padding: 0.625rem 1.875rem 0.625rem 0.875rem; text-size-adjust: 100%; font-family: "Roboto Mono", Consolas, Menlo, Monaco, "Lucida Console", "Liberation Mono", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Courier New", monospace, serif; background-color: rgb(17, 20, 25); border-radius: 0.25rem; color: rgb(255, 255, 255); font-size: 0.875rem; margin-block: 1.875rem; overflow-wrap: break-word; position: relative; white-space: pre-wrap; word-break: break-word; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;
+#+begin_src color: initial;
 import { defineCollection } from 'astro:content';
 import { cldAssetsLoader } from 'astro-cloudinary/loaders';Code language: JavaScript (javascript)
 #+end_src
@@ -109,7 +109,7 @@ import { cldAssetsLoader } from 'astro-cloudinary/loaders';Code language: JavaSc
 Next, define a new collect by exporting an object that represents each
 object that you want to make available in your Astro project:
 
-#+begin_src wp-block-code :aria-describedby shcb-language-4 :shcb-language-name JavaScript :shcb-language-slug javascript :style scroll-margin-top: 122px; box-sizing: border-box; margin: 1.25em 0px 0px; border: 0px; padding: 0.625rem 1.875rem 0.625rem 0.875rem; text-size-adjust: 100%; font-family: "Roboto Mono", Consolas, Menlo, Monaco, "Lucida Console", "Liberation Mono", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Courier New", monospace, serif; background-color: rgb(17, 20, 25); border-radius: 0.25rem; color: rgb(255, 255, 255); font-size: 0.875rem; margin-block: 1.875rem; overflow-wrap: break-word; position: relative; white-space: pre-wrap; word-break: break-word; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;
+#+begin_src color: initial;
 export const collections = {
   myAssets: defineCollection({
     loader: cldAssetsLoader({
@@ -132,7 +132,7 @@ of your Astro project!
 For instance, if you want to query your assets inside of an Astro
 component, you can use the getCollection function by adding:
 
-#+begin_src wp-block-code :aria-describedby shcb-language-5 :shcb-language-name JavaScript :shcb-language-slug javascript :style scroll-margin-top: 122px; box-sizing: border-box; margin: 1.25em 0px 0px; border: 0px; padding: 0.625rem 1.875rem 0.625rem 0.875rem; text-size-adjust: 100%; font-family: "Roboto Mono", Consolas, Menlo, Monaco, "Lucida Console", "Liberation Mono", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Courier New", monospace, serif; background-color: rgb(17, 20, 25); border-radius: 0.25rem; color: rgb(255, 255, 255); font-size: 0.875rem; margin-block: 1.875rem; overflow-wrap: break-word; position: relative; white-space: pre-wrap; word-break: break-word; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;
+#+begin_src color: initial;
 ---
 import { getCollection } from 'astro:content';
 const assets = await getCollection('myAssets');
@@ -145,7 +145,7 @@ used to define your collection.
 If you want to query an individual asset from your collection, you can
 alternatively use the ~getEntry~ function by adding:
 
-#+begin_src wp-block-code :aria-describedby shcb-language-6 :shcb-language-name JavaScript :shcb-language-slug javascript :style scroll-margin-top: 122px; box-sizing: border-box; margin: 1.25em 0px 0px; border: 0px; padding: 0.625rem 1.875rem 0.625rem 0.875rem; text-size-adjust: 100%; font-family: "Roboto Mono", Consolas, Menlo, Monaco, "Lucida Console", "Liberation Mono", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Courier New", monospace, serif; background-color: rgb(17, 20, 25); border-radius: 0.25rem; color: rgb(255, 255, 255); font-size: 0.875rem; margin-block: 1.875rem; overflow-wrap: break-word; position: relative; white-space: pre-wrap; word-break: break-word; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;
+#+begin_src color: initial;
 ---
 import { getEntry } from 'astro:content';
 const asset = await getEntry('myAssets', 'samples/food/dessert');
@@ -170,7 +170,7 @@ If you're adding images, you can use
 the [[https://astro.cloudinary.dev/cldimage/basic-usage][~CldImage~]] component
 with a few basic props:
 
-#+begin_src wp-block-code :aria-describedby shcb-language-7 :shcb-language-name JavaScript :shcb-language-slug javascript :style scroll-margin-top: 122px; box-sizing: border-box; margin: 1.25em 0px 0px; border: 0px; padding: 0.625rem 1.875rem 0.625rem 0.875rem; text-size-adjust: 100%; font-family: "Roboto Mono", Consolas, Menlo, Monaco, "Lucida Console", "Liberation Mono", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Courier New", monospace, serif; background-color: rgb(17, 20, 25); border-radius: 0.25rem; color: rgb(255, 255, 255); font-size: 0.875rem; margin-block: 1.875rem; overflow-wrap: break-word; position: relative; white-space: pre-wrap; word-break: break-word; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;
+#+begin_src color: initial;
 ---
 import { getCollection } from 'astro:content';
 import { CldImage } from 'astro-cloudinary';
@@ -195,7 +195,7 @@ const images ~ await getCollection('myImages');
 Similarly, if adding videos, you can use
 the [[https://astro.cloudinary.dev/cldvideoplayer/basic-usage][~CldVideoPlayer~]]:
 
-#+begin_src wp-block-code :aria-describedby shcb-language-8 :shcb-language-name JavaScript :shcb-language-slug javascript :style scroll-margin-top: 122px; box-sizing: border-box; margin: 1.25em 0px 0px; border: 0px; padding: 0.625rem 1.875rem 0.625rem 0.875rem; text-size-adjust: 100%; font-family: "Roboto Mono", Consolas, Menlo, Monaco, "Lucida Console", "Liberation Mono", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Courier New", monospace, serif; background-color: rgb(17, 20, 25); border-radius: 0.25rem; color: rgb(255, 255, 255); font-size: 0.875rem; margin-block: 1.875rem; overflow-wrap: break-word; position: relative; white-space: pre-wrap; word-break: break-word; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;
+#+begin_src color: initial;
 ---
 import { getCollection } from 'astro:content';
 import { CldVideoPlayer } from 'astro-cloudinary';
