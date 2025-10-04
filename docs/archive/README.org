@@ -1,0 +1,27 @@
+#+TITLE: Documentation Archive
+#+DATE: 2025-10-04
+
+* Purpose
+
+Historical documentation for the photography portfolio project.
+
+** What Gets Archived
+- Change logs and migration guides
+- Superseded design decisions
+- Completed experiment evaluations
+- Historical reference material
+
+** What Gets Deleted
+- Outdated configuration examples
+- Deprecated feature docs
+- Irrelevant TODO lists
+
+** Current Archive
+None yet. Files to be moved here during documentation reorganization:
+- Root `change-log.org` (historical changelog)
+- Other legacy docs as identified
+
+---
+[[file:../CLAUDE.org][← Docs Map]]
+
+Last Updated: 2025-10-04

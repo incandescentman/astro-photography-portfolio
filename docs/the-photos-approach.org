@@ -1,0 +1,312 @@
+#+TITLE: The Photography Portfolio Approach
+#+DATE: 2025-10-04
+#+DESCRIPTION: Philosophy and motivation behind the Jay Dixit Photography Portfolio
+
+#+BEGIN_COMMENT
+LLM_CONTEXT:
+- Purpose: State philosophy, motivation, and core concepts
+- Key Docs: Philosophy, terminology, project rationale
+- Always read before: Architectural or foundational changes
+Last Synced for AI Context: 2025-10-04
+#+END_COMMENT
+
+* Background & Motivation
+
+This photography portfolio site serves as a professional showcase for Jay Dixit's photography work. The design prioritizes simplicity, performance, and ease of content management—allowing the photographer to focus on creating and organizing photos rather than wrestling with complex CMS systems.
+
+** Why This Architecture?
+
+*** Problem: Traditional Photo Platforms
+Before this custom solution:
+- WordPress/CMS platforms felt heavyweight and slow
+- Photo management required complex admin interfaces
+- Each photo upload required manual metadata entry
+- Limited control over layout and optimization
+- Performance suffered with large galleries
+- Vendor lock-in with proprietary platforms
+
+*** Solution: Folder-Based Static Site
+This approach offers:
+- **Simple content management**: Drag photos into folders, done
+- **Automatic metadata**: Captions extracted from filenames
+- **Fast performance**: Static generation + CDN delivery
+- **Full control**: Custom layouts, no platform limitations
+- **Cloudinary optimization**: Automatic format/quality optimization
+- **Zero database**: Filesystem is the source of truth
+
+* Core Principles
+
+** 1. Content First, Code Adapts
+
+*Photos are the source of truth.* The filesystem organization drives everything:
+- Folder structure determines site navigation
+- Filenames become captions automatically
+- Code adapts to content organization
+- Never reorganize photos to fix code issues
+
+This means:
+- Photographers organize logically, not technically
+- No database or admin panel needed
+- Git tracks content changes
+- Simple backup: copy folders
+
+** 2. Performance is a Feature
+
+Fast page loads aren't optional for a portfolio:
+- **Static generation**: All pages pre-rendered
+- **Cloudinary CDN**: Global edge delivery
+- **Lazy loading**: Load images as you scroll
+- **Responsive images**: Right size for each device
+- **Minimal JavaScript**: Core functionality is static HTML/CSS
+
+Goal: Portfolio loads in under 2 seconds on slow connections.
+
+** 3. Simple Content Management
+
+Adding photos should be trivial:
+1. Create folder in `public/photos/[gallery-name]/`
+2. Add photos with descriptive filenames
+3. Optional: Add `tags.json` for customization
+4. Push to GitHub
+5. Vercel auto-deploys
+
+No admin panel. No database. Just files.
+
+** 4. Professional Presentation
+
+The portfolio must impress:
+- **Masonry layout**: Elegant, Pinterest-style grid
+- **Full-screen lightbox**: Immersive viewing experience
+- **Responsive design**: Perfect on any device
+- **Clean typography**: Focus on photos, not clutter
+- **Smooth interactions**: Polished, professional feel
+
+** 5. Progressive Enhancement
+
+Start with solid foundations, add features carefully:
+- **Base**: Static HTML with CSS masonry works without JS
+- **Enhanced**: Lightbox and search require JavaScript
+- **Optional**: Comments, likes, social sharing can be added
+- **Fallback**: Everything degrades gracefully
+
+* Project Structure
+
+** Folder-Based Gallery System
+
+#+BEGIN_SRC
+public/photos/
+├── locarno-film-festival/     # Gallery: "Locarno Film Festival"
+│   ├── red-carpet.jpg         # → Caption: "Red Carpet"
+│   ├── screening-room.jpg     # → Caption: "Screening Room"
+│   └── tags.json              # Optional metadata
+├── brooklyn-street-scenes/    # Gallery: "Brooklyn Street Scenes"
+│   ├── 01-subway-platform.jpg # → Caption: "Subway Platform" (ordered)
+│   ├── 02-corner-store.jpg    # → Caption: "Corner Store"
+│   └── tags.json
+└── portraits/
+    ├── artist-studio.jpg
+    └── musician-rehearsal.jpg
+#+END_SRC
+
+** Each folder automatically:
+1. Becomes a gallery page at `/gallery/[folder-name]`
+2. Extracts gallery title from folder name
+3. Generates captions from filenames
+4. Creates masonry grid of thumbnails
+5. Enables lightbox for full-screen viewing
+
+** Optional `tags.json` allows:
+#+BEGIN_SRC json
+{
+  "title": "Custom Gallery Title",
+  "description": "Optional description",
+  "tags": ["tag1", "tag2"],
+  "photos": [
+    {
+      "filename": "photo.jpg",
+      "caption": "Custom caption override",
+      "featured": true
+    }
+  ]
+}
+#+END_SRC
+
+* Technology Choices
+
+** Why Astro?
+- **Static-first**: Perfect for portfolios
+- **Content collections**: Type-safe photo metadata
+- **Island architecture**: Minimal JavaScript
+- **Fast builds**: Efficient static generation
+- **Developer experience**: Great tooling
+
+** Why Cloudinary?
+- **Automatic optimization**: Format/quality handled automatically
+- **CDN delivery**: Fast global distribution
+- **Transformations**: Resize/crop on demand
+- **API**: Programmatic access at build time
+- **Free tier**: Generous limits for portfolios
+
+** Why Vercel?
+- **Auto-deployment**: Push to deploy
+- **Edge network**: Fast everywhere
+- **Build caching**: Incremental builds
+- **Analytics**: Performance insights
+- **Free tier**: Perfect for static sites
+
+** Why No CMS?
+- **Complexity**: Heavyweight for simple need
+- **Maintenance**: Updates, security, hosting
+- **Lock-in**: Hard to migrate
+- **Performance**: Database queries slow things down
+- **Simplicity**: Folders are simpler than admin panels
+
+* Design Philosophy
+
+** Masonry Layout
+Pinterest-style grid that:
+- Uses pure CSS (`column-count`, `break-inside: avoid`)
+- Avoids JavaScript layout libraries (Masonry.js, Packery)
+- Responds to screen size automatically
+- Preserves aspect ratios
+- Lazy-loads images efficiently
+
+See: [[file:masonry-architecture-improvements.org][Masonry Architecture Improvements]]
+
+** Lightbox Viewer
+Full-screen photo experience:
+- **Library**: GLightbox (lightweight, accessible)
+- **Features**: Zoom, keyboard nav, swipe gestures
+- **Loading**: Client-side lazy load (not build-time)
+- **Performance**: Only loads when needed
+
+** Responsive Strategy
+Mobile-first approach:
+- **Breakpoints**: Tailwind CSS defaults
+- **Images**: Cloudinary responsive transformations
+- **Layout**: Fluid masonry columns (1-5 depending on screen)
+- **Touch**: Swipe gestures in lightbox
+
+** Typography
+Clean and minimal:
+- **Headings**: Sans-serif (system fonts)
+- **Captions**: Readable size, good contrast
+- **Spacing**: Generous whitespace
+- **Focus**: Photos, not text
+
+* Content Strategy
+
+** Gallery Organization
+Organize by:
+- **Event**: "Locarno Film Festival 2024"
+- **Location**: "Brooklyn Street Scenes"
+- **Theme**: "Portraits" or "Architecture"
+- **Project**: "Vintage Camera Collection"
+
+Avoid:
+- Technical categories ("RAW Files", "Edited")
+- Date-only folders ("2024-08-15")
+- Generic names ("Miscellaneous", "Random")
+
+** Filename Best Practices
+Good filenames:
+- `golden-gate-bridge.jpg` → "Golden Gate Bridge"
+- `artist-in-studio.jpg` → "Artist In Studio"
+- `01-sunset-beach.jpg` → "Sunset Beach" (ordered first)
+
+Poor filenames:
+- `IMG_1234.jpg` → "Img 1234" (meaningless)
+- `untitled.jpg` → "Untitled" (no context)
+- `photo.jpg` → "Photo" (too generic)
+
+** Photo Selection
+For portfolio quality:
+- Curate ruthlessly (show best work only)
+- Consistent style within galleries
+- Varied compositions across galleries
+- High-resolution originals
+- Proper exposure and focus
+
+* Build Process
+
+** Content Layer Sync
+1. Astro build starts
+2. Custom content layer loader runs
+3. Fetches Cloudinary assets via API
+4. Caches responses locally (`/apicache`)
+5. Generates content collections
+6. Static pages render with photo data
+
+** Gallery Generation
+1. Read `public/photos/` directory structure
+2. For each folder:
+   - Generate gallery page
+   - Extract metadata (folder name, tags.json)
+   - Load Cloudinary-optimized thumbnails
+   - Create masonry grid
+   - Wire up lightbox functionality
+
+** Deployment
+1. Push to GitHub main branch
+2. Vercel webhook triggers build
+3. Build process:
+   - Install dependencies
+   - Sync Cloudinary
+   - Generate static pages
+   - Optimize assets
+4. Deploy to edge network
+5. Site live at photos.jaydixit.com
+
+* Performance Characteristics
+
+** Page Load
+- **First Contentful Paint**: < 1 second
+- **Largest Contentful Paint**: < 2.5 seconds
+- **Time to Interactive**: < 3 seconds
+- **Cumulative Layout Shift**: < 0.1
+
+** Image Delivery
+- **Format**: WebP (fallback to JPG)
+- **Quality**: Auto-optimized by Cloudinary
+- **Sizes**: Responsive (200w to 2000w)
+- **Loading**: Lazy (except above fold)
+
+** Build Time
+- **Empty cache**: ~2-3 minutes
+- **With cache**: ~30-60 seconds
+- **Incremental**: Only changed pages rebuild
+
+* Future Enhancements
+
+** Planned Features
+- Enhanced search with fuzzy matching
+- Gallery slideshows
+- Photo download options
+- Print sales integration
+- EXIF data display
+
+** Under Consideration
+- Photography blog integration
+- Behind-the-scenes content
+- Client gallery access (password-protected)
+- Photo story layouts
+- Instagram cross-posting
+
+** Won't Implement
+- Social media features (likes, shares, comments) — keeps focus on photography
+- User accounts — no need for authentication
+- E-commerce — handled separately if needed
+- Admin panel — filesystem is simpler
+
+* Related Documentation
+
+- [[file:concept-map.org][Concept Map]] - Terminology and definitions
+- [[file:design-architecture.org][Design Architecture]] - Technical implementation
+- Root [[file:../instructions.org][instructions.org]] - How to use and maintain
+- [[file:codebase-wisdom.org][Codebase Wisdom]] - Lessons learned
+- Root [[file:../cloudinary-setup.org][cloudinary-setup.org]] - Cloudinary integration
+
+---
+[[file:CLAUDE.org][← Docs Map]] | [[file:concept-map.org][Concept Map →]] | [[file:design-architecture.org][Architecture →]]
+
+Last Updated: 2025-10-04

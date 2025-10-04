@@ -1,0 +1,74 @@
+#+TITLE: Architecture Decision Records (ADRs)
+#+DATE: 2025-10-04
+#+DESCRIPTION: Index of significant technical and design decisions
+
+* Purpose
+
+This directory contains Architecture Decision Records (ADRs) for the photography portfolio project. Each ADR documents a significant architectural or design decision with context, alternatives, and consequences.
+
+* ADR Template
+
+#+BEGIN_SRC org
+#+TITLE: ADR-NNNN: [Short Descriptive Title]
+#+DATE: YYYY-MM-DD
+#+STATUS: [Proposed | Accepted | Deprecated | Superseded]
+
+- Context
+What problem are we solving? What constraints exist?
+
+- Decision
+What did we decide?
+
+- Alternatives Considered
+1. Option A - why rejected
+2. Option B - why rejected
+
+- Consequences
+** Positive
+- Benefit 1
+- Benefit 2
+
+** Negative (Trade-offs)
+- Trade-off 1
+- Trade-off 2
+
+- References
+- [[file:../design-architecture.org][Related docs]]
+- External links
+
+Last Updated: YYYY-MM-DD
+#+END_SRC
+
+* Suggested Initial ADRs
+
+Consider documenting these existing decisions:
+
+1. **ADR-0001: Folder-Based Gallery Organization**
+   - Why filesystem over database
+   - Content-first philosophy
+   - Trade-offs
+
+2. **ADR-0002: Cloudinary for Image Hosting**
+   - Why Cloudinary over self-hosted
+   - API integration approach
+   - Cost considerations
+
+3. **ADR-0003: CSS Masonry Over JavaScript**
+   - Why pure CSS layout
+   - Performance benefits
+   - Limitations accepted
+
+4. **ADR-0004: Static Generation with Astro**
+   - Why Astro over Next.js, Gatsby, etc.
+   - Build-time vs runtime trade-offs
+   - Content layer approach
+
+5. **ADR-0005: GLightbox for Photo Viewer**
+   - Library selection criteria
+   - Alternatives considered
+   - Hydration strategy
+
+---
+[[file:../CLAUDE.org][← Docs Map]]
+
+Last Updated: 2025-10-04

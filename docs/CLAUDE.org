@@ -1,0 +1,284 @@
+#+TITLE: CLAUDE.org - Documentation Map for Jay Dixit Photography Portfolio
+#+DATE: 2025-10-04
+#+DESCRIPTION: Entry point and navigation for all photography portfolio documentation
+
+#+BEGIN_COMMENT
+LLM_CONTEXT:
+- Purpose: Entry point and map for all documentation
+- Key Docs: All .org files in /docs
+- Always read before: Starting any major change or onboarding
+- Also includes: "For AI Assistants" section with navigation and key invariants
+Last Synced for AI Context: 2025-10-04
+#+END_COMMENT
+
+* Important Note
+
+The root **CLAUDE.md** file contains legacy documentation. This file (docs/CLAUDE.org) is the canonical documentation entry point. Both should be maintained during transition.
+
+* Recent Updates
+- 2025-10-04: Created comprehensive documentation system following how-to-document.org
+- 2025-10-04: Added AI assistant navigation and pre-session ritual
+- 2025-10-04: Organized existing documentation into structured /docs directory
+
+* Start Here
+
+If you're new to this project, read these in order:
+1. [[file:the-photos-approach.org][The Approach]] - Philosophy and project purpose
+2. [[file:design-architecture.org][Design Architecture]] - Technical architecture
+3. [[file:instructions.org][Instructions]] - How to use and maintain the site
+4. Continue below to "For AI Assistants" section for navigation and invariants
+
+* All Documentation Files
+
+** Core Documentation
+- [[file:CLAUDE.org][CLAUDE.org]] (this file) - Documentation map and starting point
+- [[file:concept-map.org][concept-map.org]] - Glossary of photography site terminology
+- [[file:the-photos-approach.org][the-photos-approach.org]] - Philosophy and project structure
+- [[file:design-architecture.org][design-architecture.org]] - Technical architecture
+- Root [[file:../instructions.org][instructions.org]] - Operational guide and workflows
+
+** Development Documentation
+- [[file:codebase-wisdom.org][codebase-wisdom.org]] - Hard-won debugging insights
+- [[file:work-log.org][work-log.org]] - Session-based work tracking
+- [[file:decisions/][decisions/]] - Architecture Decision Records (ADRs)
+
+** Specialized Topics
+- Root [[file:../cloudinary-setup.org][cloudinary-setup.org]] - Cloudinary integration guide
+- Root [[file:../astro-cloudinary.org][astro-cloudinary.org]] - Astro Cloudinary implementation
+- [[file:cloudinary-assets-content-layer.org][cloudinary-assets-content-layer.org]] - Content layer architecture
+- [[file:masonry-architecture-improvements.org][masonry-architecture-improvements.org]] - Masonry layout enhancements
+- Root [[file:../photo-resequencing-guide.org][photo-resequencing-guide.org]] - Photo ordering guide
+- Root [[file:../image-configuration-guide.org][image-configuration-guide.org]] - Image configuration
+- [[file:wikimedia-commons-upload.org][wikimedia-commons-upload.org]] - Wikimedia Commons workflow
+
+** Archive & Reference
+- [[file:archive/][archive/]] - Historical documentation
+- Root [[file:../change-log.org][change-log.org]] - Historical changelog (to be archived)
+- Root [[file:../salient-photography-architecture.org][salient-photography-architecture.org]] - Reference implementation
+- Root [[file:../packery-masonry-ideas.org][packery-masonry-ideas.org]] - Layout research
+- Root [[file:../wordpress-analysis.org][wordpress-analysis.org]] - WordPress comparison
+
+* Pre-Session Ritual (DO NOT SKIP)
+
+Every coding session MUST start with:
+1. Read last entry in [[file:work-log.org::*Session Handoff][work-log.org::*Session Handoff]]
+2. Review "For AI Assistants" section below for navigation guidance
+3. Check [[file:codebase-wisdom.org][codebase-wisdom.org]] for relevant gotchas
+4. Check root [[file:../design-architecture.org][design-architecture.org]] for system architecture
+
+Skipping this ritual leads to:
+- Regenerating existing code
+- Missing critical warnings
+- Breaking established patterns
+- Wasting time on preventable bugs
+
+* Core Philosophy
+
+** Content First, Code Adapts
+Photography content is the source of truth:
+- **Photos drive the structure** - folder organization determines galleries
+- **Metadata in filenames** - captions extracted from filenames
+- **Code serves content** - parsers and generators adapt to photo organization
+- **Preserve photographer intent** - don't modify photos or organization to fix code
+
+** Static Generation with Dynamic Feel
+- Pre-rendered galleries for speed
+- Progressive enhancement for interactivity
+- Cloudinary for optimization
+- Minimal JavaScript for core functionality
+
+* For Contributors
+
+** How to Update Documentation
+- Work-in-progress notes → [[file:drafts/][/docs/drafts/]]
+- Mature content → promote to /docs/
+- After debugging → add to [[file:codebase-wisdom.org][codebase-wisdom.org]]
+- After major decisions → create ADR in [[file:decisions/][/docs/decisions/]]
+
+** When to Document
+Ask in every retro: "What did we just learn that future developers will need?"
+
+** Documentation Health Checklist
+- [ ] Weekly: Verify all links are valid and up-to-date
+- [ ] Weekly: Update codebase-wisdom.org with new debugging insights
+- [ ] Weekly: Prune /docs/drafts/ of stale or unpromoted notes
+- [ ] Weekly: Check for out-of-date navigation links and cross-refs
+- [ ] Weekly: Review "Recent Updates" section for accuracy
+
+** Archive vs Delete Strategy
+
+*** Archive (preserve in docs/archive/)
+- Change logs - Historical record
+- Migration guides - How we moved between systems
+- Post-mortems - Major failures and fixes
+
+*** Delete (remove completely)
+- Outdated configuration examples
+- Deprecated feature documentation
+- Old TODO lists (completed/irrelevant)
+- Duplicate content with no historical value
+- **Always ask before deleting docs files**
+
+*** Keep Active (don't archive)
+- "What NOT to do" warnings
+- Codebase wisdom - Gotchas that could recur
+- Current architecture decisions
+
+* For AI Assistants
+[[*Start Here][↑ Back to Start Here Section]]
+
+A dedicated section for language models and AI coding assistants to understand the documentation layout, navigate relevant files, and maintain context continuity.
+
+** Overview for AI Assistants
+This is a **photography portfolio site** built with Astro and Cloudinary:
+
+Documentation structure:
+- [[file:the-photos-approach.org][the-photos-approach.org]] → project philosophy and purpose
+- [[file:design-architecture.org][design-architecture.org]] → technical architecture
+- [[file:codebase-wisdom.org][codebase-wisdom.org]] → debugging lessons and traps
+- Root [[file:../instructions.org][instructions.org]] → operational workflows
+- [[file:concept-map.org][concept-map.org]] → photography site terminology
+- [[file:work-log.org][work-log.org]] → session tracking and handoffs
+
+** Before Making Code Changes
+1. Check [[file:design-architecture.org][design-architecture.org]] for system architecture
+2. Check [[file:codebase-wisdom.org][codebase-wisdom.org]] for known gotchas
+3. Reference [[file:concept-map.org][concept-map.org]] for terminology
+4. Review last [[file:work-log.org::*Session Handoff][work-log.org session handoff]]
+
+** Project Structure
+
+*** Core Directories
+- **~/public/photos/~** - Photo storage organized by gallery
+- **~/src/pages/~** - Astro pages and routes
+- **~/src/components/~** - Reusable UI components
+- **~/src/lib/~** - Utilities and helpers
+- **~/docs/~** - Documentation (this directory)
+
+*** Key Files
+- **~site.config.mts~** - Site configuration
+- **~astro.config.mts~** - Astro configuration
+- **~.photoconfig.json~** - Photo metadata configuration
+- **~vercel.json~** - Deployment configuration
+
+** Key Invariants
+
+*** Content Organization
+- Photos organized in `public/photos/[gallery-name]/` folders
+- Each folder becomes a gallery page
+- Metadata extracted from filenames or tags.json
+- Never modify photo organization to fix code issues
+
+*** Cloudinary Integration
+- Images served through Cloudinary for optimization
+- Content layer syncs Cloudinary assets
+- Transformations applied via URL parameters
+- Cache management for API responses
+
+*** Build Process
+- Static generation for all gallery pages
+- Content collections for photo metadata
+- Dynamic imports for lightbox functionality
+- Progressive image loading
+
+*** Performance
+- Lazy loading for images
+- Masonry layout with CSS (no JS layout library)
+- Minimal client-side JavaScript
+- Cloudinary for automatic optimization
+
+** Common LLM Anti-Patterns in This Codebase
+
+*** Pattern: Modifying Photo Organization to Fix Code       :content:CRITICAL:2025-10:
+Problem: LLM suggests renaming folders or reorganizing photos to accommodate code limitations
+Fix: **Always fix the code**, never modify photo organization - content is source of truth
+Prevention: Load [[file:CLAUDE.org::*Core Philosophy][CLAUDE.org::*Core Philosophy]] before working with galleries
+Frequency: High - Violates fundamental principle
+
+*** Pattern: Adding Heavy JS Libraries for Layout           :performance:HIGH_SEVERITY:2025-10:
+Problem: LLM suggests using Masonry.js or Packery instead of CSS
+Fix: Use CSS-based layout (column-count, break-inside: avoid)
+Prevention: Check [[file:design-architecture.org::*Masonry Layout][design-architecture.org::*Masonry Layout]]
+Frequency: Medium - Performance impact
+
+*** Pattern: Breaking Cloudinary URL Patterns                :cloudinary:HIGH_SEVERITY:2025-10:
+Problem: LLM modifies Cloudinary transformation URLs incorrectly
+Fix: Follow Cloudinary URL parameter documentation
+Prevention: Reference [[file:../cloudinary-setup.org][cloudinary-setup.org]]
+Frequency: Medium - Breaks image delivery
+
+*** Pattern: Not Using Content Layer for Cloudinary         :architecture:MEDIUM_SEVERITY:2025-10:
+Problem: LLM tries to fetch Cloudinary data client-side instead of build-time
+Fix: Use Astro content layer for Cloudinary assets
+Prevention: Check [[file:cloudinary-assets-content-layer.org][cloudinary-assets-content-layer.org]]
+Frequency: Medium
+
+*** Pattern: Over-Hydrating Gallery Components              :performance:MEDIUM_SEVERITY:2025-10:
+Problem: LLM adds `client:load` unnecessarily for static galleries
+Fix: Use `client:visible` or `client:idle` for interactive components only
+Prevention: Review Astro hydration strategies
+Frequency: High - LLMs default to client:load
+
+*** Pattern: Partial Context Submissions                    :process:HIGH_SEVERITY:2025-10:
+Problem: LLM submits changes without loading full context
+Fix: Always load entire files and related documentation
+Prevention: Follow [[file:CLAUDE.org::*Pre-Session Ritual (DO NOT SKIP)][CLAUDE.org::*Pre-Session Ritual]]
+Frequency: Very High
+
+** Quick Reference
+
+*** To add a new gallery:
+1. Create folder in `public/photos/[gallery-name]/`
+2. Add photos to folder
+3. Create `tags.json` for gallery metadata (optional)
+4. Run build to generate gallery page
+5. Test gallery at `/gallery/[gallery-name]`
+
+*** To modify gallery layout:
+1. Check [[file:design-architecture.org::*Masonry Layout][design-architecture.org::*Masonry Layout]] first
+2. Modify CSS in layout component
+3. Test responsive behavior
+4. Verify lazy loading still works
+5. Check build time impact
+
+*** To debug Cloudinary issues:
+1. Check [[file:codebase-wisdom.org][codebase-wisdom.org]] for similar issues
+2. Verify API credentials in `.env`
+3. Check content layer sync logs
+4. Test URL transformations manually
+5. Clear API cache if needed
+
+*** To fix a bug:
+1. Search [[file:codebase-wisdom.org][codebase-wisdom.org]] for similar issues
+2. Load full context of related files
+3. Test fix locally
+4. Update codebase-wisdom.org with findings
+5. Document in work-log.org
+
+* Project Quick Facts
+
+- **What**: Photography portfolio site with folder-based galleries
+- **Tech Stack**: Astro, Cloudinary, TypeScript, Tailwind CSS
+- **Architecture**: Static generation + Cloudinary CDN
+- **Domain**: photos.jaydixit.com
+- **Philosophy**: Content first, code adapts
+
+* Development Commands
+
+** Local Development
+- `npm run dev` - Start dev server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+
+** Cloudinary Sync
+- `npm run sync` - Sync Cloudinary assets to content layer
+- Check logs in `/logs` directory
+
+** Deployment
+- Push to main branch → auto-deploy via Vercel
+- Deployment logs at vercel.com dashboard
+
+---
+[[file:the-photos-approach.org][→ Philosophy]] | [[file:design-architecture.org][→ Architecture]] | [[file:../instructions.org][→ Instructions]]
+
+Last Updated: 2025-10-04

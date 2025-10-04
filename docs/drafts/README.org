@@ -1,0 +1,23 @@
+#+TITLE: Documentation Drafts
+#+DATE: 2025-10-04
+
+* Purpose
+
+Work-in-progress documentation for the photography portfolio project.
+
+** Workflow
+- Create files with underscore prefix: `_draft-feature-name.org`
+- Write freely without worrying about polish
+- Promote to /docs when mature
+- Delete stale drafts (>1 month old)
+
+** What Belongs Here
+- Feature planning notes
+- Session debugging notes
+- Design experiments
+- "Maybe later" ideas
+
+---
+[[file:../CLAUDE.org][← Docs Map]]
+
+Last Updated: 2025-10-04

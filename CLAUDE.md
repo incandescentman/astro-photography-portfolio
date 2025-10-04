@@ -1,6 +1,8 @@
 - Jay Dixit Photography Portfolio - Developer Handoff
 
-  
+*Note*: This is legacy documentation. For comprehensive documentation, see [[file:docs/CLAUDE.org][docs/CLAUDE.org]].
+
+
 
 
 

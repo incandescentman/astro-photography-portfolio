@@ -1,0 +1,331 @@
+#+TITLE: Concept Map - Photography Portfolio Terminology
+#+DATE: 2025-10-04
+#+DESCRIPTION: Glossary of photography site-specific terms and internal language
+
+#+BEGIN_COMMENT
+LLM_CONTEXT:
+- Purpose: Glossary of internal terms and language
+- Key Docs: Links to terms, code locations, ADRs
+- Always read before: Using or introducing new terminology
+Last Synced for AI Context: 2025-10-04
+#+END_COMMENT
+
+* Purpose
+Single source of truth for project-specific terminology and internal language used in the Jay Dixit Photography Portfolio.
+
+* Core Concepts
+
+** Gallery
+A collection of photos organized in a single folder, rendered as a dedicated page.
+
+Location: `public/photos/[gallery-name]/`
+URL: `/gallery/[gallery-name]`
+Metadata: Extracted from folder name and optional `tags.json`
+Related: [[*Folder-Based Organization]]
+
+** Folder-Based Organization
+Architectural pattern where filesystem structure drives site navigation.
+
+Structure: Each subfolder in `public/photos/` becomes a gallery
+Benefits: Simple content management, no database needed
+Constraint: Folder names must be URL-safe
+Implementation: Dynamic route generation in Astro
+
+** Masonry Layout
+CSS-based responsive grid layout that arranges photos in columns.
+
+Implementation: `column-count` CSS with `break-inside: avoid`
+Not Used: JavaScript libraries (Masonry.js, Packery)
+Features: Responsive, lazy-loading, pure CSS
+Related: [[file:masonry-architecture-improvements.org][Masonry Architecture Improvements]]
+
+** Lightbox
+Full-screen photo viewer with navigation and zoom.
+
+Library: GLightbox
+Features: Keyboard navigation, swipe gestures, zoom
+Trigger: Click on gallery thumbnail
+Loading: Lazy-loaded client-side component
+
+** Caption
+Descriptive text for a photo extracted from filename.
+
+Source: Photo filename (e.g., `sunset-over-ocean.jpg` → "Sunset Over Ocean")
+Processing: Automatic title-casing, hyphen-to-space conversion
+Override: Can be set in `tags.json`
+Display: Below photo in lightbox
+
+* Cloudinary Terminology
+
+** Cloudinary
+Cloud-based image and video management service.
+
+Purpose: Image optimization, transformation, CDN delivery
+Integration: Content layer syncs assets at build time
+Benefits: Automatic format/quality optimization
+API: REST API for asset management
+
+** Content Layer
+Astro's system for loading data at build time into content collections.
+
+Purpose: Fetch Cloudinary assets during build
+Implementation: Custom loader in `astro.config.mts`
+Benefits: Static generation, no client-side API calls
+Location: [[file:cloudinary-assets-content-layer.org][cloudinary-assets-content-layer.org]]
+
+** Transformation
+URL-based image modifications applied by Cloudinary.
+
+Examples: Resize, crop, quality, format conversion
+Syntax: `/w_800,h_600,c_fill/` in Cloudinary URL
+Application: Automatic based on viewport/usage
+Documentation: Root [[file:../cloudinary-setup.org][cloudinary-setup.org]]
+
+** Public ID
+Unique identifier for a Cloudinary asset.
+
+Format: Folder path + filename without extension
+Example: `locarno-film-festival/red-carpet`
+Usage: Reference in Cloudinary URLs
+Source: Derived from folder structure
+
+** API Cache
+Local cache of Cloudinary API responses to reduce API calls.
+
+Location: `/apicache/` directory
+Purpose: Avoid rate limits, faster builds
+Invalidation: Manual or time-based
+Control: `throttle.ctrl` file
+
+* Technical Terminology
+
+** Static Generation
+Build-time rendering of all pages to HTML.
+
+Framework: Astro
+Output: Pre-rendered HTML + minimal JavaScript
+Benefits: Fast page loads, good SEO
+Deployment: Vercel static hosting
+
+** Dynamic Route
+Page route generated from filesystem or data at build time.
+
+Pattern: `[gallery-name]/index.astro`
+Data Source: Photo folders
+Generation: One page per gallery
+Implementation: Astro `getStaticPaths()`
+
+** Lazy Loading
+Deferred loading of images until they're about to enter viewport.
+
+Method: Native `loading="lazy"` attribute
+Benefits: Faster initial page load, reduced bandwidth
+Trigger: Scroll position proximity
+Fallback: Eager load for above-fold images
+
+** tags.json
+Per-gallery metadata file for custom configuration.
+
+Location: `public/photos/[gallery]/tags.json`
+Purpose: Override defaults, add gallery description
+Schema: `{ "title": "...", "description": "...", "photos": [...] }`
+Optional: Galleries work without it
+
+** .photoconfig.json
+Site-wide photo configuration file.
+
+Location: Root directory
+Purpose: Global settings for photo handling
+Contents: Default transformations, layout settings
+Usage: Referenced by build scripts
+
+* Content Management
+
+** Photo Filename Convention
+Naming pattern for photo files that generates captions.
+
+Pattern: `descriptive-title.jpg`
+Processing: Hyphens → spaces, title case applied
+Example: `golden-gate-bridge.jpg` → "Golden Gate Bridge"
+Best Practice: Use descriptive, hyphenated names
+
+** Gallery Metadata
+Information about a gallery and its photos.
+
+Sources: Folder name, tags.json, photo filenames
+Fields: Title, description, photo list, tags
+Extraction: Build-time processing
+Display: Gallery page header
+
+** Photo Ordering
+Sequence of photos within a gallery.
+
+Default: Alphabetical by filename
+Custom: Specify in tags.json photo array
+Method: Number prefix (e.g., `01-first-photo.jpg`)
+Guide: Root [[file:../photo-resequencing-guide.org][photo-resequencing-guide.org]]
+
+* Feature-Specific Terms
+
+** Search
+Keyword-based filtering of photos across all galleries.
+
+Implementation: Client-side JavaScript
+Index: Photo captions and gallery titles
+Trigger: Search input in navigation
+Display: Filtered masonry grid
+
+** Tags
+Keywords associated with photos or galleries.
+
+Source: tags.json or generated from gallery name
+Display: Clickable filter chips
+Function: Filter photos by tag
+Storage: Build-time extraction
+
+** Likes
+Per-photo engagement tracking (optional feature).
+
+Storage: Local storage or external service
+Display: Heart icon with count
+Purpose: User engagement tracking
+Status: Optional/experimental
+
+** Giscus Comments
+GitHub Discussions-based commenting system.
+
+Integration: Optional per-gallery
+Authentication: GitHub OAuth
+Storage: GitHub Discussions
+Configuration: Site config
+
+* Build Process
+
+** Build
+Process of generating static HTML from source code.
+
+Command: `npm run build`
+Steps: Sync Cloudinary → generate pages → optimize assets
+Output: `/dist` directory
+Duration: Varies with photo count
+
+** Sync
+Process of fetching Cloudinary assets into content layer.
+
+Trigger: Part of build process
+Source: Cloudinary API
+Destination: Astro content collections
+Logs: `/logs` directory
+
+** Deployment
+Publishing built site to production.
+
+Platform: Vercel
+Trigger: Git push to main branch
+Process: Auto-build + deploy
+URL: photos.jaydixit.com
+
+* Astro-Specific
+
+** Content Collection
+Type-safe data structure in Astro for managing content.
+
+Usage: Photo metadata, gallery info
+Schema: Defined in `src/content/config.ts`
+Loading: Content layer loaders
+Access: `getCollection()` function
+
+** Island Architecture
+Astro's approach to selective client-side hydration.
+
+Concept: Static HTML with interactive "islands"
+Directives: `client:load`, `client:visible`, `client:idle`
+Usage: Lightbox, search, interactive components
+Benefits: Minimal JavaScript, fast performance
+
+** Site Config
+Central configuration file for site-wide settings.
+
+File: `site.config.mts`
+Contents: Site name, description, social links
+Usage: Imported throughout codebase
+Type: TypeScript module
+
+* Performance Terms
+
+** CDN (Content Delivery Network)
+Distributed network serving assets from edge locations.
+
+Provider: Cloudinary + Vercel
+Purpose: Fast image delivery worldwide
+Benefits: Reduced latency, bandwidth savings
+Implementation: Automatic via Cloudinary
+
+** Responsive Images
+Images that adapt to different screen sizes.
+
+Method: Cloudinary transformations
+Breakpoints: Defined in component props
+Format: WebP with fallbacks
+Goal: Optimal file size per device
+
+** Progressive Loading
+Loading strategy that shows content incrementally.
+
+Technique: Lazy loading + placeholder images
+UX: Fast perceived performance
+Implementation: Native browser features
+Fallback: Eager loading for critical images
+
+* Photography Terms
+
+** Portfolio
+Complete collection of photographer's work.
+
+Structure: Multiple galleries
+Organization: By subject, event, or theme
+Purpose: Professional showcase
+Audience: Potential clients, art directors
+
+** Gallery vs. Album
+- **Gallery**: Single themed collection (our usage)
+- **Album**: Traditional photography term (not used here)
+
+We use "gallery" for all photo collections.
+
+* Integration Points
+
+** Vercel
+Hosting and deployment platform.
+
+Features: Auto-deployment, edge functions, analytics
+Configuration: `vercel.json`
+Dashboard: vercel.com
+CLI: `vercel` command
+
+** GitHub
+Version control and CI/CD trigger.
+
+Repository: photos-jaydixit
+Branches: main (production)
+Automation: Push → Vercel deploy
+Actions: Pre-commit hooks
+
+** Wikimedia Commons
+Public media repository for select photos.
+
+Purpose: Public domain contribution
+Workflow: [[file:wikimedia-commons-upload.org][wikimedia-commons-upload.org]]
+Bot: Python upload script
+Status: Optional process
+
+* Cross-References
+
+- Related Docs: [[file:CLAUDE.org][CLAUDE.org]], [[file:design-architecture.org][Design Architecture]]
+- Related Code: `src/components/Gallery.astro`, `src/lib/cloudinary.ts`
+- Related Guides: Root [[file:../instructions.org][instructions.org]], Root [[file:../cloudinary-setup.org][cloudinary-setup.org]]
+
+---
+[[file:CLAUDE.org][← Docs Map]] | [[file:design-architecture.org][Architecture →]]
+
+Last Updated: 2025-10-04
