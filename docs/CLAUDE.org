@@ -45,7 +45,7 @@ If you're new to this project, read these in order:
 ** Specialized Topics
 - Root [[file:../cloudinary-setup.org][cloudinary-setup.org]] - Cloudinary integration guide
 - Root [[file:../astro-cloudinary.org][astro-cloudinary.org]] - Astro Cloudinary implementation
-- [[file:cloudinary-assets-content-layer.org][cloudinary-assets-content-layer.org]] - Content layer architecture
+- Root [[file:../cloudinary-assets-content-layer.org][cloudinary-assets-content-layer.org]] - Content layer architecture
 - [[file:masonry-architecture-improvements.org][masonry-architecture-improvements.org]] - Masonry layout enhancements
 - Root [[file:../photo-resequencing-guide.org][photo-resequencing-guide.org]] - Photo ordering guide
 - Root [[file:../image-configuration-guide.org][image-configuration-guide.org]] - Image configuration
@@ -210,7 +210,7 @@ Frequency: Medium - Breaks image delivery
 *** Pattern: Not Using Content Layer for Cloudinary         :architecture:MEDIUM_SEVERITY:2025-10:
 Problem: LLM tries to fetch Cloudinary data client-side instead of build-time
 Fix: Use Astro content layer for Cloudinary assets
-Prevention: Check [[file:cloudinary-assets-content-layer.org][cloudinary-assets-content-layer.org]]
+Prevention: Check Root [[file:../cloudinary-assets-content-layer.org][cloudinary-assets-content-layer.org]]
 Frequency: Medium
 
 *** Pattern: Over-Hydrating Gallery Components              :performance:MEDIUM_SEVERITY:2025-10:

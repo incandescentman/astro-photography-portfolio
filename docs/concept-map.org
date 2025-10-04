@@ -71,7 +71,7 @@ Astro's system for loading data at build time into content collections.
 Purpose: Fetch Cloudinary assets during build
 Implementation: Custom loader in `astro.config.mts`
 Benefits: Static generation, no client-side API calls
-Location: [[file:cloudinary-assets-content-layer.org][cloudinary-assets-content-layer.org]]
+Location: Root [[file:../cloudinary-assets-content-layer.org][cloudinary-assets-content-layer.org]]
 
 ** Transformation
 URL-based image modifications applied by Cloudinary.
