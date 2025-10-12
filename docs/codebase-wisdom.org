@@ -2,11 +2,11 @@
 #+DATE: 2025-10-03
 
 * 2025-10-03 - Vite Module Imports & Masonry Visibility
-- The masonry gallery script was initially imported via a relative path such as ~../scripts/packeryGallery.ts~. In Astro + Vite, that resolves relative to the generated JS file at runtime, so the browser requested ~/scripts/packeryGallery.ts~ and received a 404.
+- The masonry gallery script was initially imported via a relative path such as ~../scripts/packeryGallery.ts~ inside a regular ~<script type="module">~ block. In Astro + Vite, that executes on the client without bundling, so the browser requested ~/src/scripts/packeryGallery.ts~ and received a 404.
 - Because the initializer never ran, masonry items kept their absolute positioning and zero-opacity state, resulting in a blank photo grid—especially visible on mobile where the fallback relies entirely on the script.
-- Fix: Reference shared client-side modules from the Vite root using an absolute import like ~import initPackeryGallery from '/src/scripts/packeryGallery.ts';~ so Vite can bundle the module, regardless of which page consumes it.
-- Reminder: when moving a script into ~src/scripts~, either wire it through Astro components or use the leading ~/src/~ path; avoid ~Astro.resolve~ inside static scripts because it executes at build time and produces runtime URLs that Vite cannot serve on the client.
-- Checklist update: before shipping a new browser-side helper, confirm imports follow the `/src/...` pattern and that a quick `npm run build` succeeds without 404s in devtools logs.
+- Fix: Switch to a hoisted script (~<script hoist>~) so Astro registers the dependency at build time; relative imports like ~import initPackeryGallery from '../scripts/packeryGallery.ts'~ now bundle correctly for every page.
+- Reminder: avoid ~Astro.resolve~ for browser-targeted helpers; it runs during SSR and returns plain URLs that bypass Vite's bundler pipeline.
+- Checklist update: before shipping a new browser-side helper, confirm the entry point uses ~<script hoist>~ (or a frontmatter import) and that a quick ~npm run build~ succeeds without 404s in devtools logs.
 
 * 2025-10-03 - Mobile Masonry Gaps
 - Desktop Packery styles fix explicit heights on `.masonry-item` and images using `!important`. When we flip to the mobile flex fallback, those declarations persisted, so cards kept the desktop height even though the images were set to `auto`, leaving huge blank bands after the visible crop.

@@ -1,6 +1,19 @@
 #+TITLE: Work Log - Jay Dixit Photography Portfolio
 #+DATE: 2025-10-03
 
+* 2025-10-05 - Packery Bundle Regression
+** Symptoms
+- Vercel build succeeded, but production requested ~/src/scripts/packeryGallery.ts~ directly and hit a 404, leaving the gallery empty.
+- Browser console showed ~GET https://photos-jaydixit.vercel.app/src/scripts/packeryGallery.ts net::ERR_ABORTED 404 (Not Found)~ on both the homepage and folder routes.
+** Fix
+- Replaced inline ~<script type="module">~ imports with hoisted scripts so Astro includes ~src/scripts/packeryGallery.ts~ in the build output.
+- Updated ~src/pages/index.astro~ and ~src/pages/gallery/[...folder].astro~ to ~import initPackeryGallery from '../scripts/packeryGallery.ts'~ and ~../../scripts/packeryGallery.ts~ respectively.
+- Confirmed ~npm run build~ now emits ~dist/_astro/packeryGallery.*.js~, and masonry renders again in production.
+** Notes
+- Avoid ~Astro.resolve~ for client helpers; use hoisted scripts or frontmatter imports so the bundler owns the dependency graph.
+- Keep an eye on future refactors that move shared scripts—mixed absolute and relative imports can mask bundling gaps during dev.
+- Follow-up: redeploy to Vercel after each bundling-related change to confirm the CDN serves the hydrated assets.
+
 * 2025-10-03 - Vercel Deployment & Mobile Optimization
 
 ** Vercel Configuration
