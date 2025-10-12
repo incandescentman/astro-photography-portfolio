@@ -1,0 +1,17 @@
+/* PhotoSwipe Custom Styling */
+
+/* Darker background overlay for better focus on the image */
+.pswp__bg {
+  background-color: rgba(0, 0, 0, 0.95) !important;
+  opacity: 1 !important;
+}
+
+/* Ensure smooth transitions */
+.pswp--open {
+  backdrop-filter: blur(8px);
+}
+
+/* Caption styling to match your design */
+.pswp__caption {
+  background: rgba(0, 0, 0, 0.75);
+}
