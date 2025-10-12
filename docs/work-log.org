@@ -1,29 +1,25 @@
 #+TITLE: Work Log - Jay Dixit Photography Portfolio
 #+DATE: 2025-10-12
 
-* 2025-10-12 - Dynamic Aspect Ratios & Full-Bleed Masonry
+* 2025-10-12 - Failed Attempt at Dynamic Aspect Ratios
 ** Goal
-- Finally achieve a true, full-bleed (edge-to-edge) masonry gallery on the homepage.
-- Ensure images display at their natural aspect ratio without being cropped or distorted.
+- Refactor the homepage gallery to use dynamic, natural aspect ratios for all images, enabling a true edge-to-edge layout.
 
-** Problem
-- All previous attempts at a full-bleed layout failed because the masonry items had fixed heights set in the CSS (e.g., `height: 480px !important`).
-- This forced images into incorrect aspect ratios, causing unwanted cropping and preventing the layout from adapting fluidly to a full-width container.
-- This was the root cause of the issues documented in the "Edge-to-Edge Attempts Retrospective" from 2025-10-05.
+** Changes Made
+- A script was created to generate a metadata file (`image-metadata.json`) containing the true dimensions of all images.
+- The homepage was modified to use this metadata to drive the layout, replacing the old fixed-height CSS with a dynamic aspect-ratio system.
+- This involved passing the real image dimensions to the Astro `<Image>` component and removing several layers of conflicting CSS.
 
-** Solution
-- **Image Metadata Generation:** A new script, `scripts/generate-image-metadata.js`, was created. It uses the `sharp` library to scan all images in the `public/` directory at build time, extracting their exact dimensions.
-- **Centralized Metadata:** The script saves this dimension data to a new file at `src/data/image-metadata.json`.
-- **Dynamic Sizing in Astro:** The homepage (`src/pages/index.astro`) now imports this JSON file. As it loops through the images to create the gallery, it calculates the correct aspect ratio for each photo.
-- **CSS Custom Properties:** This calculated aspect ratio is passed directly to the HTML of each masonry item using a CSS custom property (`--aspect-ratio`).
-- **CSS Refactor:** All `height: ... !important` rules were removed from the stylesheet. The `.masonry-item` class was updated to use the new variable: `aspect-ratio: var(--aspect-ratio);`.
-- **Final Layout:** With items now correctly and dynamically sized, the horizontal padding on the main `.portfolio-wrap` container was removed, allowing the gallery to expand to the full width of the viewport.
+** Outcome: FAILURE
+- The refactoring has resulted in a broken layout.
+- Captions, intended as overlays, are now visible by default and rendered below their corresponding image.
+- This incorrectly increases the height of each masonry item, creating large vertical gaps in the Packery grid and making the layout unusable.
 
-** Outcome
-- The homepage gallery is now a true, full-bleed, edge-to-edge masonry layout.
-- All images are displayed at their correct aspect ratio, eliminating the cropping problem entirely.
-- This resolves the long-standing layout issue and completes the goal of a dynamic, visually accurate portfolio presentation.
-- As a minor cleanup, the edit icon and its related CSS were removed from the gallery items.
+** Analysis
+- The root cause is a complex and persistent CSS layout issue. Despite multiple attempts, the caption overlay (`.caption-overlay`) is not being correctly positioned over the image.
+- It is behaving as if it is part of the normal document flow rather than being absolutely positioned relative to its container.
+- The interaction between the Astro `<Image>` component (which generates its own wrapper elements) and the parent `<a>` tag (which must act as the positioning context) is proving difficult to resolve.
+- Further attempts to fix this with small CSS changes have failed. A more fundamental solution is required.
 
 * 2025-10-05 - Packery Bundle Regression
 ** Symptoms
