@@ -397,26 +397,20 @@ function mapSingle(img) {
         // Get metadata for aspect ratio
         const key = 'highlights/' + photo.filename;
         const meta = imageMetadata[key];
-        console.log(`[DEBUG] Metadata lookup for ${photo.filename}: KEY='${key}', FOUND=${!!meta}`);
-        const aspectRatio = meta ? meta.width / meta.height : 1;
 
-        // Calculate dimensions based on size
-        const dimensions = {
-          portrait: { w: 320, h: 480 },
-          landscape: { w: 648, h: 480 },
-          xlportrait: { w: 648, h: 968 }
-        };
-        const { w, h } = dimensions[photo.size];
+        // Use the real dimensions from metadata, with a fallback for safety
+        const imageWidth = meta ? meta.width : 320;
+        const imageHeight = meta ? meta.height : 480;
 
         return (
-          <article class={`masonry-item ${variant}`} data-idx={index} data-filename={photo.filename} data-size={photo.size} style={`--aspect-ratio: ${aspectRatio}`}>
+          <article class={`masonry-item ${variant}`} data-idx={index} data-filename={photo.filename} data-size={photo.size}>
             
             <a class="masonry-link portfolio-lightbox" href={photo.src}>
               <Image
                 src={photo.src}
                 alt={photo.caption}
-                width={w}
-                height={h}
+                width={imageWidth}
+                height={imageHeight}
                 layout="responsive"
                 fit="cover"
                 position="attention"
@@ -463,7 +457,6 @@ function mapSingle(img) {
   transform: translateY(12px);
   position: absolute;
   overflow: hidden;
-  aspect-ratio: var(--aspect-ratio);
 }
 
 .masonry-item.animated-in {
