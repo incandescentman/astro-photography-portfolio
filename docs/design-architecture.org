@@ -95,6 +95,22 @@ Users should see content ASAP, not stare at blank screens. Photography portfolio
 - Masonry layout with imagesLoaded and Packery
 - Image metadata from =src/data/homepage-images.js=
 
+*** Admin Interface Enhancements
+The admin mode for resequencing the homepage gallery has been enhanced to provide a more modern and intuitive user experience.
+
+**** "Dirty" State Indicator
+- *Problem*: Previously, there was no visual distinction between the local auto-save (which happens on drag) and the final server-side save (which requires a button click). A user might reorder images and assume the changes were fully persisted.
+- *Solution*: The system now tracks a "dirty" state. When a user drags an item, the "Save Sequence" button is immediately marked with a yellow asterisk (*), indicating that there are changes that have not yet been saved to the server.
+- *Benefit*: This provides clear, persistent feedback, reducing ambiguity and preventing accidental data loss. It clarifies the two-step save process (local auto-save vs. server-side persistence).
+
+**** Toast Notifications
+- *Problem*: The only feedback for save operations was the "Save Sequence" button's text changing temporarily. This is subtle and can be easily missed. It also couldn't convey different levels of information (e.g., success vs. error vs. informational).
+- *Solution*: The button-text feedback has been replaced with a toast notification system.
+  - A green "Success" toast appears on a successful server save.
+  - A red "Error" toast appears if the save fails.
+  - A gray "Info" toast appears when the sequence is auto-saved locally.
+- *Benefit*: This is a standard, modern UX pattern that provides clear, prominent, and context-rich feedback. It improves user confidence and makes the status of the system unambiguous.
+
 *** Gallery Pages (=src/pages/gallery/[...folder].astro=)
 - Dynamic routes from =public/photos/**= folder structure
 - Automatic caption parsing from filenames

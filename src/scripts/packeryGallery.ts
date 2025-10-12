@@ -80,9 +80,9 @@ export default function initPackeryGallery(options: PackeryGalleryOptions) {
 
     restoreSavedOrder(containerEl, localStorageKey);
 
-    setupAdminFeatures({ container: containerEl, pckry, isAdminMode, localStorageKey });
+    const { setDirty } = setupAdminFeatures({ container: containerEl, pckry, isAdminMode, localStorageKey });
 
-    await setupPackeryLifecycle({ container: containerEl, pckry, isAdminMode, localStorageKey });
+    await setupPackeryLifecycle({ container: containerEl, pckry, isAdminMode, localStorageKey, setDirty });
 
     if (enablePhotoSwipe) {
       setupPhotoSwipe({ container: containerEl, isAdminMode });
@@ -194,9 +194,64 @@ function injectAdminToolbarStyles() {
       background: rgba(255,255,255,0.1);
       border: 1px solid rgba(255,255,255,0.2);
     }
+
+    .admin-toolbar__button.is-dirty > span:last-of-type::before {
+      content: '*';
+      margin-right: 4px;
+      font-weight: 700;
+      color: #f59e0b;
+    }
+
+    .toast-notification {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translate(-50%, 10px);
+      padding: 12px 24px;
+      border-radius: 8px;
+      background: #2d3748;
+      color: white;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 100000;
+      opacity: 0;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+    }
+
+    .toast-notification.is-visible {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    .toast-notification--success {
+      background: #2f855a;
+    }
+
+    .toast-notification--error {
+      background: #c53030;
+    }
   `;
   document.head.appendChild(style);
   adminToolbarStylesInjected = true;
+}
+
+function showToast(message: string, type: 'success' | 'error' | 'info' = 'info') {
+  document.querySelectorAll('.toast-notification').forEach(t => t.remove());
+  const toast = document.createElement('div');
+  toast.className = `toast-notification toast-notification--${type}`;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add('is-visible');
+  }, 10);
+
+  setTimeout(() => {
+    toast.classList.remove('is-visible');
+    toast.addEventListener('transitionend', () => toast.remove(), { once: true });
+  }, 3500);
 }
 
 function createAdminToolbar() {
@@ -335,6 +390,14 @@ type AdminFeatureParams = {
 
 function setupAdminFeatures({ container, pckry, isAdminMode, localStorageKey }: AdminFeatureParams) {
   if (!isAdminMode) return;
+
+  let isDirty = false;
+  const saveButton = document.getElementById('save-order');
+
+  const setDirty = (dirty: boolean) => {
+    isDirty = dirty;
+    saveButton?.classList.toggle('is-dirty', isDirty);
+  };
 
   container.classList.add('admin-mode');
 
@@ -553,7 +616,7 @@ function setupAdminFeatures({ container, pckry, isAdminMode, localStorageKey }: 
     openEditPopover(item);
   }, true);
 
-  document.getElementById('save-order')?.addEventListener('click', async () => {
+  saveButton?.addEventListener('click', async () => {
     const items = pckry.getItemElements();
     const order = items.map((entry) => {
       const img = entry.querySelector('img');
@@ -585,31 +648,16 @@ function setupAdminFeatures({ container, pckry, isAdminMode, localStorageKey }: 
         body: JSON.stringify(order),
       });
 
-      const result = await response.json();
-      const button = document.getElementById('save-order');
-      if (button) {
-        if (response.ok) {
-          button.textContent = 'Sequence Saved!';
-          button.setAttribute('style', `${button.getAttribute('style') || ''}; background: #10b981;`);
-          console.log('Sequence saved to server:', result);
-        } else {
-          button.textContent = 'Error Saving';
-          button.setAttribute('style', `${button.getAttribute('style') || ''}; background: #ef4444;`);
-          console.error('Failed to save to server:', result);
-        }
-        setTimeout(() => {
-          button.textContent = 'Save Sequence';
-        }, 3000);
+      if (response.ok) {
+        showToast('Sequence saved to server!', 'success');
+        setDirty(false);
+      } else {
+        const result = await response.json();
+        showToast(`Error: ${result.message || 'Could not save to server.'}`, 'error');
       }
     } catch (error) {
       console.error('Error saving to server:', error);
-      const button = document.getElementById('save-order');
-      if (button) {
-        button.textContent = 'Saved Locally';
-        setTimeout(() => {
-          button.textContent = 'Save Sequence';
-        }, 2000);
-      }
+      showToast('Sequence saved locally only.', 'info');
     }
   });
 
@@ -649,6 +697,9 @@ function setupAdminFeatures({ container, pckry, isAdminMode, localStorageKey }: 
     exportLink.click();
     document.body.removeChild(exportLink);
   });
+
+  // Return setDirty to be used in other scopes
+  return { setDirty };
 }
 
 type PackeryLifecycleOptions = {
@@ -656,9 +707,10 @@ type PackeryLifecycleOptions = {
   pckry: PackeryInstance;
   isAdminMode: boolean;
   localStorageKey: string;
+  setDirty: (dirty: boolean) => void;
 };
 
-async function setupPackeryLifecycle({ container, pckry, isAdminMode, localStorageKey }: PackeryLifecycleOptions) {
+async function setupPackeryLifecycle({ container, pckry, isAdminMode, localStorageKey, setDirty }: PackeryLifecycleOptions) {
   const allItems = container.querySelectorAll('.masonry-item');
   let loadedCount = 0;
 
@@ -747,20 +799,11 @@ async function setupPackeryLifecycle({ container, pckry, isAdminMode, localStora
           })
           .filter(Boolean);
         localStorage.setItem(localStorageKey, JSON.stringify(orderFilenames));
-        console.log('Sequence auto-saved locally');
+        showToast('Sequence auto-saved locally.', 'info');
+        setDirty(true);
       });
     }
   });
-
-  let resizeTO: number | undefined;
-  window.addEventListener('resize', () => {
-    window.clearTimeout(resizeTO);
-    resizeTO = window.setTimeout(() => {
-      pckry.layout();
-      pckry.shiftLayout();
-    }, 100);
-  });
-}
 
 type PhotoSwipeOptions = {
   container: HTMLElement;

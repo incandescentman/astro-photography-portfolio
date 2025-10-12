@@ -328,8 +328,11 @@ const processedImages = applySavedOrder(baseImages);
 
 // Helper to map a single image to render data
 function mapSingle(img) {
+  const originalSrc = `/highlights/${img.filename}`;
+  const webpSrc = originalSrc.replace(/\.(jpg|jpeg|png)$/i, '.webp');
+
   return {
-    src: `/highlights/${img.filename}`,
+    src: webpSrc,
     filename: img.filename,
     caption: img.caption || img.filename.replace(/[-_]/g, ' ').replace(/\.\w+$/, ''),
     size: img.size

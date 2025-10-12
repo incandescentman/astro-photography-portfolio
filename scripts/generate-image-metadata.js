@@ -43,6 +43,13 @@ async function generateImageMetadata() {
           const relativePath = path.relative(path.join(projectRoot, 'public'), imagePath);
           
           metadata[relativePath] = { width, height };
+
+          // Convert to WebP
+          const webpPath = imagePath.replace(/\.(jpg|jpeg|png)$/i, '.webp');
+          if (imagePath !== webpPath) { // Don't re-convert webp files
+            await image.webp({ quality: 80 }).toFile(webpPath);
+          }
+
           processedCount++;
           if (processedCount % 10 === 0) {
             console.log(`Processed ${processedCount}/${imagePaths.length}...`);
