@@ -496,34 +496,9 @@ function mapSingle(img) {
   
 
 
-.masonry-item a {
-  display: block;
-}
-
-/* Stacked pair special handling */
-.masonry-item .stacked-pair {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  height: 100%;
-}
-
-.masonry-item .stacked-pair a {
-  display: block;
-  overflow: hidden;
-  flex: 1;
-  height: calc(50% - 4px); /* Each image gets half height minus half gap */
-}
-
-.masonry-item .stacked-pair img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
 /* Caption overlay */
 .masonry-item a {
+  display: block;
   position: relative;
   overflow: hidden;
 }
