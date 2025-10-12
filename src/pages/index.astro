@@ -6,6 +6,7 @@ import { Image } from 'astro:assets';
 import MainLayout from '../layouts/MainLayout.astro';
 // Import image configuration
 import { images } from '../data/homepage-images.js';
+import imageMetadata from '../data/image-metadata.json';
 import fs from 'fs';
 import path from 'path';
 
@@ -344,10 +345,9 @@ function mapSingle(img) {
         if (item && item.type === 'stacked' && Array.isArray(item.items)) {
           const a = mapSingle(item.items[0]);
           const b = mapSingle(item.items[1] || item.items[0]);
+          const containerAspectRatio = 648 / 968;
           return (
-            <article class="masonry-item wide_tall" data-idx={index} data-filename={a.filename} data-size="xlportrait">
-              <button type="button" class="edit-btn inline-flex items-center justify-center text-[11px] leading-none px-2.5 py-1 rounded-md border border-white/30 text-white bg-gray-900/80 hover:bg-gray-900 shadow-sm" title="Edit">✎</button>
-              <div class="stacked-pair">
+            <article class="masonry-item wide_tall" data-idx={index} data-filename={a.filename} data-size="xlportrait" style={`--aspect-ratio: ${containerAspectRatio}`}>              <div class="stacked-pair">
                 <a class="masonry-link portfolio-lightbox" href={a.src}>
                   <Image
                     src={a.src}
@@ -391,6 +391,10 @@ function mapSingle(img) {
         else if (photo.size === 'xlportrait') variant = 'wide_tall';
         else if (photo.size === 'portrait') variant = 'regular';
 
+        // Get metadata for aspect ratio
+        const meta = imageMetadata[photo.src.substring(1)];
+        const aspectRatio = meta ? meta.width / meta.height : 1;
+
         // Calculate dimensions based on size
         const dimensions = {
           portrait: { w: 320, h: 480 },
@@ -400,8 +404,8 @@ function mapSingle(img) {
         const { w, h } = dimensions[photo.size];
 
         return (
-          <article class={`masonry-item ${variant}`} data-idx={index} data-filename={photo.filename} data-size={photo.size}>
-            <button type="button" class="edit-btn inline-flex items-center justify-center text-[11px] leading-none px-2.5 py-1 rounded-md border border-white/30 text-white bg-gray-900/80 hover:bg-gray-900 shadow-sm" title="Edit">✎</button>
+          <article class={`masonry-item ${variant}`} data-idx={index} data-filename={photo.filename} data-size={photo.size} style={`--aspect-ratio: ${aspectRatio}`}>
+            
             <a class="masonry-link portfolio-lightbox" href={photo.src}>
               <Image
                 src={photo.src}
@@ -432,7 +436,7 @@ function mapSingle(img) {
 .portfolio-wrap {
   position: relative;
   margin: 0;
-  padding: 120px clamp(12px, 3vw, 28px) 0 clamp(12px, 3vw, 28px); /* Top padding for navbar; minimal side gutters */
+  padding: 120px 0 0 0; /* Top padding for navbar; no side gutters for edge-to-edge */
   width: 100%;
   box-sizing: border-box;
 }
@@ -454,6 +458,7 @@ function mapSingle(img) {
   transform: translateY(12px);
   position: absolute;
   overflow: hidden;
+  aspect-ratio: var(--aspect-ratio);
 }
 
 .masonry-item.animated-in {
@@ -491,98 +496,7 @@ function mapSingle(img) {
     width: 50%;
   }
   
-  /* Scale heights proportionally */
-  .masonry-item.regular,
-  .masonry-item.wide {
-    height: 350px !important;
-  }
-  .masonry-item.wide_tall {
-    height: 708px !important; /* Double height + 8px gap */
-  }
-}
 
-@media only screen and (max-width: 768px) {
-  .grid-sizer,
-  .masonry-item.regular {
-    width: 50%;
-  }
-  .masonry-item.wide,
-  .masonry-item.wide_tall {
-    width: 100%;
-  }
-  
-  /* Further scale heights */
-  .masonry-item.regular,
-  .masonry-item.wide {
-    height: 300px !important;
-  }
-  .masonry-item.wide_tall {
-    height: 608px !important; /* Double height + 8px gap */
-  }
-}
-
-@media only screen and (max-width: 480px) {
-  /* Disable Packery positioning on mobile - use natural flow */
-  .masonry-items {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 8px !important;
-    position: relative !important;
-  }
-
-  .grid-sizer {
-    display: none !important;
-  }
-
-  .masonry-item {
-    position: relative !important; /* Override absolute positioning */
-    width: 100% !important;
-    height: auto !important;
-    transform: none !important;
-    left: auto !important;
-    top: auto !important;
-  }
-
-  /* Allow images to show full without cropping on mobile */
-  .masonry-item img {
-    object-fit: contain !important;
-    width: 100% !important;
-    height: auto !important;
-  }
-
-  /* Stacked pairs should also flow naturally */
-  .masonry-item .stacked-pair {
-    height: auto;
-    gap: 8px;
-  }
-
-  .masonry-item .stacked-pair img {
-    height: auto !important;
-  }
-}
-
-/* Images */
-.masonry-item img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 0;
-  transition: transform 0.45s cubic-bezier(0.3, 0.1, 0.3, 1);
-}
-
-/* Set fixed heights for consistent display */
-.masonry-item.regular {
-  height: 480px !important; /* Standard height */
-}
-
-.masonry-item.wide {
-  height: 480px !important; /* Same height as regular */
-}
-
-.masonry-item.wide_tall {
-  height: 968px !important; /* Double height (480*2 + 8px gap) */
-}
 
 .masonry-item a {
   display: block;
@@ -1039,39 +953,6 @@ body:has(.admin-toolbar) .portfolio-wrap {
   z-index: 99999;
 }
 
-/* Edit button overlay */
-.edit-btn {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  z-index: 6;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  color: #1e3a8a;
-  border: 2px solid rgba(30, 58, 138, 0.2);
-  border-radius: 10px;
-  padding: 8px 12px;
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1;
-  cursor: pointer;
-  opacity: 0;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.edit-btn:hover {
-  background: #1e3a8a;
-  color: white;
-  border-color: #1e3a8a;
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.admin-mode .masonry-item:hover .edit-btn,
-body.edit-key-active .masonry-item .edit-btn {
-  opacity: 1;
-}
 </style>
 
 <script hoist>
