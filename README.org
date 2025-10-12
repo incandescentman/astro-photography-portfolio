@@ -1,5 +1,10 @@
 * Jay Dixit Photography Portfolio
 
+** What’s New (Early 2025)
+- Home page now serves RSS (`/feed.xml`) and JSON (`/feed.json`) feeds for blog updates, plus `/highlights.json` for hero shots.
+- A press landing page lives at `/press/`, pulling from the `press` content collection (`src/content/press/`).
+- Critical CSS inlining keeps the top nav styled during first paint while deferring Photoswipe until interaction for faster LCP.
+
 ** Image Import Solutions for Astro MDX
 
 *** Problem: Images not loading in MDX files

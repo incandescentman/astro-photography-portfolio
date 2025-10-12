@@ -34,4 +34,47 @@ const albums = defineCollection({
   }),
 });
 
-export const collections = { albums, blog: blogPosts };
+const pressKit = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title: z.string(),
+    subtitle: z.string().optional(),
+    lastUpdated: z.coerce.date().optional(),
+    contactEmail: z.string().optional(),
+    heroShots: z
+      .array(
+        z.object({
+          title: z.string(),
+          caption: z.string().optional(),
+          image: z.string(),
+          downloadUrl: z.string().optional(),
+        }),
+      )
+      .optional(),
+    downloads: z
+      .array(
+        z.object({
+          label: z.string(),
+          url: z.string(),
+          description: z.string().optional(),
+        }),
+      )
+      .optional(),
+    guidelines: z
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        }),
+      )
+      .optional(),
+    quote: z
+      .object({
+        text: z.string(),
+        attribution: z.string().optional(),
+      })
+      .optional(),
+  }),
+});
+
+export const collections = { albums, blog: blogPosts, press: pressKit };

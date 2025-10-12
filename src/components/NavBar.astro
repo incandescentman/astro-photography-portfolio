@@ -28,14 +28,15 @@ const socialLinks = [
 />
 
 <nav
+	data-critical-nav
 	x-data="{ isOpen: false, scrolled: false }"
 	@scroll.window="scrolled = window.scrollY > 20"
 	class="fixed top-0 left-0 w-full z-50 transition-all duration-500 ease-in-out"
 	:class="scrolled ? 'bg-white/95 backdrop-blur-md shadow-lg py-4' : 'bg-white/80 backdrop-blur-sm py-6'"
 >
-	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+	<div data-critical-nav-inner class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
 		<!-- Logo and Wordmark -->
-		<div class="flex items-center gap-3 group">
+		<div data-critical-brand class="flex items-center gap-3 group">
 			<div class="relative cursor-pointer" @click="$dispatch('open-logo-modal')">
 				<img src="/logo.png" alt="Jay Dixit Logo" class="w-12 h-12 md:w-14 md:h-14 object-contain rounded-lg transition-transform duration-300 hover:scale-105" />
 				<div class="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-lg opacity-0 hover:opacity-100 transition-opacity duration-300"></div>

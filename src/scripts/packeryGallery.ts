@@ -1,9 +1,21 @@
-import PhotoSwipeLightbox from 'photoswipe/lightbox';
-import 'photoswipe/style.css';
 import Packery from 'packery';
 import imagesLoaded from 'imagesloaded';
 
 type PackeryInstance = any;
+
+type PhotoSwipeLightboxCtor = typeof import('photoswipe/lightbox')['default'];
+
+let photoSwipeLoader: Promise<PhotoSwipeLightboxCtor> | null = null;
+
+async function loadPhotoSwipeLightbox(): Promise<PhotoSwipeLightboxCtor> {
+  if (!photoSwipeLoader) {
+    photoSwipeLoader = Promise.all([
+      import('photoswipe/lightbox'),
+      import('photoswipe/style.css'),
+    ]).then(([module]) => module.default as PhotoSwipeLightboxCtor);
+  }
+  return photoSwipeLoader;
+}
 
 export interface PackeryGalleryOptions {
   container: string | HTMLElement;
@@ -815,88 +827,126 @@ type PhotoSwipeOptions = {
 };
 
 function setupPhotoSwipe({ container, isAdminMode }: PhotoSwipeOptions) {
-  const lightbox = new PhotoSwipeLightbox({
-    gallery: '.masonry-items',
-    children: '.portfolio-lightbox',
-    pswpModule: () => import('/node_modules/photoswipe/dist/photoswipe.esm.js'),
-    padding: { top: 20, bottom: 80, left: 20, right: 20 },
-    wheelToZoom: true,
-    imageClickAction: 'close',
-    tapAction: 'toggle-controls',
-    doubleTapAction: 'zoom',
-    preloaderDelay: 0,
-    showHideAnimationType: 'fade',
-  });
+  let initialized = false;
 
-  if (isAdminMode) {
-    lightbox.on('clickEvent', (event) => {
-      const target = event.originalEvent.target as HTMLElement | null;
-      const item = target?.closest('.masonry-item');
-      if (item && item.classList.contains('is-dragging')) {
-        event.preventDefault();
-      }
+  const activateLightbox = async () => {
+    if (initialized) return;
+    initialized = true;
+
+    const PhotoSwipeLightbox = await loadPhotoSwipeLightbox();
+    const lightbox = new PhotoSwipeLightbox({
+      gallery: '.masonry-items',
+      children: '.portfolio-lightbox',
+      pswpModule: () => import('/node_modules/photoswipe/dist/photoswipe.esm.js'),
+      padding: { top: 20, bottom: 80, left: 20, right: 20 },
+      wheelToZoom: true,
+      imageClickAction: 'close',
+      tapAction: 'toggle-controls',
+      doubleTapAction: 'zoom',
+      preloaderDelay: 0,
+      showHideAnimationType: 'fade',
     });
-  }
 
-  lightbox.addFilter('itemData', (itemData) => {
-    const linkEl = itemData.element as HTMLElement;
-    const imgEl = linkEl.querySelector('img');
-
-    if (imgEl) {
-      itemData.w = imgEl.naturalWidth || 1600;
-      itemData.h = imgEl.naturalHeight || 1200;
-      itemData.alt = imgEl.alt;
-      const caption = imgEl.getAttribute('data-caption') || imgEl.alt || '';
-      if (caption) {
-        itemData.title = caption;
-      }
+    if (isAdminMode) {
+      lightbox.on('clickEvent', (event) => {
+        const target = event.originalEvent.target as HTMLElement | null;
+        const item = target?.closest('.masonry-item');
+        if (item && item.classList.contains('is-dragging')) {
+          event.preventDefault();
+        }
+      });
     }
 
-    return itemData;
-  });
+    lightbox.addFilter('itemData', (itemData) => {
+      const linkEl = itemData.element as HTMLElement;
+      const imgEl = linkEl.querySelector('img');
 
-  lightbox.on('uiRegister', () => {
-    lightbox.pswp.ui.registerElement({
-      name: 'custom-caption',
-      order: 9,
-      isButton: false,
-      appendTo: 'root',
-      onInit: (el, pswp) => {
-        el.style.position = 'absolute';
-        el.style.left = '0';
-        el.style.bottom = '0';
-        el.style.width = '100%';
-        el.style.maxWidth = '100%';
-        el.style.padding = '15px 20px';
-        el.style.background = 'rgba(0, 0, 0, 0.75)';
-        el.style.color = '#fff';
-        el.style.fontSize = '16px';
-        el.style.fontFamily =
-          '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
-        el.style.textAlign = 'center';
-        el.style.lineHeight = '1.4';
-        el.style.zIndex = '10';
+      if (imgEl) {
+        itemData.w = imgEl.naturalWidth || imgEl.width || 1600;
+        itemData.h = imgEl.naturalHeight || imgEl.height || 1200;
+        itemData.alt = imgEl.alt;
+        const caption = imgEl.getAttribute('data-caption') || imgEl.alt || '';
+        if (caption) {
+          itemData.title = caption;
+        }
+      }
 
-        pswp.on('change', () => {
-          const currSlideData = pswp.currSlide?.data;
-          if (currSlideData?.title) {
-            el.innerHTML = currSlideData.title;
-            el.style.display = 'block';
-          } else {
-            el.style.display = 'none';
-          }
-        });
-
-        setTimeout(() => {
-          const currSlideData = pswp.currSlide?.data;
-          if (currSlideData?.title) {
-            el.innerHTML = currSlideData.title;
-            el.style.display = 'block';
-          }
-        }, 0);
-      },
+      return itemData;
     });
-  });
 
-  lightbox.init();
+    lightbox.on('uiRegister', () => {
+      lightbox.pswp.ui.registerElement({
+        name: 'custom-caption',
+        order: 9,
+        isButton: false,
+        appendTo: 'root',
+        onInit: (el, pswp) => {
+          el.style.position = 'absolute';
+          el.style.left = '0';
+          el.style.bottom = '0';
+          el.style.width = '100%';
+          el.style.maxWidth = '100%';
+          el.style.padding = '15px 20px';
+          el.style.background = 'rgba(0, 0, 0, 0.75)';
+          el.style.color = '#fff';
+          el.style.fontSize = '16px';
+          el.style.fontFamily =
+            '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+          el.style.textAlign = 'center';
+          el.style.lineHeight = '1.4';
+          el.style.zIndex = '10';
+
+          pswp.on('change', () => {
+            const currSlideData = pswp.currSlide?.data;
+            if (currSlideData?.title) {
+              el.innerHTML = currSlideData.title;
+              el.style.display = 'block';
+            } else {
+              el.style.display = 'none';
+            }
+          });
+
+          setTimeout(() => {
+            const currSlideData = pswp.currSlide?.data;
+            if (currSlideData?.title) {
+              el.innerHTML = currSlideData.title;
+              el.style.display = 'block';
+            }
+          }, 0);
+        },
+      });
+    });
+
+    lightbox.init();
+  };
+
+  const pointerHandler = (event: Event) => {
+    const target = event.target as HTMLElement | null;
+    if (!target) return;
+    if (!target.closest('.portfolio-lightbox')) return;
+
+    container.removeEventListener('pointerdown', pointerHandler);
+    container.removeEventListener('keydown', keyHandler);
+
+    activateLightbox().catch((error) => {
+      console.error('Failed to initialize PhotoSwipe', error);
+    });
+  };
+
+  const keyHandler = (event: KeyboardEvent) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    const target = event.target as HTMLElement | null;
+    if (!target) return;
+    if (!target.closest('.portfolio-lightbox')) return;
+
+    container.removeEventListener('pointerdown', pointerHandler);
+    container.removeEventListener('keydown', keyHandler);
+
+    activateLightbox().catch((error) => {
+      console.error('Failed to initialize PhotoSwipe', error);
+    });
+  };
+
+  container.addEventListener('pointerdown', pointerHandler);
+  container.addEventListener('keydown', keyHandler);
 }
