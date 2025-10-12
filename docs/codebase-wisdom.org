@@ -8,6 +8,12 @@
 - Reminder: avoid ~Astro.resolve~ for browser-targeted helpers; it runs during SSR and returns plain URLs that bypass Vite's bundler pipeline.
 - Checklist update: before shipping a new browser-side helper, confirm the entry point uses ~<script hoist>~ (or a frontmatter import) and that a quick ~npm run build~ succeeds without 404s in devtools logs.
 
+* 2025-10-05 - Masonry Gutters & Edge Balance
+- Packery is happiest when column math stays at the canonical 320px + 8px gutter; pushing columns wider without recalculating heights produces the infamous cropped foreheads.
+- To get a near edge-to-edge feel without touching Packery internals, wrap the gallery in a ~clamp~-based horizontal padding (see ~.portfolio-wrap~ in ~src/pages/index.astro~). Tuning the clamp keeps large monitors almost full-bleed while still guarding tablets from edge collisions.
+- If you *must* widen columns, collect the real aspect ratios (e.g., ahead-of-time via ~sharp~) and set explicit heights before Packery runs, otherwise the forced ~object-fit: cover~ spills important framing.
+- Quick test: after tweaking gutters, run ~npm run build~ and flick through the homepage with devtools device toolbar to ensure stacked pairs still align and no gaps appear.
+
 * 2025-10-03 - Mobile Masonry Gaps
 - Desktop Packery styles fix explicit heights on `.masonry-item` and images using `!important`. When we flip to the mobile flex fallback, those declarations persisted, so cards kept the desktop height even though the images were set to `auto`, leaving huge blank bands after the visible crop.
 - Fix: in the mobile fallback branch (`setupMobileFallback`), explicitly set both the item and `<img>` height via `style.setProperty('height', 'auto', 'important')` and `object-fit: contain` to override the desktop rules with matching specificity.

@@ -14,6 +14,18 @@
 - Keep an eye on future refactors that move shared scripts—mixed absolute and relative imports can mask bundling gaps during dev.
 - Follow-up: redeploy to Vercel after each bundling-related change to confirm the CDN serves the hydrated assets.
 
+* 2025-10-05 - Homepage Framing Tweaks
+** Motivation
+- With Packery widths restored, the homepage still felt slightly offset compared to the nav + footer chrome.
+- Goal: add symmetric gutters without shrinking the masonry columns back down or reintroducing the head-cropping issue.
+** Changes
+- Wrapped the gallery in a ~clamp(12px, 3vw, 28px)~ horizontal padding so large screens see just a sliver of whitespace while tablets get comfortable breathing room.
+- Left column widths untouched (320px/648px) so Packery layouts and saved admin order remain 1:1 with the historical baseline.
+- Confirmed ~npm run build~ after the tweak.
+** Notes
+- The clamp values live in ~src/pages/index.astro:432~; drop the minimum below ~12px~ if you truly want edge-to-edge.
+- Any future responsive experiments should tweak this padding first before touching Packery column math.
+
 * 2025-10-03 - Vercel Deployment & Mobile Optimization
 
 ** Vercel Configuration

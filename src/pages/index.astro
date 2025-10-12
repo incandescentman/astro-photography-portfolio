@@ -432,8 +432,9 @@ function mapSingle(img) {
 .portfolio-wrap {
   position: relative;
   margin: 0;
-  padding: 120px 0 0 0; /* Top padding to account for fixed navbar with extra padding */
+  padding: 120px clamp(12px, 3vw, 28px) 0 clamp(12px, 3vw, 28px); /* Top padding for navbar; minimal side gutters */
   width: 100%;
+  box-sizing: border-box;
 }
 
 /* Masonry Container */
