@@ -1,5 +1,29 @@
 #+TITLE: Work Log - Jay Dixit Photography Portfolio
-#+DATE: 2025-10-03
+#+DATE: 2025-10-12
+
+* 2025-10-12 - Dynamic Aspect Ratios & Full-Bleed Masonry
+** Goal
+- Finally achieve a true, full-bleed (edge-to-edge) masonry gallery on the homepage.
+- Ensure images display at their natural aspect ratio without being cropped or distorted.
+
+** Problem
+- All previous attempts at a full-bleed layout failed because the masonry items had fixed heights set in the CSS (e.g., `height: 480px !important`).
+- This forced images into incorrect aspect ratios, causing unwanted cropping and preventing the layout from adapting fluidly to a full-width container.
+- This was the root cause of the issues documented in the "Edge-to-Edge Attempts Retrospective" from 2025-10-05.
+
+** Solution
+- **Image Metadata Generation:** A new script, `scripts/generate-image-metadata.js`, was created. It uses the `sharp` library to scan all images in the `public/` directory at build time, extracting their exact dimensions.
+- **Centralized Metadata:** The script saves this dimension data to a new file at `src/data/image-metadata.json`.
+- **Dynamic Sizing in Astro:** The homepage (`src/pages/index.astro`) now imports this JSON file. As it loops through the images to create the gallery, it calculates the correct aspect ratio for each photo.
+- **CSS Custom Properties:** This calculated aspect ratio is passed directly to the HTML of each masonry item using a CSS custom property (`--aspect-ratio`).
+- **CSS Refactor:** All `height: ... !important` rules were removed from the stylesheet. The `.masonry-item` class was updated to use the new variable: `aspect-ratio: var(--aspect-ratio);`.
+- **Final Layout:** With items now correctly and dynamically sized, the horizontal padding on the main `.portfolio-wrap` container was removed, allowing the gallery to expand to the full width of the viewport.
+
+** Outcome
+- The homepage gallery is now a true, full-bleed, edge-to-edge masonry layout.
+- All images are displayed at their correct aspect ratio, eliminating the cropping problem entirely.
+- This resolves the long-standing layout issue and completes the goal of a dynamic, visually accurate portfolio presentation.
+- As a minor cleanup, the edit icon and its related CSS were removed from the gallery items.
 
 * 2025-10-05 - Packery Bundle Regression
 ** Symptoms
