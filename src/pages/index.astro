@@ -326,6 +326,12 @@ function optimizeImageOrder(images) {
 const baseImages = AUTO_OPTIMIZE_ORDER ? optimizeImageOrder(images) : images;
 const processedImages = applySavedOrder(baseImages);
 
+const fallbackDimensions = {
+  portrait: { width: 320, height: 480 },
+  landscape: { width: 648, height: 480 },
+  xlportrait: { width: 648, height: 968 }
+} as const;
+
 // Helper to map a single image to render data
 function mapSingle(img) {
   const originalSrc = `/highlights/${img.filename}`;
@@ -350,7 +356,14 @@ function mapSingle(img) {
           const b = mapSingle(item.items[1] || item.items[0]);
           const containerAspectRatio = 648 / 968;
           return (
-            <article class="masonry-item wide_tall" data-idx={index} data-filename={a.filename} data-size="xlportrait" style={`--aspect-ratio: ${containerAspectRatio}`}>              <div class="stacked-pair">
+            <article
+              class="masonry-item wide_tall"
+              data-idx={index}
+              data-filename={a.filename}
+              data-size="xlportrait"
+              style={`--aspect-ratio: ${containerAspectRatio}`}
+            >
+              <div class="stacked-pair">
                 <a class="masonry-link portfolio-lightbox" href={a.src}>
                   <Image
                     src={a.src}
@@ -398,12 +411,21 @@ function mapSingle(img) {
         const key = 'highlights/' + photo.filename;
         const meta = imageMetadata[key];
 
-        // Use the real dimensions from metadata, with a fallback for safety
-        const imageWidth = meta ? meta.width : 320;
-        const imageHeight = meta ? meta.height : 480;
+        const fallback = fallbackDimensions[photo.size as keyof typeof fallbackDimensions] ?? fallbackDimensions.portrait;
+        const aspectRatio = fallback.width / fallback.height;
+
+        // Enforce consistent frame dimensions for Packery layout
+        const imageWidth = fallback.width;
+        const imageHeight = fallback.height;
 
         return (
-          <article class={`masonry-item ${variant}`} data-idx={index} data-filename={photo.filename} data-size={photo.size}>
+          <article
+            class={`masonry-item ${variant}`}
+            data-idx={index}
+            data-filename={photo.filename}
+            data-size={photo.size}
+            style={`--aspect-ratio: ${aspectRatio}`}
+          >
             
             <a class="masonry-link portfolio-lightbox" href={photo.src}>
               <Image
@@ -417,6 +439,8 @@ function mapSingle(img) {
                 loading="lazy"
                 data-caption={photo.caption}
                 data-variant={variant}
+                data-natural-width={meta?.width}
+                data-natural-height={meta?.height}
               />
               <div class="caption-overlay">
                 <h3>{photo.caption}</h3>
@@ -457,6 +481,7 @@ function mapSingle(img) {
   transform: translateY(12px);
   position: absolute;
   overflow: hidden;
+  aspect-ratio: var(--aspect-ratio, 2 / 3);
 }
 
 .masonry-item.animated-in {
@@ -483,6 +508,13 @@ function mapSingle(img) {
   width: 648px; /* 2 columns (320*2) + gap (8) */
 }
 
+.masonry-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 /* Responsive sizing */
 @media only screen and (max-width: 1300px) {
   .grid-sizer,
@@ -493,7 +525,28 @@ function mapSingle(img) {
   .masonry-item.wide_tall {
     width: 50%;
   }
-  
+
+}
+
+.masonry-item .stacked-pair {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+}
+
+.masonry-item .stacked-pair a {
+  display: block;
+  overflow: hidden;
+  flex: 1;
+}
+
+.masonry-item .stacked-pair img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 
 
 /* Caption overlay */
@@ -501,6 +554,7 @@ function mapSingle(img) {
   display: block;
   position: relative;
   overflow: hidden;
+  height: 100%;
 }
 
 /* Dark overlay on hover */
