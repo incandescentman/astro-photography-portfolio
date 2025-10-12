@@ -395,7 +395,7 @@ function mapSingle(img) {
         else if (photo.size === 'portrait') variant = 'regular';
 
         // Get metadata for aspect ratio
-        const meta = imageMetadata[photo.src.substring(1)];
+        const meta = imageMetadata['highlights/' + photo.filename];
         const aspectRatio = meta ? meta.width / meta.height : 1;
 
         // Calculate dimensions based on size
