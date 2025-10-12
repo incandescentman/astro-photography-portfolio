@@ -12,6 +12,9 @@ export default defineConfig({
 	site: 'https://photos.jaydixit.com',
 	output: 'static', // Static output for Vercel deployment (admin features work only in dev)
 	integrations: [mdx()],
+	experimental: {
+		responsiveImages: true,
+	},
 	vite: {
 		plugins: [tailwindcss()],
 		resolve: {

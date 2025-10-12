@@ -2,6 +2,7 @@
 // Mark this page as prerendered (static)
 export const prerender = true;
 
+import { Image } from 'astro:assets';
 import MainLayout from '../layouts/MainLayout.astro';
 // Import image configuration
 import { images } from '../data/homepage-images.js';
@@ -348,13 +349,33 @@ function mapSingle(img) {
               <button type="button" class="edit-btn inline-flex items-center justify-center text-[11px] leading-none px-2.5 py-1 rounded-md border border-white/30 text-white bg-gray-900/80 hover:bg-gray-900 shadow-sm" title="Edit">✎</button>
               <div class="stacked-pair">
                 <a class="masonry-link portfolio-lightbox" href={a.src}>
-                  <img src={a.src} alt={a.caption} loading="lazy" data-caption={a.caption} />
+                  <Image
+                    src={a.src}
+                    alt={a.caption}
+                    width={648}
+                    height={484}
+                    layout="responsive"
+                    fit="cover"
+                    position="attention"
+                    loading="lazy"
+                    data-caption={a.caption}
+                  />
                   <div class="caption-overlay">
                     <h3>{a.caption}</h3>
                   </div>
                 </a>
                 <a class="masonry-link portfolio-lightbox" href={b.src}>
-                  <img src={b.src} alt={b.caption} loading="lazy" data-caption={b.caption} />
+                  <Image
+                    src={b.src}
+                    alt={b.caption}
+                    width={648}
+                    height={484}
+                    layout="responsive"
+                    fit="cover"
+                    position="attention"
+                    loading="lazy"
+                    data-caption={b.caption}
+                  />
                   <div class="caption-overlay">
                     <h3>{b.caption}</h3>
                   </div>
@@ -369,14 +390,27 @@ function mapSingle(img) {
         if (photo.size === 'landscape') variant = 'wide';
         else if (photo.size === 'xlportrait') variant = 'wide_tall';
         else if (photo.size === 'portrait') variant = 'regular';
-        
+
+        // Calculate dimensions based on size
+        const dimensions = {
+          portrait: { w: 320, h: 480 },
+          landscape: { w: 648, h: 480 },
+          xlportrait: { w: 648, h: 968 }
+        };
+        const { w, h } = dimensions[photo.size];
+
         return (
           <article class={`masonry-item ${variant}`} data-idx={index} data-filename={photo.filename} data-size={photo.size}>
             <button type="button" class="edit-btn inline-flex items-center justify-center text-[11px] leading-none px-2.5 py-1 rounded-md border border-white/30 text-white bg-gray-900/80 hover:bg-gray-900 shadow-sm" title="Edit">✎</button>
             <a class="masonry-link portfolio-lightbox" href={photo.src}>
-              <img 
-                src={photo.src} 
+              <Image
+                src={photo.src}
                 alt={photo.caption}
+                width={w}
+                height={h}
+                layout="responsive"
+                fit="cover"
+                position="attention"
                 loading="lazy"
                 data-caption={photo.caption}
                 data-variant={variant}

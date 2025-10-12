@@ -1,6 +1,7 @@
 ---
 import fs from 'fs';
 import path from 'path';
+import { Image } from 'astro:assets';
 import MainLayout from '../../layouts/MainLayout.astro';
 import PhotoComments from '../../components/PhotoComments.astro';
 
@@ -188,6 +189,14 @@ export const getStaticPaths = async () => {
             dataSize = 'xlportrait';
           }
 
+          // Calculate dimensions based on size
+          const dimensions = {
+            portrait: { w: 320, h: 480 },
+            landscape: { w: 648, h: 480 },
+            xlportrait: { w: 648, h: 968 }
+          };
+          const { w, h } = dimensions[dataSize];
+
           return (
             <article
               class={`masonry-item ${variant}`}
@@ -198,9 +207,14 @@ export const getStaticPaths = async () => {
               data-tags={JSON.stringify(image.tags)}
             >
               <a class="masonry-link portfolio-lightbox" href={image.src}>
-                <img
+                <Image
                   src={image.src}
                   alt={image.caption}
+                  width={w}
+                  height={h}
+                  layout="responsive"
+                  fit="cover"
+                  position="attention"
                   loading="lazy"
                   data-caption={image.caption}
                 />
