@@ -4,6 +4,7 @@ export const prerender = true;
 
 import { Image } from 'astro:assets';
 import MainLayout from '../layouts/MainLayout.astro';
+import siteConfig from '../../site.config.mts';
 // Import image configuration
 import { images } from '../data/homepage-images.js';
 import imageMetadata from '../data/image-metadata.json';
@@ -344,9 +345,143 @@ function mapSingle(img) {
     size: img.size
   };
 }
----
 
-<MainLayout>
+const siteOrigin = Astro.site?.origin ?? 'https://photos.jaydixit.com';
+const canonicalUrl = new URL('/', siteOrigin).toString();
+const metaTitle = 'Red Carpet Highlights';
+const fullTitle = `${metaTitle} — ${siteConfig.owner}`;
+const pageDescription =
+  'Red carpet portraits captured by Jay Dixit at film festivals, cultural premieres, and creative events.';
+const creatorName = siteConfig.owner;
+
+const flattenProcessed = processedImages.flatMap((item) => {
+  if (!item) return [];
+  if (item.type === 'stacked' && Array.isArray(item.items)) {
+    return item.items;
+  }
+  return [item];
+});
+
+const normalizedPhotos = flattenProcessed.map((item) => mapSingle(item));
+
+const uniquePhotoMap = new Map<string, ReturnType<typeof mapSingle>>();
+normalizedPhotos.forEach((photo) => {
+  if (!uniquePhotoMap.has(photo.filename)) {
+    uniquePhotoMap.set(photo.filename, photo);
+  }
+});
+
+const uniquePhotos = Array.from(uniquePhotoMap.values());
+
+const toAbsoluteUrl = (pathSegment: string) => new URL(pathSegment, siteOrigin).toString();
+
+const dimensionForPhoto = (photo: ReturnType<typeof mapSingle>) => {
+  const key = `highlights/${photo.filename}`;
+  const meta = imageMetadata[key] as { width?: number; height?: number } | undefined;
+  const fallback =
+    fallbackDimensions[photo.size as keyof typeof fallbackDimensions] ?? fallbackDimensions.portrait;
+  return {
+    width: meta?.width ?? fallback.width,
+    height: meta?.height ?? fallback.height
+  };
+};
+
+const imageObjects = uniquePhotos.map((photo) => {
+  const { width, height } = dimensionForPhoto(photo);
+  const originalPath = `/highlights/${photo.filename}`;
+  const originalUrl = toAbsoluteUrl(originalPath);
+  const webpUrl = toAbsoluteUrl(photo.src);
+  const extension = photo.filename.split('.').pop()?.toLowerCase() ?? 'jpg';
+  const encodingFormat =
+    extension === 'png'
+      ? 'image/png'
+      : extension === 'webp'
+        ? 'image/webp'
+        : extension === 'gif'
+          ? 'image/gif'
+          : 'image/jpeg';
+
+  return {
+    '@type': 'ImageObject',
+    '@id': `${originalUrl}#image`,
+    name: photo.caption,
+    caption: photo.caption,
+    url: originalUrl,
+    contentUrl: originalUrl,
+    thumbnailUrl: webpUrl,
+    encodingFormat,
+    representativeOfPage: photo.size === 'xlportrait' ? true : undefined,
+    width,
+    height,
+    author: {
+      '@type': 'Person',
+      name: creatorName
+    },
+    creator: {
+      '@type': 'Person',
+      name: creatorName
+    }
+  };
+});
+
+const collectionStructuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: fullTitle,
+  url: canonicalUrl,
+  description: pageDescription,
+  image: imageObjects.slice(0, 12).map((img) => img.contentUrl),
+  hasPart: imageObjects
+};
+
+const jsonLdString = JSON.stringify(collectionStructuredData, null, 2)
+  .replace(/</g, '\\u003c')
+  .replace(/>/g, '\\u003e')
+  .replace(/&/g, '\\u0026');
+
+const featuredPhotos = uniquePhotos.filter((photo) => photo.size === 'xlportrait');
+const shareCandidates = featuredPhotos.length > 0 ? featuredPhotos : uniquePhotos;
+
+const ogImages = shareCandidates.slice(0, 4).map((photo) => {
+  const { width, height } = dimensionForPhoto(photo);
+  return {
+    url: toAbsoluteUrl(`/highlights/${photo.filename}`),
+    alt: photo.caption,
+    width,
+    height
+  };
+});
+
+const primaryOgImage = ogImages[0];
+
+const layoutFrontmatter = {
+  title: metaTitle,
+  description: pageDescription,
+  canonical: canonicalUrl
+};
+--- 
+
+<MainLayout frontmatter={layoutFrontmatter}>
+  <Fragment slot="head">
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:url" content={canonicalUrl} />
+    {ogImages.map((image) => (
+      <meta property="og:image" content={image.url} />
+    ))}
+    {ogImages.map((image) => (
+      <meta property="og:image:alt" content={image.alt} />
+    ))}
+    {primaryOgImage?.width && <meta property="og:image:width" content={String(primaryOgImage.width)} />}
+    {primaryOgImage?.height && <meta property="og:image:height" content={String(primaryOgImage.height)} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={pageDescription} />
+    {primaryOgImage && <meta name="twitter:image" content={primaryOgImage.url} />}
+    {primaryOgImage?.alt && <meta name="twitter:image:alt" content={primaryOgImage.alt} />}
+    <script type="application/ld+json" set:html={jsonLdString}></script>
+  </Fragment>
   <div class="portfolio-wrap">
     <div id="masonry" class="masonry-items elastic" data-col-num="elastic" data-gutter="8px" data-starting-filter="*" data-masonry-type="photography">
       <div class="grid-sizer"></div>
