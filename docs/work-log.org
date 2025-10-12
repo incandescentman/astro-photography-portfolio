@@ -14,6 +14,21 @@
 - Keep an eye on future refactors that move shared scripts—mixed absolute and relative imports can mask bundling gaps during dev.
 - Follow-up: redeploy to Vercel after each bundling-related change to confirm the CDN serves the hydrated assets.
 
+* 2025-10-05 - Edge-to-Edge Attempts Retrospective
+** Goal
+- Make the homepage masonry appear full-bleed without breaking the stable Packery layout (four 320px columns + gutters)
+** Attempts (All Reverted)
+- *Clamp padding on `.portfolio-wrap`* (e.g., `padding: 120px clamp(16px, 4vw, 40px)`): kept four columns centered but always left ~24px white on the right at large viewports because Packery still anchored columns to 320px widths.
+- *Enable `fitWidth` + flex centering*: Packery shrank the grid to a single column, producing massive black gutters; unusable on desktop.
+- *Pseudo-element curtains on `.gallery-stage`*: Added black panels with `::before/::after`, but a white sliver persisted (column width still fixed). Tweaking widths shifted the white space around without achieving true edge-to-edge.
+- *Dynamic padding-inline stage* (`padding-inline: max(0, (100vw - 1304px) / 2)`): created mismatched white/black margins (e.g., 350px white right gutter + 212px black) since Packery columns remained 320px wide.
+- *Black background on `.portfolio-wrap`* with white masonry inset: magnified the visible white border (372px) because the grid width never changed.
+** Takeaway
+- Packery’s fixed column widths + hard-coded heights are the blocking constraint. Without recomputing heights from real image aspect ratios, any attempt to widen columns or stretch the container will crop heads or deform the layout.
+- Next viable path: precompute aspect ratios (e.g., via `sharp`) and use them to set per-item heights before Packery initializes; once height/width pairs reflect actual assets, we can revisit edge-to-edge or add an extra column.
+** Recommendation
+- Prototype aspect-aware sizing in a feature branch, validate against live data, then update documentation if the approach succeeds.
+
 * 2025-10-05 - Homepage Framing Tweaks
 ** Motivation
 - With Packery widths restored, the homepage still felt slightly offset compared to the nav + footer chrome.
