@@ -389,7 +389,9 @@ type AdminFeatureParams = {
 };
 
 function setupAdminFeatures({ container, pckry, isAdminMode, localStorageKey }: AdminFeatureParams) {
-  if (!isAdminMode) return;
+  if (!isAdminMode) {
+    return { setDirty: (dirty: boolean) => {} }; // Return a no-op function for non-admin mode
+  }
 
   let isDirty = false;
   const saveButton = document.getElementById('save-order');
@@ -804,6 +806,8 @@ async function setupPackeryLifecycle({ container, pckry, isAdminMode, localStora
       });
     }
   });
+}
+
 
 type PhotoSwipeOptions = {
   container: HTMLElement;
