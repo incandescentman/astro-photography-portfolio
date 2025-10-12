@@ -20,6 +20,7 @@
 - It is behaving as if it is part of the normal document flow rather than being absolutely positioned relative to its container.
 - The interaction between the Astro `<Image>` component (which generates its own wrapper elements) and the parent `<a>` tag (which must act as the positioning context) is proving difficult to resolve.
 - Further attempts to fix this with small CSS changes have failed. A more fundamental solution is required.
+- *Update*: A subsequent attempt to fix the overlay using a modern CSS Grid approach (`display: grid` and `grid-area`) also failed, with no change in the broken behavior. This indicates the issue is not a simple positioning context problem.
 
 * 2025-10-05 - Packery Bundle Regression
 ** Symptoms
