@@ -400,9 +400,8 @@ export const getStaticPaths = async () => {
 }
 </style>
 
-<script type="module">
-  import initPackeryGallery from '/src/scripts/packeryGallery.ts';
-
+<script hoist>
+  import initPackeryGallery from '../../scripts/packeryGallery.ts';
   initPackeryGallery({
     container: '#masonry',
     adminMode: false,
