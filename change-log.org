@@ -4,6 +4,33 @@
 
 * Implementation History
 
+** 2025-10-19 - Highlight Delivery Fixes & Responsive Pipeline
+
+*** Problems Observed
+- *Production 404s*: Vercel deployments served 404 for `/highlights/*.webp` even though local builds succeeded.
+- *Slow visual paint*: Homepage masonry waited on multi-megabyte originals, causing long blank gaps before images appeared.
+- *Existing lint debt*: Repository-wide ESLint run still blocks on historical `no-undef`/`no-unused-vars` errors unrelated to this change.
+
+*** Root Causes
+- `.gitignore` excluded all `*.webp`, so optimized highlight assets were never pushed to Vercel and the build emitted references to missing files.
+- The homepage rewrote every filename to `.webp` and rendered them directly without `srcset`, forcing browsers to download full-resolution sources regardless of viewport context.
+
+*** Solutions Implemented
+- *Versioned WebP assets*: Removed the `*.webp` ignore rule and committed the highlight derivatives so production can serve the requested files.
+- *Astro asset pipeline*: Replaced manual string-based URLs with eager `import.meta.glob` of the highlight originals and used `getImage()` to precompute responsive WebP/JPEG variants sized per layout role.
+- *Responsive markup*: Swapped `<Image>` usage for `<picture>` + `<img>` tags that expose generated `srcset`/`sizes`, letting the browser choose optimal variants while keeping the lightbox anchored to the high-quality JPEG.
+- *Structured data parity*: Updated JSON-LD and social metadata to reference the resized JPEG output so crawlers receive consistent assets.
+
+*** Implementation Notes
+- New helper maps highlight filenames to imported metadata (~src/pages/index.astro:14-33~) and caches responsive variants per unique image (~src/pages/index.astro:391-457~).
+- Rendering layer now pulls variant info via `responsiveInfoFor` and emits `<picture>` elements for stacked and single masonry tiles (~src/pages/index.astro:638-752~).
+- Added a symlink (`src/assets/highlights`) pointing to `public/highlights` so Astro can process originals without duplicating media in the repo.
+- Astro build now generates 382 responsive assets; first run takes ~27s, subsequent builds reuse cache.
+
+*** Outstanding Items
+- ESLint continues to fail on legacy global references (e.g., ~src/pages/index.astro:36~, ~salient-portfolio.js~); not addressed in this iteration.
+- Investigate long-term strategy for linting browser globals or restructuring legacy scripts to reduce noise when running `npm run lint`.
+
 ** 2025-09-06 - Reordering, Inline Editor, and Persistence Upgrades
 
 *** Summary
