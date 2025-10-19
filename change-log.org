@@ -4,6 +4,31 @@
 
 * Implementation History
 
+** 2025-10-19 - Lint Workflow Stabilization & Legacy Exceptions
+
+*** Problems Observed
+- Full `npm run lint` failed on generated `.astro` artifacts, third-party “Salient” bundle, and Node CLI scripts that rely on browser globals or the Node runtime.
+- Several Astro components still declared unused locals after recent refactors, keeping lint from ever reaching other errors.
+- `src/pages/api/save-order.ts` relied on broad `any` types and empty `catch` blocks, preventing TypeScript rules from catching malformed payloads.
+
+*** Solutions Implemented
+- Introduced targeted overrides in ~eslint.config.js~ to:
+  - ignore generated `.astro/**` trees and nested starter folders;
+  - treat ~salient-portfolio.js~ as a browser bundle with relaxed rules;
+  - mark `scripts/**/*.js` as Node so `process`/`__dirname` are recognised without manual globals.
+- Removed unused variables from Astro components/pages and simplified helper logic so only the required data remains.
+- Reworked the save-order API to use typed payload extraction, filtered entries, and structured error handling (no bare `any` / empty `catch`).
+- Normalised Packery admin helpers and legacy scripts to silence unused parameters without disabling lint project-wide.
+
+*** Results
+- `npm run lint` now passes cleanly with zero warnings, enabling the repo’s pre-submit automation again.
+- `npm run build` succeeds post-refactor, verifying the responsive image pipeline still compiles.
+- Future third-party or tooling directories can be added to the ignore list without impacting the main Astro app.
+
+*** Follow-Up Ideas
+- Gradually replace the one-off Salient bundle with native Astro/Tailwind equivalents to retire the disable at ~salient-portfolio.js:1~.
+- Split CLI scripts into ES modules with explicit typings, making it possible to re-enable `no-unused-vars` selectively.
+
 ** 2025-10-19 - Highlight Delivery Fixes & Responsive Pipeline
 
 *** Problems Observed
