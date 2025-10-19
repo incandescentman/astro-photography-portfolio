@@ -2,7 +2,7 @@
 // Mark this page as prerendered (static)
 export const prerender = true;
 
-import { Image } from 'astro:assets';
+import { getImage, type GetImageResult, type ImageMetadata } from 'astro:assets';
 import MainLayout from '../layouts/MainLayout.astro';
 import siteConfig from '../../site.config.mts';
 // Import image configuration
@@ -10,6 +10,19 @@ import { images } from '../data/homepage-images.js';
 import imageMetadata from '../data/image-metadata.json';
 import fs from 'fs';
 import path from 'path';
+
+const highlightImports = import.meta.glob('../assets/highlights/*.{jpg,jpeg,JPG,JPEG,png,PNG}', {
+  eager: true,
+  import: 'default'
+}) as Record<string, ImageMetadata>;
+
+const highlightImageMap = new Map<string, ImageMetadata>();
+for (const [filePath, mod] of Object.entries(highlightImports)) {
+  const filename = filePath.split('/').pop();
+  if (filename) {
+    highlightImageMap.set(filename, mod as ImageMetadata);
+  }
+}
 
 // Load saved order from JSON file if it exists
 function loadSavedOrder() {
@@ -334,15 +347,17 @@ const fallbackDimensions = {
 } as const;
 
 // Helper to map a single image to render data
+type HighlightSize = 'portrait' | 'landscape' | 'xlportrait';
+
 function mapSingle(img) {
-  const originalSrc = `/highlights/${img.filename}`;
-  const webpSrc = originalSrc.replace(/\.(jpg|jpeg|png)$/i, '.webp');
+  const filename = img.filename;
+  const originalSrc = `/highlights/${filename}`;
 
   return {
-    src: webpSrc,
-    filename: img.filename,
-    caption: img.caption || img.filename.replace(/[-_]/g, ' ').replace(/\.\w+$/, ''),
-    size: img.size
+    filename,
+    caption: img.caption || filename.replace(/[-_]/g, ' ').replace(/\.\w+$/, ''),
+    size: (img.size ?? 'portrait') as HighlightSize,
+    originalSrc
   };
 }
 
@@ -373,6 +388,75 @@ normalizedPhotos.forEach((photo) => {
 
 const uniquePhotos = Array.from(uniquePhotoMap.values());
 
+type ResponsiveVariant = {
+  webp: GetImageResult;
+  jpeg: GetImageResult;
+  sizes: string;
+};
+
+const sizePresets: Record<HighlightSize, { widths: number[]; sizes: string }> = {
+  portrait: {
+    widths: [360, 540, 720, 900, 1080],
+    sizes: '(max-width: 640px) 90vw, (max-width: 1100px) 45vw, 320px'
+  },
+  landscape: {
+    widths: [640, 900, 1200, 1440],
+    sizes: '(max-width: 640px) 100vw, (max-width: 1100px) 90vw, 648px'
+  },
+  xlportrait: {
+    widths: [480, 720, 960, 1280, 1600],
+    sizes: '(max-width: 640px) 90vw, (max-width: 1100px) 60vw, 648px'
+  }
+};
+
+const responsiveVariants = new Map<string, ResponsiveVariant>();
+
+const resolveResponsiveVariant = async (photo: ReturnType<typeof mapSingle>) => {
+  const preset = sizePresets[photo.size] ?? sizePresets.portrait;
+  const imageModule = highlightImageMap.get(photo.filename);
+
+  try {
+    if (!imageModule) {
+      throw new Error(`Highlight asset not found for ${photo.filename}`);
+    }
+
+    const [webp, jpeg] = await Promise.all([
+      getImage({ src: imageModule, widths: preset.widths, format: 'webp', quality: 'mid' }),
+      getImage({ src: imageModule, widths: preset.widths, format: 'jpeg', quality: 'mid' })
+    ]);
+
+    return {
+      webp,
+      jpeg,
+      sizes: preset.sizes
+    };
+  } catch (error) {
+    throw error;
+  }
+};
+
+const sizesFor = (size: HighlightSize) => sizePresets[size]?.sizes ?? sizePresets.portrait.sizes;
+
+const responsiveInfoFor = (photo: ReturnType<typeof mapSingle>) => {
+  const variant = responsiveVariants.get(photo.filename);
+  const sizes = sizesFor(photo.size);
+  return {
+    variant,
+    sizes,
+    href: variant?.jpeg.src ?? photo.originalSrc,
+    imgSrc: variant?.jpeg.src ?? photo.originalSrc,
+    jpegSrcSet: variant?.jpeg.srcSet.attribute,
+    webpSrcSet: variant?.webp.srcSet.attribute
+  };
+};
+
+await Promise.all(
+  uniquePhotos.map(async (photo) => {
+    const variant = await resolveResponsiveVariant(photo);
+    responsiveVariants.set(photo.filename, variant);
+  })
+);
+
 const toAbsoluteUrl = (pathSegment: string) => new URL(pathSegment, siteOrigin).toString();
 
 const dimensionForPhoto = (photo: ReturnType<typeof mapSingle>) => {
@@ -388,9 +472,10 @@ const dimensionForPhoto = (photo: ReturnType<typeof mapSingle>) => {
 
 const imageObjects = uniquePhotos.map((photo) => {
   const { width, height } = dimensionForPhoto(photo);
-  const originalPath = `/highlights/${photo.filename}`;
-  const originalUrl = toAbsoluteUrl(originalPath);
-  const webpUrl = toAbsoluteUrl(photo.src);
+  const originalUrl = toAbsoluteUrl(photo.originalSrc);
+  const variant = responsiveVariants.get(photo.filename);
+  const thumbnailUrl = variant ? toAbsoluteUrl(variant.webp.src) : originalUrl;
+  const contentUrl = variant ? toAbsoluteUrl(variant.jpeg.src) : originalUrl;
   const extension = photo.filename.split('.').pop()?.toLowerCase() ?? 'jpg';
   const encodingFormat =
     extension === 'png'
@@ -407,8 +492,8 @@ const imageObjects = uniquePhotos.map((photo) => {
     name: photo.caption,
     caption: photo.caption,
     url: originalUrl,
-    contentUrl: originalUrl,
-    thumbnailUrl: webpUrl,
+    contentUrl,
+    thumbnailUrl,
     encodingFormat,
     representativeOfPage: photo.size === 'xlportrait' ? true : undefined,
     width,
@@ -444,8 +529,10 @@ const shareCandidates = featuredPhotos.length > 0 ? featuredPhotos : uniquePhoto
 
 const ogImages = shareCandidates.slice(0, 4).map((photo) => {
   const { width, height } = dimensionForPhoto(photo);
+  const variant = responsiveVariants.get(photo.filename);
+  const ogUrl = variant ? toAbsoluteUrl(variant.jpeg.src) : toAbsoluteUrl(photo.originalSrc);
   return {
-    url: toAbsoluteUrl(`/highlights/${photo.filename}`),
+    url: ogUrl,
     alt: photo.caption,
     width,
     height
@@ -552,6 +639,8 @@ const criticalStyles = `
         if (item && item.type === 'stacked' && Array.isArray(item.items)) {
           const a = mapSingle(item.items[0]);
           const b = mapSingle(item.items[1] || item.items[0]);
+          const aInfo = responsiveInfoFor(a);
+          const bInfo = responsiveInfoFor(b);
           const containerAspectRatio = 648 / 968;
           return (
             <article
@@ -562,34 +651,44 @@ const criticalStyles = `
               style={`--aspect-ratio: ${containerAspectRatio}`}
             >
               <div class="stacked-pair">
-                <a class="masonry-link portfolio-lightbox" href={a.src}>
-                  <Image
-                    src={a.src}
-                    alt={a.caption}
-                    width={648}
-                    height={484}
-                    layout="responsive"
-                    fit="cover"
-                    position="attention"
-                    loading="lazy"
-                    data-caption={a.caption}
-                  />
+                <a class="masonry-link portfolio-lightbox" href={aInfo.href}>
+                  <picture>
+                    {aInfo.webpSrcSet && (
+                      <source type="image/webp" srcset={aInfo.webpSrcSet} sizes={aInfo.sizes} />
+                    )}
+                    <img
+                      src={aInfo.imgSrc}
+                      srcset={aInfo.jpegSrcSet}
+                      sizes={aInfo.sizes}
+                      alt={a.caption}
+                      width={648}
+                      height={484}
+                      loading="lazy"
+                      decoding="async"
+                      data-caption={a.caption}
+                    />
+                  </picture>
                   <div class="caption-overlay">
                     <h3>{a.caption}</h3>
                   </div>
                 </a>
-                <a class="masonry-link portfolio-lightbox" href={b.src}>
-                  <Image
-                    src={b.src}
-                    alt={b.caption}
-                    width={648}
-                    height={484}
-                    layout="responsive"
-                    fit="cover"
-                    position="attention"
-                    loading="lazy"
-                    data-caption={b.caption}
-                  />
+                <a class="masonry-link portfolio-lightbox" href={bInfo.href}>
+                  <picture>
+                    {bInfo.webpSrcSet && (
+                      <source type="image/webp" srcset={bInfo.webpSrcSet} sizes={bInfo.sizes} />
+                    )}
+                    <img
+                      src={bInfo.imgSrc}
+                      srcset={bInfo.jpegSrcSet}
+                      sizes={bInfo.sizes}
+                      alt={b.caption}
+                      width={648}
+                      height={484}
+                      loading="lazy"
+                      decoding="async"
+                      data-caption={b.caption}
+                    />
+                  </picture>
                   <div class="caption-overlay">
                     <h3>{b.caption}</h3>
                   </div>
@@ -599,6 +698,7 @@ const criticalStyles = `
           );
         }
         const photo = mapSingle(item);
+        const photoInfo = responsiveInfoFor(photo);
         // Map size to variant names
         let variant = 'regular';
         if (photo.size === 'landscape') variant = 'wide';
@@ -624,22 +724,26 @@ const criticalStyles = `
             data-size={photo.size}
             style={`--aspect-ratio: ${aspectRatio}`}
           >
-            
-            <a class="masonry-link portfolio-lightbox" href={photo.src}>
-              <Image
-                src={photo.src}
-                alt={photo.caption}
-                width={imageWidth}
-                height={imageHeight}
-                layout="responsive"
-                fit="cover"
-                position="attention"
-                loading="lazy"
-                data-caption={photo.caption}
-                data-variant={variant}
-                data-natural-width={meta?.width}
-                data-natural-height={meta?.height}
-              />
+            <a class="masonry-link portfolio-lightbox" href={photoInfo.href}>
+              <picture>
+                {photoInfo.webpSrcSet && (
+                  <source type="image/webp" srcset={photoInfo.webpSrcSet} sizes={photoInfo.sizes} />
+                )}
+                <img
+                  src={photoInfo.imgSrc}
+                  srcset={photoInfo.jpegSrcSet ?? undefined}
+                  sizes={photoInfo.sizes}
+                  alt={photo.caption}
+                  width={imageWidth}
+                  height={imageHeight}
+                  loading="lazy"
+                  decoding="async"
+                  data-caption={photo.caption}
+                  data-variant={variant}
+                  data-natural-width={meta?.width}
+                  data-natural-height={meta?.height}
+                />
+              </picture>
               <div class="caption-overlay">
                 <h3>{photo.caption}</h3>
               </div>
