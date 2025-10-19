@@ -8,7 +8,40 @@ import globals from 'globals';
 export default [
 	js.configs.recommended,
 	{
-		ignores: ['dist/**', '.astro/**', 'node_modules/**', '.cache/**'],
+		ignores: [
+			'dist/**',
+			'.astro/**',
+			'**/.astro/**',
+			'node_modules/**',
+			'.cache/**',
+			'venv/**',
+			'astro-jay-dixit-photos-starter/**',
+		],
+	},
+	{
+		files: ['scripts/**/*.js'],
+		languageOptions: {
+			globals: {
+				...globals.node,
+			},
+		},
+		rules: {
+			'no-unused-vars': 'off',
+		},
+	},
+	{
+		files: ['salient-portfolio.js'],
+		languageOptions: {
+			globals: {
+				...globals.browser,
+				jQuery: 'readonly',
+			},
+		},
+		rules: {
+			'no-undef': 'off',
+			'no-unused-vars': 'off',
+			'no-redeclare': 'off',
+		},
 	},
 	{
 		files: ['**/*.ts'],
@@ -28,15 +61,20 @@ export default [
 		},
 		rules: {
 			...ts.configs.recommended.rules,
+			'@typescript-eslint/no-explicit-any': 'off',
 		},
 	},
-
 	{
 		files: ['**/*.astro'],
 		languageOptions: {
 			parser: astroParser,
 			parserOptions: {
 				parser: tsParser,
+			},
+			globals: {
+				...globals.browser,
+				...globals.node,
+				URL: 'readonly',
 			},
 		},
 		plugins: {

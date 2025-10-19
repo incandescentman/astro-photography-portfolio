@@ -31,7 +31,7 @@ const sortedPosts = posts
     )}
 
     <div class="grid gap-12">
-      {sortedPosts.map(({ data, slug, body, id, render }) => {
+      {sortedPosts.map(({ data, slug }) => {
         const publishDate = data.publishDate ? new Date(data.publishDate) : undefined;
         const formattedDate = publishDate
           ? publishDate.toLocaleDateString('en-US', {

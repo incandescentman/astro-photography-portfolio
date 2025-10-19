@@ -402,7 +402,7 @@ type AdminFeatureParams = {
 
 function setupAdminFeatures({ container, pckry, isAdminMode, localStorageKey }: AdminFeatureParams) {
   if (!isAdminMode) {
-    return { setDirty: (dirty: boolean) => {} }; // Return a no-op function for non-admin mode
+    return { setDirty: () => {} }; // Return a no-op function for non-admin mode
   }
 
   let isDirty = false;

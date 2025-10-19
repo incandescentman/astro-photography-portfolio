@@ -268,14 +268,13 @@ function optimizeImageOrder(images) {
         }
       }
       // If still none, try landscape
-      let wideWasLandscape = false;
       if (xlIndex === -1) {
         for (let k = end; k < result.length; k++) {
-          if (isLandscape(result[k])) { xlIndex = k; wideWasLandscape = true; break; }
+          if (isLandscape(result[k])) { xlIndex = k; break; }
         }
         if (xlIndex === -1) {
           for (let k = start - 1; k >= 0; k--) {
-            if (isLandscape(result[k])) { xlIndex = k; wideWasLandscape = true; break; }
+            if (isLandscape(result[k])) { xlIndex = k; break; }
           }
         }
       }
@@ -415,24 +414,20 @@ const resolveResponsiveVariant = async (photo: ReturnType<typeof mapSingle>) => 
   const preset = sizePresets[photo.size] ?? sizePresets.portrait;
   const imageModule = highlightImageMap.get(photo.filename);
 
-  try {
-    if (!imageModule) {
-      throw new Error(`Highlight asset not found for ${photo.filename}`);
-    }
-
-    const [webp, jpeg] = await Promise.all([
-      getImage({ src: imageModule, widths: preset.widths, format: 'webp', quality: 'mid' }),
-      getImage({ src: imageModule, widths: preset.widths, format: 'jpeg', quality: 'mid' })
-    ]);
-
-    return {
-      webp,
-      jpeg,
-      sizes: preset.sizes
-    };
-  } catch (error) {
-    throw error;
+  if (!imageModule) {
+    throw new Error(`Highlight asset not found for ${photo.filename}`);
   }
+
+  const [webp, jpeg] = await Promise.all([
+    getImage({ src: imageModule, widths: preset.widths, format: 'webp', quality: 'mid' }),
+    getImage({ src: imageModule, widths: preset.widths, format: 'jpeg', quality: 'mid' })
+  ]);
+
+  return {
+    webp,
+    jpeg,
+    sizes: preset.sizes
+  };
 };
 
 const sizesFor = (size: HighlightSize) => sizePresets[size]?.sizes ?? sizePresets.portrait.sizes;

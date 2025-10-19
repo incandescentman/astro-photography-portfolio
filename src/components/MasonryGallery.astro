@@ -124,7 +124,7 @@ const { images } = Astro.props;
 </style>
 
 <div class="gallery">
-  {images.map(({ src, filename, caption, tags }, index) => (
+  {images.map(({ src, filename, caption, tags }) => (
     <div 
       class="gallery-item" 
       data-caption={caption}
