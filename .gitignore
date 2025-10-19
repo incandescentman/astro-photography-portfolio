@@ -13,4 +13,3 @@ logs/
 throttle.ctrl
 pywikibot.lwp
 .vercel
-*.webp
