@@ -8,7 +8,7 @@
   - Data layer: `src/data/**.ts` (YAML gallery, image store)
   - Styles: `src/styles/**.css`
 - Assets: `public/**` (static), `src/gallery/**` (YAML-driven images)
-- Galleries: YAML at `src/gallery/gallery.yaml`; filesystem galleries under `public/photos/**`.
+- Galleries: YAML at `src/gallery/gallery.yaml`; filesystem galleries under `src/gallery/photos/**`.
 - Tests: `src/data/__tests__/*.test.ts`
 - Config: `site.config.mts`, `astro.config.mts`, `tailwind.config.js`, `eslint.config.js`, `prettier.config.js`.
 
@@ -20,7 +20,7 @@
 - `npm run lint`: ESLint for TS/JS/Astro files.
 - `npm run prettier`: Format with Prettier.
 - `npm run generate`: Generate/update `src/gallery/gallery.yaml` from `src/gallery/**`.
-- `npm run generate-tags`: Create `tags.json` for `public/photos/<folder>`.
+- `npm run generate-tags`: Create `tags.json` for `src/gallery/photos/<folder>`.
 
 ## Coding Style & Naming Conventions
 - Use TypeScript for logic; Astro components for UI.
@@ -42,7 +42,7 @@
 - PRs: Describe scope, rationale, testing steps, and any config changes.
 
 ## Architecture Notes & Tips
-- Two gallery modes exist: YAML (`src/gallery/gallery.yaml`) and filesystem (`public/photos/**`). Avoid route conflicts; prefer one source per route.
+- Two gallery modes exist: YAML (`src/gallery/gallery.yaml`) and filesystem (`src/gallery/photos/**`). Avoid route conflicts; prefer one source per route.
 - Site settings live in `site.config.mts`.
 - GLightbox is used for lightbox; ensure CSS is imported where needed.
 - Comments use Giscus; set valid `data-repo-id` and `data-category-id` in `PhotoComments.astro`.

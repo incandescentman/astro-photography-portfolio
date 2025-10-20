@@ -7,8 +7,8 @@
  *   node scripts/upload-with-metadata.js <sourceDir> [cloudinaryFolder]
  * 
  * Example:
- *   node scripts/upload-with-metadata.js ./photos/red-carpet/tiff-2025
- *   node scripts/upload-with-metadata.js ./photos/portraits portraits
+ *   node scripts/upload-with-metadata.js ./src/gallery/photos/red-carpet/tiff-2025
+ *   node scripts/upload-with-metadata.js ./src/gallery/photos/portraits portraits
  * 
  * Prerequisites:
  *   - brew install exiftool
@@ -40,14 +40,17 @@ if (!sourceDir) {
 Usage: node scripts/upload-with-metadata.js <sourceDir> [cloudinaryFolder]
 
 Examples:
-  node scripts/upload-with-metadata.js ./public/photos
-  node scripts/upload-with-metadata.js ./photos/red-carpet/tiff-2025 photos/red-carpet/tiff-2025
+  node scripts/upload-with-metadata.js ./src/gallery/photos
+  node scripts/upload-with-metadata.js ./src/gallery/photos/red-carpet/tiff-2025 photos/red-carpet/tiff-2025
   `);
   process.exit(1);
 }
 
 const ROOT = path.resolve(sourceDir);
-const UPLOAD_FOLDER = cloudinaryFolder || sourceDir.replace(/^\.\//, '').replace(/^public\//, '');
+const UPLOAD_FOLDER = cloudinaryFolder || sourceDir
+  .replace(/^\.\//, '')
+  .replace(/^public\//, '')
+  .replace(/^src\/gallery\//, '');
 
 /**
  * Read EXIF/IPTC metadata using exiftool

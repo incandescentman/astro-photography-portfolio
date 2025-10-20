@@ -18,7 +18,7 @@ Single source of truth for project-specific terminology and internal language us
 ** Gallery
 A collection of photos organized in a single folder, rendered as a dedicated page.
 
-Location: `public/photos/[gallery-name]/`
+Location: `src/gallery/photos/[gallery-name]/`
 URL: `/gallery/[gallery-name]`
 Metadata: Extracted from folder name and optional `tags.json`
 Related: [[*Folder-Based Organization]]
@@ -26,7 +26,7 @@ Related: [[*Folder-Based Organization]]
 ** Folder-Based Organization
 Architectural pattern where filesystem structure drives site navigation.
 
-Structure: Each subfolder in `public/photos/` becomes a gallery
+Structure: Each subfolder in `src/gallery/photos/` becomes a gallery
 Benefits: Simple content management, no database needed
 Constraint: Folder names must be URL-safe
 Implementation: Dynamic route generation in Astro
@@ -126,7 +126,7 @@ Fallback: Eager load for above-fold images
 ** tags.json
 Per-gallery metadata file for custom configuration.
 
-Location: `public/photos/[gallery]/tags.json`
+Location: `src/gallery/photos/[gallery]/tags.json`
 Purpose: Override defaults, add gallery description
 Schema: `{ "title": "...", "description": "...", "photos": [...] }`
 Optional: Galleries work without it

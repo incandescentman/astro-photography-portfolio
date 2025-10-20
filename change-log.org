@@ -127,7 +127,7 @@
 
 *** Major Features Added
 - *Dual Architecture*: Main highlights masonry + complete gallery system
-- *Folder-Based Galleries*: Dynamic routing from public/photos/** structure
+- *Folder-Based Galleries*: Dynamic routing from src/gallery/photos/** structure
 - *CSS Grid Masonry*: Precise 10px spacing with varied photo sizes
 - *Search & Filtering*: Real-time search with clickable tag pills
 - *Like System*: localStorage-based (Supabase-ready) with animated hearts
@@ -144,7 +144,7 @@
 - `/src/components/PhotoComments.astro` - Giscus comments component
 - `/scripts/generate-tags-json.js` - CLI tool for tag generation
 - `/public/highlights/` - Main page photo collection
-- `/public/photos/red-carpet/tiff/` - Sample gallery structure
+- `/src/gallery/photos/red-carpet/tiff/` - Sample gallery structure
 - `/design-architecture.org` - Complete system documentation
 
 *** Technical Achievements
@@ -172,9 +172,9 @@
 ** Development Workflow Established
 
 *** Content Management
-1. Add photos to appropriate `public/photos/category/` folder
+1. Add photos to appropriate `src/gallery/photos/category/` folder
 2. Follow naming convention: `subject_event_year.jpg`
-3. Optionally run: `node scripts/generate-tags-json.js ./public/photos/folder`
+3. Optionally run: `node scripts/generate-tags-json.js ./src/gallery/photos/folder`
 4. Deploy (automatic route generation)
 
 *** CLI Commands
@@ -185,7 +185,7 @@
 
 *** Folder Structure Template
 ```
-public/photos/
+src/gallery/photos/
 ├── red-carpet/tiff/          # Film festival red carpet
 ├── red-carpet/sundance/      # Sundance red carpet
 ├── portraits/studio/         # Studio portrait sessions

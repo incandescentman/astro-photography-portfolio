@@ -149,7 +149,7 @@ Documentation structure:
 ** Project Structure
 
 *** Core Directories
-- **~/public/photos/~** - Photo storage organized by gallery
+- **~/src/gallery/photos/~** - Photo storage organized by gallery
 - **~/src/pages/~** - Astro pages and routes
 - **~/src/components/~** - Reusable UI components
 - **~/src/lib/~** - Utilities and helpers
@@ -164,7 +164,7 @@ Documentation structure:
 ** Key Invariants
 
 *** Content Organization
-- Photos organized in `public/photos/[gallery-name]/` folders
+- Photos organized in `src/gallery/photos/[gallery-name]/` folders
 - Each folder becomes a gallery page
 - Metadata extracted from filenames or tags.json
 - Never modify photo organization to fix code issues
@@ -228,7 +228,7 @@ Frequency: Very High
 ** Quick Reference
 
 *** To add a new gallery:
-1. Create folder in `public/photos/[gallery-name]/`
+1. Create folder in `src/gallery/photos/[gallery-name]/`
 2. Add photos to folder
 3. Create `tags.json` for gallery metadata (optional)
 4. Run build to generate gallery page

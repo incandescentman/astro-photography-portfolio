@@ -818,7 +818,7 @@ node scripts/upload-with-metadata.js ./photos/red-carpet/tiff-2025
 
 Usage:
 #+begin_src bash
-node scripts/upload-with-tags-json.js ./public/photos
+node scripts/upload-with-tags-json.js ./src/gallery/photos
 #+end_src
 
 ***** C. scripts/photo-cli.js (MAIN CLI TOOL - Full Spec Implementation)
@@ -890,19 +890,19 @@ npm install p-limit       # Concurrent upload control
 **** Test 1: Basic Upload Script
 #+begin_src bash
 # Test the simple upload script (already working)
-node scripts/upload-to-cloudinary.js ./public/photos
+node scripts/upload-to-cloudinary.js ./src/gallery/photos
 #+end_src
 
 **** Test 2: Upload with Metadata Extraction
 #+begin_src bash
 # Test EXIF/IPTC extraction
-node scripts/upload-with-metadata.js ./public/photos/portraits
+node scripts/upload-with-metadata.js ./src/gallery/photos/portraits
 #+end_src
 
 **** Test 3: Upload with tags.json
 #+begin_src bash
 # Create a test tags.json
-cat > ./public/photos/tags.json << 'EOF'
+cat > ./src/gallery/photos/tags.json << 'EOF'
 {
   "tags": ["test", "2025"],
   "location": "Toronto, Canada",
@@ -913,7 +913,7 @@ cat > ./public/photos/tags.json << 'EOF'
 EOF
 
 # Run upload
-node scripts/upload-with-tags-json.js ./public/photos
+node scripts/upload-with-tags-json.js ./src/gallery/photos
 #+end_src
 
 **** Test 4: Full CLI Tool
@@ -922,13 +922,13 @@ node scripts/upload-with-tags-json.js ./public/photos
 npm run photo:init
 
 # Dry run to preview
-node scripts/photo-cli.js upload ./public/photos --dry-run --verbose
+node scripts/photo-cli.js upload ./src/gallery/photos --dry-run --verbose
 
 # Validate metadata
-npm run photo:validate ./public/photos
+npm run photo:validate ./src/gallery/photos
 
 # Full upload with content generation
-npm run photo:upload ./public/photos
+npm run photo:upload ./src/gallery/photos
 #+end_src
 
 **** Test 5: Check Generated Content
@@ -1011,10 +1011,10 @@ cat .env | grep CLOUDINARY
 npm run photo:init
 
 # 4. Test with a dry run
-node scripts/photo-cli.js upload ./public/photos --dry-run
+node scripts/photo-cli.js upload ./src/gallery/photos --dry-run
 
 # 5. Upload for real
-npm run photo:upload ./public/photos
+npm run photo:upload ./src/gallery/photos
 
 # 6. Check generated content
 ls src/content/albums/
@@ -1115,7 +1115,7 @@ npm i cloudinary
 
 Upload from a local folder (preserve structure):
 #+begin_src bash
-npm run upload-cloudinary -- ./public/photos events
+npm run upload-cloudinary -- ./src/gallery/photos events
 #+end_src
 This yields public IDs like ~events/red-carpet/tiff/vanessa-kirby_tiff_2024~ (no extension).
 

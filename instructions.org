@@ -20,11 +20,11 @@ This guide walks you through uploading photos to Cloudinary with proper metadata
 
 ** Where to Put Photos
 
-Place your photos in: ~./public/photos/~
+Place your photos in: ~./src/gallery/photos/~
 
 Organize them into logical folders:
 #+begin_example
-public/photos/
+src/gallery/photos/
   ├── events/
   │   └── nobel/
   │       └── john-hopfield_nobel-physics_2024.jpg
@@ -65,7 +65,7 @@ brew install exiftool
 *** Add Caption and Title to a Photo
 #+begin_src bash
 # Navigate to your photo folder
-cd public/photos/portraits/studio
+cd src/gallery/photos/portraits/studio
 
 # Add caption and title
 exiftool -overwrite_original \
@@ -91,7 +91,7 @@ exiftool -overwrite_original \
 *** Batch Process Multiple Photos
 #+begin_src bash
 # Add the same metadata to all JPGs in a folder
-cd public/photos/red-carpet/tiff
+cd src/gallery/photos/red-carpet/tiff
 
 # Add event metadata to all photos
 exiftool -overwrite_original \
@@ -122,7 +122,7 @@ Create a ~tags.json~ file in each photo folder:
 Notes:
 - ~album.slug~ is used to name the generated content file (~src/content/albums/<slug>.json~) and the album route (~/albums/<slug>~). Keep it URL-friendly (hyphens) and unique across albums.
 
-*** Example: public/photos/portraits/studio/tags.json
+*** Example: src/gallery/photos/portraits/studio/tags.json
 #+begin_src json
 {
   "album": {
@@ -159,7 +159,7 @@ Notes:
 }
 #+end_src
 
-*** Example: public/photos/red-carpet/tiff/tags.json
+*** Example: src/gallery/photos/red-carpet/tiff/tags.json
 #+begin_src json
 {
   "album": {
@@ -191,7 +191,7 @@ Notes:
 }
 #+end_src
 
-*** Example: public/photos/events/nobel/tags.json
+*** Example: src/gallery/photos/events/nobel/tags.json
 #+begin_src json
 {
   "album": {
@@ -229,7 +229,7 @@ Notes:
 
 This uploads photos as-is without validation:
 #+begin_src bash
-node scripts/upload-to-cloudinary.js ./public/photos photos
+node scripts/upload-to-cloudinary.js ./src/gallery/photos photos
 #+end_src
 
 Notes:
@@ -240,38 +240,38 @@ Notes:
 
 If you added metadata with ExifTool:
 #+begin_src bash
-node scripts/upload-with-metadata.js ./public/photos
+node scripts/upload-with-metadata.js ./src/gallery/photos
 #+end_src
 
 ** Step 3: Upload with tags.json
 
 If you created tags.json files:
 #+begin_src bash
-node scripts/upload-with-tags-json.js ./public/photos
+node scripts/upload-with-tags-json.js ./src/gallery/photos
 #+end_src
 
 ** Step 4: Full Pipeline with Validation (Recommended)
 
 *** First, check your metadata is complete:
 #+begin_src bash
-npm run photo:validate -- ./public/photos
+npm run photo:validate -- ./src/gallery/photos
 #+end_src
 
 This will show which photos are missing captions or titles.
 
 *** Preview what will happen (dry run):
 #+begin_src bash
-node scripts/photo-cli.js upload ./public/photos --dry-run --verbose
+node scripts/photo-cli.js upload ./src/gallery/photos --dry-run --verbose
 #+end_src
 
 *** If validation passes, upload for real:
 #+begin_src bash
-npm run photo:upload -- ./public/photos
+npm run photo:upload -- ./src/gallery/photos
 #+end_src
 
 *** Force upload even with validation errors:
 #+begin_src bash
-node scripts/photo-cli.js upload ./public/photos --force
+node scripts/photo-cli.js upload ./src/gallery/photos --force
 #+end_src
 
 Behavior notes:
@@ -374,11 +374,11 @@ Here's a full example for uploading a new batch of photos:
 
 #+begin_src bash
 # 1. Organize photos
-mkdir -p public/photos/red-carpet/oscars-2025
-cp ~/Desktop/oscars-photos/*.jpg public/photos/red-carpet/oscars-2025/
+mkdir -p src/gallery/photos/red-carpet/oscars-2025
+cp ~/Desktop/oscars-photos/*.jpg src/gallery/photos/red-carpet/oscars-2025/
 
 # 2. Rename files to follow convention
-cd public/photos/red-carpet/oscars-2025
+cd src/gallery/photos/red-carpet/oscars-2025
 mv IMG_001.jpg emma-stone_oscars_2025.jpg
 mv IMG_002.jpg ryan-gosling_oscars_2025.jpg
 
@@ -426,10 +426,10 @@ EOF
 cd ../../../..
 
 # 6. Validate metadata
-npm run photo:validate -- ./public/photos/red-carpet/oscars-2025
+npm run photo:validate -- ./src/gallery/photos/red-carpet/oscars-2025
 
 # 7. Upload to Cloudinary
-npm run photo:upload -- ./public/photos/red-carpet/oscars-2025
+npm run photo:upload -- ./src/gallery/photos/red-carpet/oscars-2025
 
 # 8. Check the results
 ls src/content/albums/
@@ -479,7 +479,7 @@ Check the Cloudinary console:
 
 ** File Structure
 #+begin_example
-public/photos/
+src/gallery/photos/
   [category]/
     [event]/
       subject_event_year.jpg
@@ -526,16 +526,16 @@ rg -n "PUBLIC_CLOUDINARY|CLOUDINARY_URL" .env || cat .env
 exiftool -ver
 
 # 2) Dry-run full pipeline
-node scripts/photo-cli.js upload ./public/photos --dry-run --verbose
+node scripts/photo-cli.js upload ./src/gallery/photos --dry-run --verbose
 
 # 3) Validate metadata
-npm run photo:validate -- ./public/photos
+npm run photo:validate -- ./src/gallery/photos
 
 # 4) Simple upload to Cloudinary (keeps folder prefix consistent)
-node scripts/upload-to-cloudinary.js ./public/photos photos
+node scripts/upload-to-cloudinary.js ./src/gallery/photos photos
 
 # 5) Generate content by real upload of a small folder
-npm run photo:upload -- ./public/photos/<some-folder>
+npm run photo:upload -- ./src/gallery/photos/<some-folder>
 ls -la src/content/albums
 
 # 6) Run the site
@@ -561,6 +561,6 @@ npm run dev
 
 - Added Prerequisites (~.env~, ExifTool, optional ~photo:init~)
 - Fixed npm arg passing using ~--~ in ~photo:validate~ and ~photo:upload~ examples
-- Standardized basic upload usage: ~node scripts/upload-to-cloudinary.js ./public/photos photos~
+- Standardized basic upload usage: ~node scripts/upload-to-cloudinary.js ./src/gallery/photos photos~
 - Clarified overwrite vs skip behavior between scripts
 - Added filename and slug guidance; added tags.json slug notes

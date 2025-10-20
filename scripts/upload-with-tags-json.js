@@ -49,14 +49,17 @@ if (!sourceDir) {
 Usage: node scripts/upload-with-tags-json.js <sourceDir> [cloudinaryFolder]
 
 Examples:
-  node scripts/upload-with-tags-json.js ./public/photos
-  node scripts/upload-with-tags-json.js ./photos/red-carpet photos/red-carpet
+  node scripts/upload-with-tags-json.js ./src/gallery/photos
+  node scripts/upload-with-tags-json.js ./src/gallery/photos/red-carpet photos/red-carpet
   `);
   process.exit(1);
 }
 
 const ROOT = path.resolve(sourceDir);
-const UPLOAD_FOLDER = cloudinaryFolder || sourceDir.replace(/^\.\//, '').replace(/^public\//, '');
+const UPLOAD_FOLDER = cloudinaryFolder || sourceDir
+  .replace(/^\.\//, '')
+  .replace(/^public\//, '')
+  .replace(/^src\/gallery\//, '');
 
 /**
  * Load tags.json from a directory

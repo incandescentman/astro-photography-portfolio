@@ -334,7 +334,7 @@ If you want, I can:
 
 *** Gallery System
 - *Location*: `/gallery/[...folder]` (dynamic routes)
-- *Photo Source*: `public/photos/**` (nested folder structure)
+- *Photo Source*: `src/gallery/photos/**` (nested folder structure)
 - *Purpose*: Organized collections by theme/event/category
 - *Features*:
   - Folder-based automatic gallery generation
@@ -386,7 +386,7 @@ const sizeClass = index % 7 === 0 ? 'wide-tall' :
 ** Photo Organization System
 
 *** Folder Structure
-*Note*: With Cloudinary-first, the source of truth is album metadata (public IDs). Local public/photos folders are optional for development or legacy import.
+*Note*: With Cloudinary-first, the source of truth is album metadata (public IDs). Local src/gallery/photos folders are optional for development or legacy import.
 
 #+BEGIN_EXAMPLE
 public/
@@ -470,7 +470,7 @@ const matchesTags = activeTags.size === 0 ||
 
 *** Route Generation
 - *Method*: `getStaticPaths()` with recursive folder scanning
-- *Source*: `public/photos/**` directory structure
+- *Source*: `src/gallery/photos/**` directory structure
 - *Filter*: Only folders containing image files
 
 ** Navigation System
@@ -508,7 +508,7 @@ const matchesTags = activeTags.size === 0 ||
 *** CLI Tools
 - *Tag Generation*: `npm run generate-tags`
   #+BEGIN_EXAMPLE
-  node scripts/generate-tags-json.js ./public/photos/red-carpet/tiff
+  node scripts/generate-tags-json.js ./src/gallery/photos/red-carpet/tiff
   #+END_EXAMPLE
 - *Development*: `npm run dev --open`
 - *Build*: `npm run build`
@@ -517,13 +517,13 @@ const matchesTags = activeTags.size === 0 ||
 *** Content Management
 - *Method*: File system based (no CMS)
 - *Workflow*:
-  1. Add photos to appropriate `public/photos/category/` folder
+  1. Add photos to appropriate `src/gallery/photos/category/` folder
   2. Follow naming convention: `subject_event_year.jpg`
   3. Optionally run tag generation script
   4. Deploy (automatic route generation)
 
 *** Maintenance
-- *Adding Galleries*: Create new folder in `public/photos/`
+- *Adding Galleries*: Create new folder in `src/gallery/photos/`
 - *Updating Photos*: Replace files in folders
 - *Customizing Tags*: Edit or create `tags.json` files
 - *Managing Highlights*: Update `public/highlights/` folder
@@ -557,7 +557,7 @@ const matchesTags = activeTags.size === 0 ||
 
 ** ✅ Completed Features
 - *Dual System Architecture*: Main highlights masonry + gallery system
-- *Folder-Based Routing*: Dynamic routes from public/photos/** structure  
+- *Folder-Based Routing*: Dynamic routes from src/gallery/photos/** structure  
 - *CSS Grid Masonry*: Precise 10px spacing with varied photo sizes
 - *Search & Filtering*: Real-time search with clickable tag pills
 - *Like System*: localStorage-based with animated interactions
@@ -588,11 +588,11 @@ const matchesTags = activeTags.size === 0 ||
 
 *** Content Population
 - *Photo Organization*: Populate gallery folders with real collections
-  - `/public/photos/red-carpet/tiff/` - TIFF red carpet photos
-  - `/public/photos/red-carpet/sundance/` - Sundance photos
-  - `/public/photos/portraits/studio/` - Studio sessions
-  - `/public/photos/events/nobel/` - Nobel Prize events
-  - `/public/photos/themes/fashion/` - Fashion photography
+  - `/src/gallery/photos/red-carpet/tiff/` - TIFF red carpet photos
+  - `/src/gallery/photos/red-carpet/sundance/` - Sundance photos
+  - `/src/gallery/photos/portraits/studio/` - Studio sessions
+  - `/src/gallery/photos/events/nobel/` - Nobel Prize events
+  - `/src/gallery/photos/themes/fashion/` - Fashion photography
 - *Tag Generation*: Run scripts for all populated folders
 - *Testing*: Verify all routes and functionality with real content
 

@@ -18,9 +18,9 @@ Tech Stack:
 Key Functional Features:
 
 1. Folder-Based Photo Galleries
- - All photo folders in public/photos/ are turned into galleries.
+ - All photo folders in src/gallery/photos/ are turned into galleries.
  - Each folder's contents are displayed at /gallery/[foldername].
- - Nested folders are supported (e.g. public/photos/red-carpet/locarno).
+ - Nested folders are supported (e.g. src/gallery/photos/red-carpet/locarno).
  - Folders should be named semantically, not by year (e.g. locarno-film-festival, tiff, sundance).
 
 2. Responsive Masonry Grid
@@ -97,7 +97,7 @@ Deployment
  - Hosted on Vercel, mapped to photos.jaydixit.com
  - Astro generates fully static pages
  - Site build will include:
- - /public/photos/ folder with images
+ - /src/gallery/photos/ folder with images
  - /src/pages/gallery/[folder].astro
  - MasonryGallery.astro, PhotoComments.astro, PhotoLikeButton.astro
  - /scripts/generate-tags-json.js

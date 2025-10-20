@@ -64,7 +64,7 @@ Goal: Portfolio loads in under 2 seconds on slow connections.
 ** 3. Simple Content Management
 
 Adding photos should be trivial:
-1. Create folder in `public/photos/[gallery-name]/`
+1. Create folder in `src/gallery/photos/[gallery-name]/`
 2. Add photos with descriptive filenames
 3. Optional: Add `tags.json` for customization
 4. Push to GitHub
@@ -94,7 +94,7 @@ Start with solid foundations, add features carefully:
 ** Folder-Based Gallery System
 
 #+BEGIN_SRC
-public/photos/
+src/gallery/photos/
 ├── locarno-film-festival/     # Gallery: "Locarno Film Festival"
 │   ├── red-carpet.jpg         # → Caption: "Red Carpet"
 │   ├── screening-room.jpg     # → Caption: "Screening Room"
@@ -238,7 +238,7 @@ For portfolio quality:
 6. Static pages render with photo data
 
 ** Gallery Generation
-1. Read `public/photos/` directory structure
+1. Read `src/gallery/photos/` directory structure
 2. For each folder:
    - Generate gallery page
    - Extract metadata (folder name, tags.json)

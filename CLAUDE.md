@@ -23,11 +23,11 @@ per-folder tags.json files.
 
 ​*** 📁 Folder-Based Gallery Pages
 
-- All photos live in public/photos/** folder
+- All photos live in src/gallery/photos/** folder
 
 - Each subfolder becomes a separate gallery
 
-- Example: public/photos/locarno-film-festival →
+- Example: src/gallery/photos/locarno-film-festival →
   /gallery/locarno-film-festival
 
 
@@ -140,7 +140,7 @@ per-folder tags.json files.
 
 - Run with:
 
-  node scripts/generate-tags-json.js ./public/photos/locarno
+  node scripts/generate-tags-json.js ./src/gallery/photos/locarno
 
 
 
@@ -248,7 +248,7 @@ per-folder tags.json files.
 ​** Commands
 
 - To generate tags: node scripts/generate-tags-json.js
-  ./public/photos/[folder]
+  ./src/gallery/photos/[folder]
 
 - To build Astro: npm run build
 
@@ -586,15 +586,15 @@ A static site generator (SSG)-powered photography portfolio using Astro, designe
 | Image Viewer        | GLightbox                            |
 | Deployment          | Vercel                               |
 | Hosting Domain      | photos.jaydixit.com                  |
-| Image Source        | public/photos/**                     |
+| Image Source        | src/gallery/photos/**                     |
 | Metadata Source     | File naming convention               |
 | CMS                 | None (filename = metadata)           |
 
 ,** Features
 
 ,*** 📁 Automatic Gallery Routing
-- Each folder in ~public/photos/~ becomes a gallery
-- Example: ~public/photos/tiff~ → /gallery/tiff
+- Each folder in ~src/gallery/photos/~ becomes a gallery
+- Example: ~src/gallery/photos/tiff~ → /gallery/tiff
 - Nested folders are supported: ~/gallery/red-carpet/locarno~
 
 ,*** 🖼 Responsive Masonry Grid
@@ -641,7 +641,7 @@ A static site generator (SSG)-powered photography portfolio using Astro, designe
 
 ,*** 🛠 Folder Structure Example
 ,#+BEGIN_EXAMPLE
-/public/photos/
+/src/gallery/photos/
 ├── red-carpet/
 │   ├── tiff/
 │   ├── sundance/

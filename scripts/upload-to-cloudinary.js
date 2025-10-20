@@ -4,7 +4,7 @@
 // Usage:
 //   node scripts/upload-to-cloudinary.js <sourceDir> [publicIdPrefix]
 // Example:
-//   node scripts/upload-to-cloudinary.js ./public/photos events
+//   node scripts/upload-to-cloudinary.js ./src/gallery/photos events
 //
 // Auth via either:
 //   - CLOUDINARY_URL=cloudinary://<api_key>:<api_secret>@<cloud_name>
