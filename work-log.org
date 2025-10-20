@@ -1,0 +1,16 @@
+#+TITLE: Daily Handoff Notes
+#+DATE: 2025-10-19
+
+* 2025-10-19
+** Summary
+- Highlight pipeline now uses Astro-managed responsive variants; verified with build on main.
+- ESLint configuration stabilized; `npm run lint` and `npm run build` both succeed.
+
+** Next Steps
+1. Replace `salient-portfolio.js` with native Astro/Tailwind components to retire lint exceptions.
+2. Refactor Node CLI scripts to typed ES modules and re-enable stricter linting rules.
+3. Extend responsive image pipeline to gallery routes for consistent load performance.
+
+** Status
+- All work committed and pushed to `main`.
+- Ready for pick-up on the follow-up tasks above.
