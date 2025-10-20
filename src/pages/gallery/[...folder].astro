@@ -1,7 +1,6 @@
 ---
-import fs from 'fs';
-import path from 'path';
 import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro:assets';
 import MainLayout from '../../layouts/MainLayout.astro';
 import PhotoComments from '../../components/PhotoComments.astro';
 
@@ -9,123 +8,148 @@ const { folder } = Astro.params;
 
 // Handle nested folder paths (e.g., "red-carpet/tiff")
 const folderPath = Array.isArray(folder) ? folder.join('/') : folder;
-const photosDir = path.join(process.cwd(), 'public/photos', folderPath);
 
-// Check if folder exists
-if (!fs.existsSync(photosDir)) {
-  return Astro.redirect('/404');
-}
+type TagMapping = Record<string, string[]>;
+type TagsByFolder = Record<string, TagMapping>;
 
-// Get image files
-const imageFiles = fs.readdirSync(photosDir).filter(f => 
-  /\.(jpg|jpeg|png|webp|gif)$/i.test(f)
+const imageModules = import.meta.glob<{ default: ImageMetadata }>(
+  '../../gallery/photos/**/*.{jpg,jpeg,png,webp,gif}',
+  {
+    eager: true
+  }
 );
 
-// Load tags.json if it exists
-const tagsPath = path.join(photosDir, 'tags.json');
-const tagsOverride = fs.existsSync(tagsPath) ? 
-  JSON.parse(fs.readFileSync(tagsPath, 'utf8')) : {};
+const tagModules = import.meta.glob<TagMapping>(
+  '../../gallery/photos/**/tags.json',
+  { import: 'default', eager: true }
+);
 
-// Process each image
-const images = imageFiles.map(file => {
-  const filename = path.parse(file).name;
-  
-  // Parse filename for caption: subject_event_year.jpg
-  const parts = filename.split('_');
+const tagsByFolder = Object.entries(tagModules).reduce<TagsByFolder>((acc, [key, value]) => {
+  const relativeFolder = key
+    .replace('../../gallery/photos/', '')
+    .replace(/\/tags\.json$/, '');
+  acc[relativeFolder] = value;
+  return acc;
+}, {});
+
+function capitalize(word: string) {
+  return word.charAt(0).toUpperCase() + word.slice(1);
+}
+
+function buildCaptionAndTags(filename: string, folderSlug: string) {
+  const baseName = filename.replace(/\.[^/.]+$/, '');
+  const parts = baseName.split('_');
   let subject = '';
   let event = '';
   let year = '';
-  
+
   if (parts.length > 0) {
-    subject = parts[0].split('-').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ');
+    subject = parts[0].split('-').map(capitalize).join(' ');
   }
-  
+
   if (parts.length > 1) {
     const lastPart = parts[parts.length - 1];
     if (/^\d{4}$/.test(lastPart)) {
       year = lastPart;
       if (parts.length > 2) {
-        event = parts.slice(1, -1).join(' ').split('-').map(word => 
-          word.charAt(0).toUpperCase() + word.slice(1)
-        ).join(' ');
+        event = parts.slice(1, -1).join(' ').split('-').map(capitalize).join(' ');
       }
     } else {
-      event = parts.slice(1).join(' ').split('-').map(word => 
-        word.charAt(0).toUpperCase() + word.slice(1)
-      ).join(' ');
+      event = parts.slice(1).join(' ').split('-').map(capitalize).join(' ');
     }
   }
-  
-  // Build caption
+
   let caption = subject;
   if (event) caption += ` at ${event}`;
   if (year) caption += ` in ${year}`;
-  
-  // Get tags from tags.json or parse from filename
-  let tags = tagsOverride[file] || [];
+  if (!caption) {
+    caption = subject || baseName.replace(/[-_]/g, ' ');
+  }
+
+  const overrides = tagsByFolder[folderSlug]?.[filename] ?? [];
+  let tags = [...overrides];
+
   if (tags.length === 0) {
-    // Extract tags from filename patterns like _tag1-tag2
-    const tagMatch = filename.match(/_([^_]+)$/);
+    const tagMatch = baseName.match(/_([^_]+)$/);
     if (tagMatch) {
       tags = tagMatch[1].split('-');
     }
-    // Add folder name(s) as tags
-    tags.push(...folderPath.split('/'));
+    if (folderSlug) {
+      tags.push(...folderSlug.split('/'));
+    }
   }
-  
+
   return {
-    src: `/photos/${folderPath}/${file}`,
-    filename: file,
     caption,
-    tags: [...new Set(tags)] // Remove duplicates
+    tags: [...new Set(tags)]
   };
-});
+}
+
+const images = Object.entries(imageModules)
+  .map(([key, module]) => {
+    const metadata = module.default;
+    const relativePath = key.replace('../../gallery/photos/', '');
+    const segments = relativePath.split('/');
+    const filename = segments.pop();
+    if (!filename) return null;
+    const imageFolder = segments.join('/');
+
+    if (imageFolder !== folderPath) return null;
+
+    const { caption, tags } = buildCaptionAndTags(filename, imageFolder);
+
+    return {
+      metadata,
+      filename,
+      caption,
+      tags,
+      originalSrc: metadata.src
+    };
+  })
+  .filter((entry): entry is {
+    metadata: ImageMetadata;
+    filename: string;
+    caption: string;
+    tags: string[];
+    originalSrc: string;
+  } => entry !== null)
+  .sort((a, b) => a.filename.localeCompare(b.filename));
+
+if (images.length === 0) {
+  return Astro.redirect('/404');
+}
 
 // Get all unique tags for filtering
 const allTags = [...new Set(images.flatMap(img => img.tags))];
 
 // Display name for the gallery
 const displayName = folderPath.split('/').map(part => 
-  part.split('-').map(word => 
-    word.charAt(0).toUpperCase() + word.slice(1)
-  ).join(' ')
+  part.split('-').map(capitalize).join(' ')
 ).join(' → ');
 
-export const getStaticPaths = async () => {
-  const photosDir = path.join(process.cwd(), 'public/photos');
-  if (!fs.existsSync(photosDir)) return [];
-  
-  const paths = [];
-  
-  function getAllFolders(dir, basePath = '') {
-    const items = fs.readdirSync(dir);
-    
-    for (const item of items) {
-      const itemPath = path.join(dir, item);
-      const relativePath = basePath ? `${basePath}/${item}` : item;
-      
-      if (fs.statSync(itemPath).isDirectory()) {
-        // Check if this folder has images
-        const hasImages = fs.readdirSync(itemPath).some(f => 
-          /\.(jpg|jpeg|png|webp|gif)$/i.test(f)
-        );
-        
-        if (hasImages) {
-          paths.push({
-            params: { folder: relativePath }
-          });
-        }
-        
-        // Recursively check subfolders
-        getAllFolders(itemPath, relativePath);
-      }
+export const getStaticPaths = () => {
+  const folders = new Set<string>();
+
+  const staticModules = import.meta.glob<{ default: ImageMetadata }>(
+    '../../gallery/photos/**/*.{jpg,jpeg,png,webp,gif}',
+    {
+      eager: true
     }
-  }
-  
-  getAllFolders(photosDir);
-  return paths;
+  );
+
+  Object.keys(staticModules).forEach(key => {
+    const relativePath = key.replace('../../gallery/photos/', '');
+    const folderSlug = relativePath.split('/').slice(0, -1).join('/');
+    if (folderSlug) {
+      folders.add(folderSlug);
+    }
+  });
+
+  return Array.from(folders).map(folderSlug => ({
+    params: {
+      folder: folderSlug
+    }
+  }));
 };
 ---
 
@@ -206,13 +230,12 @@ export const getStaticPaths = async () => {
               data-caption={image.caption}
               data-tags={JSON.stringify(image.tags)}
             >
-              <a class="masonry-link portfolio-lightbox" href={image.src}>
+              <a class="masonry-link portfolio-lightbox" href={image.originalSrc}>
                 <Image
-                  src={image.src}
+                  src={image.metadata}
                   alt={image.caption}
                   width={w}
                   height={h}
-                  layout="responsive"
                   fit="cover"
                   position="attention"
                   loading="lazy"

@@ -1,55 +1,66 @@
 ---
-import fs from 'fs';
-import path from 'path';
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro:assets';
 import MainLayout from '../../layouts/MainLayout.astro';
 
-// Get all gallery folders from public/photos
-const photosDir = path.join(process.cwd(), 'public/photos');
-const galleries = [];
+type GalleryEntry = {
+  name: string;
+  displayName: string;
+  imageCount: number;
+  sampleImage?: ImageMetadata;
+  url: string;
+  category: string;
+};
 
-function getAllGalleries(dir, basePath = '') {
-  if (!fs.existsSync(dir)) return;
-  
-  const items = fs.readdirSync(dir);
-  
-  for (const item of items) {
-    const itemPath = path.join(dir, item);
-    const relativePath = basePath ? `${basePath}/${item}` : item;
-    
-    if (fs.statSync(itemPath).isDirectory()) {
-      // Check if this folder has images
-      const imageFiles = fs.readdirSync(itemPath).filter(f => 
-        /\.(jpg|jpeg|png|webp|gif)$/i.test(f)
-      );
-      
-      if (imageFiles.length > 0) {
-        const sampleImage = imageFiles[0];
-        const displayName = relativePath.split('/').map(part => 
-          part.split('-').map(word => 
-            word.charAt(0).toUpperCase() + word.slice(1)
-          ).join(' ')
-        ).join(' → ');
-        
-        galleries.push({
-          name: relativePath,
-          displayName,
-          imageCount: imageFiles.length,
-          sampleImage: `/photos/${relativePath}/${sampleImage}`,
-          url: `/gallery/${relativePath}`,
-          category: relativePath.split('/')[0] // top-level category
-        });
-      }
-      
-      // Recursively check subfolders
-      getAllGalleries(itemPath, relativePath);
-    }
-  }
+const imageModules = import.meta.glob<{ default: ImageMetadata }>(
+  '../../gallery/photos/**/*.{jpg,jpeg,png,webp,gif}',
+  { eager: true }
+);
+
+function toTitleCase(slug: string) {
+  return slug
+    .split('-')
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
 }
 
-getAllGalleries(photosDir);
+const grouped = new Map<string, ImageMetadata[]>();
 
-// Group galleries by category
-const categorizedGalleries = galleries.reduce((acc, gallery) => {
+Object.entries(imageModules).forEach(([key, module]) => {
+  const relativePath = key.replace('../../gallery/photos/', '');
+  const segments = relativePath.split('/');
+  segments.pop();
+  const folder = segments.join('/');
+  if (!folder) return;
+
+  if (!grouped.has(folder)) {
+    grouped.set(folder, []);
+  }
+
+  grouped.get(folder)?.push(module.default);
+});
+
+const galleries = Array.from(grouped.entries()).map(([folder, images]) => {
+  if (images.length === 0) return null;
+
+  const displayName = folder
+    .split('/')
+    .map(toTitleCase)
+    .join(' → ');
+
+  const entry: GalleryEntry = {
+    name: folder,
+    displayName,
+    imageCount: images.length,
+    sampleImage: images[0],
+    url: `/gallery/${folder}`,
+    category: folder.split('/')[0] ?? 'other'
+  };
+
+  return entry;
+}).filter((entry): entry is GalleryEntry => entry !== null);
+
+const categorizedGalleries = galleries.reduce<Record<string, GalleryEntry[]>>((acc, gallery) => {
   const category = gallery.category;
   if (!acc[category]) acc[category] = [];
   acc[category].push(gallery);
@@ -81,12 +92,19 @@ const categorizedGalleries = galleries.reduce((acc, gallery) => {
                   class="group block bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
                 >
                   <div class="aspect-[4/3] bg-gray-200 overflow-hidden">
-                    <img 
-                      src={gallery.sampleImage} 
-                      alt={gallery.displayName}
-                      class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      loading="lazy"
-                    />
+                    {gallery.sampleImage ? (
+                      <Image
+                        src={gallery.sampleImage}
+                        alt={gallery.displayName}
+                        width={640}
+                        height={480}
+                        fit="cover"
+                        class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div class="w-full h-full bg-gray-200" />
+                    )}
                   </div>
                   
                   <div class="p-4">
@@ -111,7 +129,7 @@ const categorizedGalleries = galleries.reduce((acc, gallery) => {
           </div>
           <h3 class="text-xl font-semibold mb-2">No galleries found</h3>
           <p class="text-gray-600">
-            Create gallery folders in <code class="bg-gray-100 px-2 py-1 rounded text-sm">public/photos/</code> to get started.
+            Create gallery folders in <code class="bg-gray-100 px-2 py-1 rounded text-sm">src/gallery/photos/</code> to get started.
           </p>
         </div>
       )}

@@ -224,3 +224,17 @@ imagesLoaded(container).on('progress', function(instance, image) {
 
 ** Validation
 - ~npm run build~ (passes; existing album collection warnings unchanged).
+
+* 2025-10-05 - Gallery Asset Pipeline Alignment
+
+** Asset Migration
+- Relocated filesystem-driven galleries from ~public/photos/~ into ~src/gallery/photos/~ so Astro’s optimizer can fingerprint originals and emit responsive variants.
+- Catch-all gallery page now glob-imports the new source tree, derives captions/tags centrally, and renders each item through ~Image~ metadata with hashed lightbox targets.
+
+** Listing & Tooling
+- Gallery index rebuilds its cards from the updated metadata pool and serves optimized thumbnails instead of raw ~img~ tags.
+- Upload-to-Commons admin view swaps to Astro-provided preview URLs while generating absolute source paths under the new directory for uploader scripts.
+
+** Validation
+- ~npm run lint~
+- ~npm run build~
