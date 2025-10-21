@@ -628,7 +628,7 @@ const criticalStyles = `
     <script type="application/ld+json" set:html={jsonLdString}></script>
   </Fragment>
   <div class="portfolio-wrap">
-    <div id="masonry" class="masonry-items elastic" data-col-num="elastic" data-gutter="16px" data-starting-filter="*" data-masonry-type="photography">
+    <div id="masonry" class="masonry-items elastic" data-col-num="elastic" data-gutter="8px" data-starting-filter="*" data-masonry-type="photography">
       <div class="grid-sizer"></div>
       {processedImages.map((item, index) => {
         if (item && item.type === 'stacked' && Array.isArray(item.items)) {
@@ -752,19 +752,13 @@ const criticalStyles = `
 </MainLayout>
 
 <style is:inline>
-/* Portfolio container - with breathing room */
+/* Portfolio container - full width with top spacing for navbar */
 .portfolio-wrap {
   position: relative;
   margin: 0;
-  padding: 120px 24px 24px 24px;
+  padding: 120px 0 0 0; /* Top padding for navbar; no side gutters for edge-to-edge */
   width: 100%;
   box-sizing: border-box;
-}
-
-@media (min-width: 768px) {
-  .portfolio-wrap {
-    padding: 120px 32px 32px 32px;
-  }
 }
 
 /* Masonry Container */
