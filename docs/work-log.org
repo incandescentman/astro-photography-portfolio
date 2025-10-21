@@ -1,6 +1,61 @@
 #+TITLE: Work Log - Jay Dixit Photography Portfolio
 #+DATE: 2025-10-12
 
+* 2025-10-21 - Known Good State: Design Enhancements Phase 1 (Stable)
+** Status: ✅ STABLE - MASONRY WORKING
+This commit marks a stable, production-ready state after implementing Phase 1 design enhancements.
+
+** What's Working
+- Masonry grid layout fully functional (Packery with 8px gaps)
+- Edge-to-edge layout (no container padding)
+- Square corners on images (no border-radius)
+- Captions displaying correctly as overlays on hover
+
+** Design Enhancements Applied
+*** Color Palette
+- Warmer background: #fafafa (neutral-50) instead of pure white
+- Neutral color scale: neutral-50 through neutral-900
+- Better foreground colors: deeper, richer blacks
+
+*** Shadows & Depth
+- Refined shadow system: shadow-sm-refined through shadow-xl-refined
+- Layered, subtle shadows with reduced opacity
+- Applied to nav, search inputs, interactive elements
+
+*** Interaction Refinements
+- Hover overlay: Gradient (0% → 30% → 70%) instead of solid
+- Zoom effect: Gentler scale(1.03) instead of scale(1.07)
+- Transitions: Smoother 0.6s cubic-bezier easing
+- Caption typography: clamp() fluid sizing, lighter weight (500)
+
+*** UI Components
+- Navigation: Enhanced glassmorphism (backdrop-blur-xl)
+- Search input: shadcn-style rounded-xl with better focus states
+- Tag pills: Black active state (neutral-900) instead of blue
+- Footer: Subtle background with backdrop-blur
+- Social icons: Rounded hover backgrounds
+
+*** Typography
+- Improved hierarchy with proper tracking-tight
+- Better line-height and letter-spacing
+- Fluid typography using clamp()
+
+** Spacing (Reverted to Original)
+- Masonry gap: 8px (tight, original spacing)
+- Container: Edge-to-edge (no side padding)
+- Images: Square corners (no border-radius)
+
+** Files Modified
+- src/styles/global.css
+- src/pages/index.astro
+- src/pages/gallery/[...folder].astro
+- src/components/NavBar.astro
+- src/components/Footer.astro
+- src/components/SocialIcon.astro
+
+** Reference
+See docs/feature-ideas/design-enhancements-2025-10.org for full proposal.
+
 * 2025-10-12 - Failed Attempt at Dynamic Aspect Ratios
 ** Goal
 - Refactor the homepage gallery to use dynamic, natural aspect ratios for all images, enabling a true edge-to-edge layout.
