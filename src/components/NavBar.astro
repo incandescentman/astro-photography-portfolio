@@ -27,7 +27,8 @@ const socialLinks = [
 	x-data="{ isOpen: false, scrolled: false }"
 	@scroll.window="scrolled = window.scrollY > 20"
 	class="fixed top-0 left-0 w-full z-50 transition-all duration-500 ease-in-out"
-	:class="scrolled ? 'bg-white/95 backdrop-blur-md shadow-lg py-4' : 'bg-white/80 backdrop-blur-sm py-6'"
+	:class="scrolled ? 'bg-white/80 backdrop-blur-xl shadow-sm-refined py-4' : 'bg-white/70 backdrop-blur-lg py-6'"
+	style="border-bottom: 1px solid rgba(229, 229, 229, 0.6);"
 >
 	<div data-critical-nav-inner class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
 		<!-- Logo and Wordmark -->
@@ -52,9 +53,8 @@ const socialLinks = [
 				menuItems.map((item, index) => (
 					<a
 						href={item.link}
-						class={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 hover:bg-gray-100 ${
-							index === 0 ? 'text-blue-600 hover:text-blue-700' : 'text-gray-700 hover:text-gray-900'
-						}`}
+						class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ease-out active:scale-95"
+						style={`color: ${index === 0 ? '#0ea5e9' : 'var(--neutral-700)'};`}
 						target={item.link.startsWith('http') ? '_blank' : '_self'}
 					>
 						{item.name}
@@ -181,3 +181,15 @@ const socialLinks = [
 		</button>
 	</div>
 </div>
+
+<style>
+	nav a[href]:hover {
+		background-color: rgba(250, 250, 250, 0.8) !important;
+		color: var(--neutral-900) !important;
+	}
+
+	nav .shadow-sm-refined {
+		box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03),
+					0 1px 3px 0 rgba(0, 0, 0, 0.04);
+	}
+</style>

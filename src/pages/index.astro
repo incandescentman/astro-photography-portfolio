@@ -628,7 +628,7 @@ const criticalStyles = `
     <script type="application/ld+json" set:html={jsonLdString}></script>
   </Fragment>
   <div class="portfolio-wrap">
-    <div id="masonry" class="masonry-items elastic" data-col-num="elastic" data-gutter="8px" data-starting-filter="*" data-masonry-type="photography">
+    <div id="masonry" class="masonry-items elastic" data-col-num="elastic" data-gutter="16px" data-starting-filter="*" data-masonry-type="photography">
       <div class="grid-sizer"></div>
       {processedImages.map((item, index) => {
         if (item && item.type === 'stacked' && Array.isArray(item.items)) {
@@ -752,13 +752,19 @@ const criticalStyles = `
 </MainLayout>
 
 <style is:inline>
-/* Portfolio container - full width with top spacing for navbar */
+/* Portfolio container - with breathing room */
 .portfolio-wrap {
   position: relative;
   margin: 0;
-  padding: 120px 0 0 0; /* Top padding for navbar; no side gutters for edge-to-edge */
+  padding: 120px 24px 24px 24px;
   width: 100%;
   box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .portfolio-wrap {
+    padding: 120px 32px 32px 32px;
+  }
 }
 
 /* Masonry Container */
@@ -810,6 +816,8 @@ const criticalStyles = `
   height: 100%;
   object-fit: cover;
   display: block;
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.03);
 }
 
 /* Responsive sizing */
@@ -854,7 +862,7 @@ const criticalStyles = `
   height: 100%;
 }
 
-/* Dark overlay on hover */
+/* Dark overlay on hover - gradient for sophistication */
 .masonry-item a::before {
   content: '';
   position: absolute;
@@ -862,11 +870,17 @@ const criticalStyles = `
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.3) 40%,
+    rgba(0, 0, 0, 0.7) 100%
+  );
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   z-index: 1;
   pointer-events: none;
+  border-radius: 8px;
 }
 
 .caption-overlay {
@@ -888,16 +902,20 @@ const criticalStyles = `
 .caption-overlay h3 {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  font-size: 28px;
-  font-weight: 600;
+  font-size: clamp(20px, 3vw, 28px);
+  font-weight: 500;
   text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-  letter-spacing: 0.5px;
-  line-height: 1.3;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
 }
 
-/* Hover effects */
+/* Hover effects - gentler and more elegant */
+.masonry-item img {
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
 .masonry-item:hover img {
-  transform: scale(1.07);
+  transform: scale(1.03);
 }
 
 .masonry-item:hover a::before {

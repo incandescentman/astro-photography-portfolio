@@ -38,9 +38,9 @@ This document contains comprehensive design enhancement proposals to elevate the
 #+BEGIN_SRC css
 /* Warmer, more sophisticated palette */
 :root {
-  --background: 0 0% 99%;        /* Warmer than pure white */
-  --foreground: 222 47% 11%;     /* Deeper, richer black */
-  --accent: 210 40% 96%;         /* Subtle blue-gray wash */
+  --background: 0 0% 99%;        /* Warmer than pure white; use via hsl(var(--background)) */
+  --foreground: 222 47% 11%;     /* Deeper, richer black; use via hsl(var(--foreground)) */
+  --accent: 210 40% 96%;         /* Subtle blue-gray wash; use via hsl(var(--accent)) */
   --neutral-50: #fafafa;
   --neutral-100: #f5f5f5;
   --neutral-200: #e5e5e5;
@@ -56,6 +56,7 @@ This document contains comprehensive design enhancement proposals to elevate the
 - Use ~text-neutral-700~ instead of ~text-gray-700~
 - Add subtle color washes (very light blue/purple tints)
 - Use CSS variables already defined: ~bg-background~, ~text-foreground~
+- Confirm any components consuming these HSL tokens wrap them in ~hsl(var(--token))~ (or convert to hex) to avoid invalid CSS.
 
 *** Impact
 - More sophisticated, premium feel
@@ -99,6 +100,7 @@ This document contains comprehensive design enhancement proposals to elevate the
 - KEY to premium feel
 - Adds depth and dimensionality
 - Modern, polished appearance
+- Plan a quick scroll-performance check on lower-powered devices once the new shadows land.
 
 ** 3. Better Typography Hierarchy
 
@@ -137,6 +139,9 @@ body {
   line-height: 1.25;
 }
 #+END_SRC
+
+**** Implementation Notes
+- Assumes Tailwind/PostCSS pipeline handles ~@apply~ directives; if a component falls outside that tooling, translate these utilities into static CSS equivalents.
 
 *** Impact
 - Better readability
@@ -252,6 +257,7 @@ body {
 - More polished navigation
 - Better interactive feedback
 - Modern glassmorphism effect
+- Validate the stronger blur + shadow treatment on mobile to catch any performance regressions early.
 
 ** 7. Search & Filter Refinement
 
@@ -616,6 +622,7 @@ body {
 - Improve spacing and gaps
 - Update border-radius values
 - Soften transitions and hover effects
+- Visual QA pass to confirm new HSL tokens render correctly and shadows perform acceptably on low-powered devices.
 
 ** Phase 2: Component Refinement (2-3 hours)
 - Enhance navigation
@@ -628,6 +635,7 @@ body {
 - Implement loading states
 - Enhance mobile experience
 - Add focus states
+- Re-run device checks focusing on navigation blur and hover animations before enabling advanced touches.
 
 ** Phase 4: Advanced (Optional)
 - Glass morphism effects
