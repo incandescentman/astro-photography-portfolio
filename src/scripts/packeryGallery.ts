@@ -71,6 +71,20 @@ export default function initPackeryGallery(options: PackeryGalleryOptions) {
 
     if (isMobileLayout) {
       setupMobileFallback(containerEl);
+
+      // Setup resize handler even on mobile to allow switching to desktop
+      setupResponsiveLayoutHandler({
+        container: containerEl,
+        pckry: null,
+        mobileBreakpoint,
+        localStorageKey,
+        initialLayout: 'mobile'
+      });
+
+      if (enablePhotoSwipe) {
+        setupPhotoSwipe({ container: containerEl, isAdminMode });
+      }
+
       return;
     }
 
@@ -105,7 +119,8 @@ export default function initPackeryGallery(options: PackeryGalleryOptions) {
       container: containerEl,
       pckry,
       mobileBreakpoint,
-      localStorageKey
+      localStorageKey,
+      initialLayout: 'packery'
     });
   };
 
@@ -310,16 +325,15 @@ function createAdminToolbar() {
 
 function setupMobileFallback(container: HTMLElement) {
   container.classList.add('masonry-mobile');
-  container.style.gap = '8px';
   const items = Array.from(container.querySelectorAll<HTMLElement>('.masonry-item'));
 
-  container.style.display = 'flex';
-  container.style.flexDirection = 'column';
-  container.style.alignItems = 'stretch';
-  container.style.justifyContent = 'flex-start';
-  container.style.gap = '8px';
-  container.style.padding = '0';
-  container.style.margin = '0 auto';
+  container.style.setProperty('display', 'flex', 'important');
+  container.style.setProperty('flex-direction', 'column', 'important');
+  container.style.setProperty('align-items', 'stretch', 'important');
+  container.style.setProperty('justify-content', 'flex-start', 'important');
+  container.style.setProperty('gap', '8px', 'important');
+  container.style.setProperty('padding', '0', 'important');
+  container.style.setProperty('margin', '0 auto', 'important');
 
   items.forEach((item) => {
     item.style.setProperty('position', 'relative', 'important');
@@ -831,18 +845,20 @@ async function setupPackeryLifecycle({ container, pckry, isAdminMode, localStora
 
 type ResponsiveLayoutHandlerOptions = {
   container: HTMLElement;
-  pckry: PackeryInstance;
+  pckry: PackeryInstance | null;
   mobileBreakpoint: number;
   localStorageKey: string;
+  initialLayout: 'packery' | 'mobile';
 };
 
 function setupResponsiveLayoutHandler({
   container,
   pckry,
   mobileBreakpoint,
-  localStorageKey
+  localStorageKey,
+  initialLayout
 }: ResponsiveLayoutHandlerOptions) {
-  let currentLayout: 'packery' | 'mobile' = 'packery';
+  let currentLayout: 'packery' | 'mobile' = initialLayout;
 
   const handleResize = () => {
     const isMobile = window.matchMedia(`(max-width: ${mobileBreakpoint}px)`).matches;

@@ -601,6 +601,38 @@ const criticalStyles = `
     .portfolio-wrap {
       padding-top: 100px;
     }
+
+    /* Force mobile stack layout */
+    .masonry-items {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 8px !important;
+      position: relative !important;
+      height: auto !important;
+    }
+
+    .masonry-item {
+      position: relative !important;
+      left: auto !important;
+      top: auto !important;
+      transform: none !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+      height: auto !important;
+      aspect-ratio: auto !important;
+    }
+
+    .masonry-item img {
+      width: 100% !important;
+      height: auto !important;
+      object-fit: contain !important;
+      max-height: none !important;
+    }
+
+    .grid-sizer {
+      display: none !important;
+    }
   }
 `;
 --- 
