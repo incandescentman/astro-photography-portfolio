@@ -3,14 +3,24 @@
 
 * 2025-10-22
 ** Summary
-- Added a mobile-only flex stack that bypasses justified-layout so each photo runs edge-to-edge with only a 2px gutter, but residual gaps still appear intermittently.
-- Captured open issue details and hypotheses in ~docs/debug/mobile-gallery-gaps.org~ for follow-up.
+- Completed root cause analysis of mobile gallery gaps (breakpoint mismatch, missing resize handler, absolute positioning persistence)
+- Implemented robust solution with responsive layout handler in packeryGallery.ts:
+  - Increased mobile breakpoint from 480px → 768px
+  - Added setupResponsiveLayoutHandler to detect breakpoint crossing
+  - Destroy Packery before applying mobile flex layout
+  - Enhanced mobile style resets with !important flags
+  - Added debounce helper function
+- All changes committed to main with full documentation in docs/debug/mobile-gallery-gaps.org
 
 ** Next Steps
-1. QA the gallery on physical mobile hardware to confirm spacing across device pixel ratios.
+1. Test the fix on physical mobile hardware across 480px, 768px, 1024px breakpoints
+2. Verify no gaps appear when resizing from desktop → tablet → mobile
+3. If successful, mark issue as resolved and update debug doc
 
 ** Status
-- Change staged locally and awaiting tests before merge.
+- Implementation complete and committed to main
+- Build succeeds without errors
+- Ready for testing on actual devices
 
 * 2025-10-19
 ** Summary
