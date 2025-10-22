@@ -41,7 +41,7 @@ export default function initPackeryGallery(options: PackeryGalleryOptions) {
     adminMode,
     adminQueryParam = 'admin',
     localStorageKey = 'photoOrder',
-    mobileBreakpoint = 480,
+    mobileBreakpoint = 768,
     enableToolbar = true,
     enablePhotoSwipe = true,
   } = options;
@@ -81,7 +81,7 @@ export default function initPackeryGallery(options: PackeryGalleryOptions) {
       percentPosition: false,
       transitionDuration: '0.35s',
       stagger: 30,
-      resize: true,
+      resize: false,
       initLayout: false,
       horizontal: false,
       originLeft: true,
@@ -99,6 +99,14 @@ export default function initPackeryGallery(options: PackeryGalleryOptions) {
     if (enablePhotoSwipe) {
       setupPhotoSwipe({ container: containerEl, isAdminMode });
     }
+
+    // Setup responsive layout switching
+    setupResponsiveLayoutHandler({
+      container: containerEl,
+      pckry,
+      mobileBreakpoint,
+      localStorageKey
+    });
   };
 
   if (document.readyState === 'loading') {
@@ -314,19 +322,19 @@ function setupMobileFallback(container: HTMLElement) {
   container.style.margin = '0 auto';
 
   items.forEach((item) => {
-    item.style.position = 'relative';
-    item.style.left = 'auto';
-    item.style.top = 'auto';
-    item.style.transform = 'none';
-    item.style.width = '100%';
-    item.style.maxWidth = '100%';
-    item.style.margin = '0';
+    item.style.setProperty('position', 'relative', 'important');
+    item.style.setProperty('left', 'auto', 'important');
+    item.style.setProperty('top', 'auto', 'important');
+    item.style.setProperty('transform', 'none', 'important');
+    item.style.setProperty('width', '100%', 'important');
+    item.style.setProperty('max-width', '100%', 'important');
+    item.style.setProperty('margin', '0', 'important');
     item.style.setProperty('height', 'auto', 'important');
-    item.style.display = 'block';
+    item.style.setProperty('display', 'block', 'important');
     item.classList.add('animated-in');
     const img = item.querySelector('img');
     if (img) {
-      img.style.width = '100%';
+      img.style.setProperty('width', '100%', 'important');
       img.style.setProperty('height', 'auto', 'important');
       img.style.setProperty('object-fit', 'contain', 'important');
       img.style.setProperty('max-height', 'none', 'important');
@@ -821,6 +829,61 @@ async function setupPackeryLifecycle({ container, pckry, isAdminMode, localStora
 }
 
 
+type ResponsiveLayoutHandlerOptions = {
+  container: HTMLElement;
+  pckry: PackeryInstance;
+  mobileBreakpoint: number;
+  localStorageKey: string;
+};
+
+function setupResponsiveLayoutHandler({
+  container,
+  pckry,
+  mobileBreakpoint,
+  localStorageKey
+}: ResponsiveLayoutHandlerOptions) {
+  let currentLayout: 'packery' | 'mobile' = 'packery';
+
+  const handleResize = () => {
+    const isMobile = window.matchMedia(`(max-width: ${mobileBreakpoint}px)`).matches;
+
+    if (isMobile && currentLayout === 'packery') {
+      // Switch from Packery to mobile layout
+      console.log('Switching to mobile layout');
+
+      // Destroy Packery to remove absolute positioning
+      if (pckry && typeof pckry.destroy === 'function') {
+        pckry.destroy();
+      }
+
+      // Apply mobile fallback
+      setupMobileFallback(container);
+      currentLayout = 'mobile';
+
+    } else if (!isMobile && currentLayout === 'mobile') {
+      // Switch from mobile to Packery layout
+      console.log('Switching to Packery layout - reloading page');
+
+      // Reload is safest to reinit Packery properly
+      window.location.reload();
+    }
+  };
+
+  // Debounce resize handler
+  const debouncedResize = debounce(handleResize, 250);
+  window.addEventListener('resize', debouncedResize);
+
+  // Handle manual Packery resize when in desktop mode
+  if (pckry && typeof pckry.layout === 'function') {
+    const packeryResize = debounce(() => {
+      if (currentLayout === 'packery') {
+        pckry.layout();
+      }
+    }, 150);
+    window.addEventListener('resize', packeryResize);
+  }
+}
+
 type PhotoSwipeOptions = {
   container: HTMLElement;
   isAdminMode: boolean;
@@ -949,4 +1012,16 @@ function setupPhotoSwipe({ container, isAdminMode }: PhotoSwipeOptions) {
 
   container.addEventListener('pointerdown', pointerHandler);
   container.addEventListener('keydown', keyHandler);
+}
+
+// Debounce helper function
+function debounce<T extends (...args: any[]) => void>(
+  func: T,
+  wait: number
+): (...args: Parameters<T>) => void {
+  let timeout: ReturnType<typeof setTimeout>;
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
 }
