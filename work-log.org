@@ -1,6 +1,16 @@
 #+TITLE: Daily Handoff Notes
 #+DATE: 2025-10-19
 
+* 2025-10-22
+** Summary
+- Tuned justified-layout `boxSpacing` for narrow viewports so the mobile gallery shows edge-to-edge images without white gutters.
+
+** Next Steps
+1. QA the gallery on physical mobile hardware to confirm spacing across device pixel ratios.
+
+** Status
+- Change staged locally and awaiting tests before merge.
+
 * 2025-10-19
 ** Summary
 - Highlight pipeline now uses Astro-managed responsive variants; verified with build on main.

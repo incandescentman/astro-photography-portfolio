@@ -91,10 +91,14 @@ function createLayoutFor(
 		height: img.naturalHeight || img.height || 200,
 	}));
 
+	const containerWidth = container.clientWidth || window.innerWidth;
+	const isMobileViewport = containerWidth <= 768;
+	const boxSpacing = isMobileViewport ? 2 : 10;
+
 	const layout = justifiedLayout(imageSizes, {
-		containerWidth: container.clientWidth || window.innerWidth,
+		containerWidth,
 		targetRowHeight: 300,
-		boxSpacing: 10,
+		boxSpacing,
 		containerPadding: 0,
 	});
 	return layout;
