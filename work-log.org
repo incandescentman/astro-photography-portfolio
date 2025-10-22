@@ -3,24 +3,28 @@
 
 * 2025-10-22
 ** Summary
-- Completed root cause analysis of mobile gallery gaps (breakpoint mismatch, missing resize handler, absolute positioning persistence)
-- Implemented robust solution with responsive layout handler in packeryGallery.ts:
-  - Increased mobile breakpoint from 480px → 768px
-  - Added setupResponsiveLayoutHandler to detect breakpoint crossing
-  - Destroy Packery before applying mobile flex layout
-  - Enhanced mobile style resets with !important flags
-  - Added debounce helper function
-- All changes committed to main with full documentation in docs/debug/mobile-gallery-gaps.org
+- RESOLVED mobile gallery gaps issue
+- Root cause: CSS specificity war - desktop styles (position: absolute, aspect-ratio) had no media query overrides
+- JavaScript fixes (resize handlers, destroying Packery) were red herrings
+- Actual solution: Added CSS media query with !important overrides at ≤768px in src/pages/index.astro
+- Key insight: CSS rules persist continuously; JavaScript inline styles are one-time snapshots
+- Full debugging journey and lessons captured in docs/debug/mobile-gallery-gaps.org and docs/codebase-wisdom.org
 
-** Next Steps
-1. Test the fix on physical mobile hardware across 480px, 768px, 1024px breakpoints
-2. Verify no gaps appear when resizing from desktop → tablet → mobile
-3. If successful, mark issue as resolved and update debug doc
+** Commits
+- 147d1eb: Document actual root cause (CSS specificity war)
+- 6ece74e: Add CSS media query fix
+- Earlier commits: JavaScript improvements (still useful for resize handling)
+
+** Lessons Learned
+1. Check CSS computed styles FIRST before diving into JavaScript debugging
+2. Responsive layout changes belong in CSS media queries, not JavaScript
+3. Use "Computed" tab in DevTools, not just "Styles" or inline attributes
+4. Test at all breakpoints before considering features "done"
 
 ** Status
-- Implementation complete and committed to main
-- Build succeeds without errors
-- Ready for testing on actual devices
+- Issue fully resolved and tested
+- All documentation updated
+- Pattern documented for future responsive layout work
 
 * 2025-10-19
 ** Summary
