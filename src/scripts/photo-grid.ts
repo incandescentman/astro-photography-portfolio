@@ -70,7 +70,7 @@ export async function setupGallery() {
 	const isMobileViewport = containerWidth <= 768;
 
 	if (isMobileViewport) {
-		applyMobileLayout(imageLinks, container);
+		applyMobileLayout(imageLinks, container, imageElements);
 		return;
 	}
 
@@ -135,24 +135,34 @@ function applyImagesStyleBasedOnLayout(imageLinks: HTMLElement[], layout: Justif
 		if (!layout.boxes[i]) return;
 		const { left, top, width, height } = layout.boxes[i];
 
+		el.style.marginBottom = '0';
 		el.style.position = 'absolute';
 		el.style.left = `${left}px`;
 		el.style.top = `${top}px`;
 		el.style.width = `${width}px`;
 		el.style.height = `${height}px`;
 		el.style.display = 'block';
-		el.style.marginBottom = '0';
 	});
 }
 
 function applyContainerStyleBasedOnLayout(container: HTMLElement, layout: JustifiedLayoutResult) {
 	// Ensure the parent container has relative positioning
+	container.style.display = 'block';
+	container.style.flexDirection = '';
+	container.style.gap = '0';
 	container.style.position = 'relative';
 	// Set container height
 	container.style.height = `${layout.containerHeight}px`;
 }
 
-function applyMobileLayout(imageLinks: HTMLElement[], container: HTMLElement) {
+function applyMobileLayout(
+	imageLinks: HTMLElement[],
+	container: HTMLElement,
+	imageElements: HTMLImageElement[],
+) {
+	container.style.display = 'flex';
+	container.style.flexDirection = 'column';
+	container.style.gap = '2px';
 	container.style.position = 'relative';
 	container.style.height = 'auto';
 
@@ -163,7 +173,13 @@ function applyMobileLayout(imageLinks: HTMLElement[], container: HTMLElement) {
 		el.style.width = '100%';
 		el.style.height = 'auto';
 		el.style.display = 'block';
-		el.style.marginBottom = index === imageLinks.length - 1 ? '0' : '2px';
+		el.style.marginBottom = '0';
+	});
+
+	imageElements.forEach((img) => {
+		img.style.width = '100%';
+		img.style.height = 'auto';
+		img.style.display = 'block';
 	});
 }
 // Run setupGallery once the page is loaded
