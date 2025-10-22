@@ -49,3 +49,75 @@
 - Proceed with robust solution for better maintainability
 - Add resize listener that properly destroys/reinits layouts
 - Test on physical devices across 480px, 768px, 1024px breakpoints
+
+* ACTUAL Root Cause (2025-10-22) - RESOLVED
+
+** The Real Problem: CSS Specificity War
+
+The JavaScript fixes (resize handler, destroying Packery, !important in JS) were *correct but insufficient*. The fundamental issue was that *CSS was continuously fighting JavaScript*.
+
+*** What Was Actually Happening
+
+1. *Hardcoded CSS rules persisted*:
+   - src/pages/index.astro defined `.masonry-item { position: absolute; aspect-ratio: var(--aspect-ratio, 2/3); }`
+   - These rules applied at all viewport sizes
+   - No media query override existed for mobile
+
+2. *JavaScript couldn't win*:
+   - setupMobileFallback() tried: `item.style.position = 'relative'`
+   - Even with `.setProperty(..., 'important')` in JS, CSS kept reapplying
+   - CSS rules have persistent effect; inline styles are one-time changes
+
+3. *Race condition between CSS and JS*:
+   - Page loads → CSS applies absolute positioning
+   - JS runs → tries to set relative positioning
+   - CSS stays active → gaps remain because aspect-ratio and position persist
+
+*** The Successful Solution
+
+*Added CSS media query with !important flags* in src/pages/index.astro:
+
+```css
+@media (max-width: 768px) {
+  .masonry-items {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .masonry-item {
+    position: relative !important;
+    width: 100% !important;
+    aspect-ratio: auto !important;
+    left: auto !important;
+    top: auto !important;
+    transform: none !important;
+    height: auto !important;
+  }
+
+  .masonry-item img {
+    width: 100% !important;
+    height: auto !important;
+    object-fit: contain !important;
+  }
+}
+```
+
+*** Why This Works
+
+- *CSS-level override*: Media query has higher priority than base styles
+- *Runs immediately*: No FOUC (Flash Of Unstyled Content) waiting for JS
+- *Can't be overridden*: `!important` in media query beats everything
+- *Persistent*: Stays active throughout page lifecycle
+- *Performant*: Browser handles it natively, no JS overhead
+
+*** Key Debugging Insight
+
+*CSS specificity issues masquerade as JavaScript bugs.* When layout behaves inconsistently:
+
+1. Check CSS rules FIRST (not JavaScript logic)
+2. Inspect computed styles in DevTools (not just inline styles)
+3. Look for media query gaps (desktop styles bleeding into mobile)
+4. Use CSS solutions for CSS problems (don't fight CSS with JS)
+
+The "robust JavaScript solution" was a red herring. The real fix was a simple CSS media query.
