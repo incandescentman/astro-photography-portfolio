@@ -3,7 +3,8 @@
 
 * 2025-10-22
 ** Summary
-- Added a mobile-only flex stack that bypasses justified-layout so each photo runs edge-to-edge with only a 2px gutter.
+- Added a mobile-only flex stack that bypasses justified-layout so each photo runs edge-to-edge with only a 2px gutter, but residual gaps still appear intermittently.
+- Captured open issue details and hypotheses in ~docs/debug/mobile-gallery-gaps.org~ for follow-up.
 
 ** Next Steps
 1. QA the gallery on physical mobile hardware to confirm spacing across device pixel ratios.

@@ -1,0 +1,24 @@
+#+TITLE: Mobile Gallery Gap Investigation
+#+DATE: 2025-10-22
+
+* Problem
+- On mobile viewports (≤768px) the main gallery still shows intermittent vertical gaps between certain images despite the desired one-photo-per-row layout.
+- Reproduced in Safari and Chrome device simulators at ~http://localhost:4321/~ after hard refresh.
+
+* Observations
+- First and second photos often display extra white space beneath them, while later items stack flush, suggesting inconsistent inline styles per element.
+- DOM inspection shows some anchors retain absolute positioning inline styles (e.g., `top`, `left`) even after switching to the mobile stack.
+- Resizing from desktop to mobile and loading directly on mobile both show the issue, implying script logic affects initial render as well.
+
+* Hypotheses
+- Debounced resize handler may re-run justified layout after mobile layout applies, reintroducing absolute positioning on select nodes.
+- GLightbox initialization might clone nodes and restore previous styles, leaving residual gaps.
+- Astro hydration timing could mean the flex stack runs before image load completes, and subsequent layout pass reverts to justified spacing for a subset of images.
+
+* Attempts
+1. Lowered justified-layout `boxSpacing` on narrow viewports (2px) to minimize gutters. → No noticeable change; gaps persisted.
+2. Added mobile-only branch to bypass justified layout and stack anchors with `flex` container and uniform image dimensions. → Improved consistency but gaps still appear after certain items.
+3. Forced container style resets when returning to desktop mode to avoid leftover flex properties. → Desktop fine; mobile gaps remain.
+
+* Status
+- Issue unresolved. Need deeper inspection of resize/init order and GLightbox side effects before next iteration.
