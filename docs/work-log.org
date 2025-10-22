@@ -135,7 +135,7 @@ See docs/feature-ideas/design-enhancements-2025-10.org for full proposal.
   - Temporarily disabled =wikiportraits-story.mdx= (image import issue)
 
 *** Git Integration
-- Connected Vercel project to GitHub repository =incandescentman/astro-photography-portfolio=
+- Connected Vercel project to GitHub repository =incandescentman/photos-jaydixit=
 - Enabled automatic deployments on push to =main= branch
 - Added custom domain =photos.jaydixit.com= (DNS configuration pending)
 

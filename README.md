@@ -1,11 +1,11 @@
-# 📸 Astro Photography Portfolio Template
+# 📸 Photos Jaydixit
 
-[![Build & Test](https://github.com/rockem/astro-photography-portfolio/actions/workflows/test.yml/badge.svg)](https://github.com/rockem/astro-photography-portfolio/actions/workflows/test.yml)
+[![Build & Test](https://github.com/incandescentman/photos-jaydixit/actions/workflows/test.yml/badge.svg)](https://github.com/incandescentman/photos-jaydixit/actions/workflows/test.yml)
 
 A modern, fast, and highly customizable photography portfolio template built with [Astro](https://astro.build).
 Ideal for photographers who want to showcase their work through a sleek, performant, and professional website.
 
-👉 [View the demo](https://rockem.github.io/astro-photography-portfolio/)
+👉 [View the demo](https://incandescentman.github.io/photos-jaydixit/)
 
 ## ✨ Features
 
