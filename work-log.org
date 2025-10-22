@@ -3,7 +3,7 @@
 
 * 2025-10-22
 ** Summary
-- Tuned justified-layout `boxSpacing` for narrow viewports so the mobile gallery shows edge-to-edge images without white gutters.
+- Added a mobile-only stack layout that bypasses justified-layout so each photo runs edge-to-edge with only a 2px gutter.
 
 ** Next Steps
 1. QA the gallery on physical mobile hardware to confirm spacing across device pixel ratios.

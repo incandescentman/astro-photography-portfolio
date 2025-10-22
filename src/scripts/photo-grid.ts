@@ -66,7 +66,15 @@ export async function setupGallery() {
 	const imageElements = await waitForImagesToLoad(container);
 
 	// Get actual image dimensions after loading
-	const layout = createLayoutFor(imageElements, container);
+	const containerWidth = container.clientWidth || window.innerWidth;
+	const isMobileViewport = containerWidth <= 768;
+
+	if (isMobileViewport) {
+		applyMobileLayout(imageLinks, container);
+		return;
+	}
+
+	const layout = createLayoutFor(imageElements, containerWidth);
 	console.log('Generated layout:', layout);
 
 	applyImagesStyleBasedOnLayout(imageLinks, layout);
@@ -84,16 +92,15 @@ export async function setupGallery() {
 
 function createLayoutFor(
 	imageElements: HTMLImageElement[],
-	container: HTMLElement,
+	containerWidth: number,
 ): JustifiedLayoutResult {
 	const imageSizes = imageElements.map((img) => ({
 		width: img.naturalWidth || img.width || 300,
 		height: img.naturalHeight || img.height || 200,
 	}));
 
-	const containerWidth = container.clientWidth || window.innerWidth;
-	const isMobileViewport = containerWidth <= 768;
-	const boxSpacing = isMobileViewport ? 2 : 10;
+	const isTabletViewport = containerWidth <= 1024;
+	const boxSpacing = isTabletViewport ? 6 : 10;
 
 	const layout = justifiedLayout(imageSizes, {
 		containerWidth,
@@ -134,6 +141,7 @@ function applyImagesStyleBasedOnLayout(imageLinks: HTMLElement[], layout: Justif
 		el.style.width = `${width}px`;
 		el.style.height = `${height}px`;
 		el.style.display = 'block';
+		el.style.marginBottom = '0';
 	});
 }
 
@@ -142,6 +150,21 @@ function applyContainerStyleBasedOnLayout(container: HTMLElement, layout: Justif
 	container.style.position = 'relative';
 	// Set container height
 	container.style.height = `${layout.containerHeight}px`;
+}
+
+function applyMobileLayout(imageLinks: HTMLElement[], container: HTMLElement) {
+	container.style.position = 'relative';
+	container.style.height = 'auto';
+
+	imageLinks.forEach((el, index) => {
+		el.style.position = 'relative';
+		el.style.left = '0';
+		el.style.top = '0';
+		el.style.width = '100%';
+		el.style.height = 'auto';
+		el.style.display = 'block';
+		el.style.marginBottom = index === imageLinks.length - 1 ? '0' : '2px';
+	});
 }
 // Run setupGallery once the page is loaded
 if (typeof window !== 'undefined') {
