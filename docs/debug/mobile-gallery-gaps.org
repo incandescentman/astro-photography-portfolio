@@ -22,3 +22,30 @@
 
 * Status
 - Issue unresolved. Need deeper inspection of resize/init order and GLightbox side effects before next iteration.
+
+* Root Cause Analysis (2025-10-22)
+
+** Identified Issues
+1. *Breakpoint Mismatch*: Mobile fallback triggers at ≤480px (packeryGallery.ts:44, 70), but gaps appear at ≤768px viewports. Between 481-768px, Packery still runs with absolute positioning.
+
+2. *No Resize Handler for Layout Switching*: Initial layout check happens once in onReady() (line 62). Packery has resize: true (line 84), but no logic exists to switch from Packery → mobile fallback when crossing the breakpoint. When resizing from desktop → tablet → mobile, Packery keeps running until 480px.
+
+3. *Absolute Positioning Persistence*: Packery applies inline styles (position: absolute; left: Xpx; top: Ypx). Mobile fallback tries to reset these (lines 316-334), but lacks !important flags. Race condition: if Packery's resize handler fires after mobile fallback setup, it reapplies absolute positioning.
+
+4. *Multiple Gallery Scripts*: Two gallery implementations found (packeryGallery.ts and photo-grid.ts), both with resize handlers that could conflict.
+
+** Proposed Solution (Robust)
+1. Increase mobile breakpoint from 480px → 768px
+2. Add resize handler to detect breakpoint crossing and switch layouts
+3. Destroy Packery instance before applying mobile fallback
+4. Disable Packery's built-in resize (resize: false) and handle manually
+5. Debounce resize handler to prevent excessive recalculations
+
+** Alternative Solution (Simple)
+1. Increase breakpoint to 768px
+2. Add !important flags to all mobile style resets in setupMobileFallback()
+
+** Implementation Plan
+- Proceed with robust solution for better maintainability
+- Add resize listener that properly destroys/reinits layouts
+- Test on physical devices across 480px, 768px, 1024px breakpoints
